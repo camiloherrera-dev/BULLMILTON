@@ -33,10 +33,11 @@ function ChartTooltip({ active, payload, names }: TooltipProps) {
     <div className="rounded-xl border border-line-strong bg-surface px-3 py-2.5 text-sm shadow-[0_8px_24px_-8px_var(--shadow-tint)]">
       <p className="font-semibold first-letter:uppercase">{formatMonthName(month.month)}</p>
       <p className="tabular">{formatMoney(month.total)}</p>
-      <dl className="mt-1.5 flex flex-col gap-0.5 text-fg-muted">
+      <p className="mt-1.5 text-xs text-fg-muted">Lo pagó:</p>
+      <dl className="flex flex-col gap-0.5 text-fg-muted">
         {Object.entries(month.byPerson).map(([userId, amount]) => (
           <div key={userId} className="flex justify-between gap-4 tabular">
-            <dt>pagó {names[userId] ?? 'Alguien'}</dt>
+            <dt>{names[userId] ?? 'Alguien'}</dt>
             <dd>{formatMoney(amount)}</dd>
           </div>
         ))}
@@ -57,14 +58,18 @@ export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <ul aria-label="Leyenda" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-fg-muted">
+        <ul
+          aria-label="Quién pagó"
+          className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fg-muted"
+        >
+          <li aria-hidden="true">Pagó:</li>
           {people.map((userId) => (
             <li key={userId} className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
                 className={`size-2.5 rounded-sm ${personBg[colors[userId] ?? 'azul']}`}
               />
-              pagó {names[userId]}
+              {names[userId]}
             </li>
           ))}
         </ul>
