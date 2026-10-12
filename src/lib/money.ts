@@ -13,11 +13,11 @@ export function formatMoney(amount: number): string {
   return `${sign}$${formatAmount(Math.abs(amount))}`
 }
 
-/** Efecto en un saldo: "+66.500" / "−22.450" / "0" (signo menos tipográfico). */
+/** Efecto en un saldo: "+$66.500" / "−$22.450" / "$0" (signo menos tipográfico). */
 export function formatSigned(amount: number): string {
-  if (amount === 0) return '0'
+  if (amount === 0) return '$0'
   const sign = amount > 0 ? '+' : '−'
-  return `${sign}${formatAmount(Math.abs(amount))}`
+  return `${sign}$${formatAmount(Math.abs(amount))}`
 }
 
 export const MAX_AMOUNT = 100_000_000_000_000

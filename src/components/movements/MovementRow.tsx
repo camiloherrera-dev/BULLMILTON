@@ -1,81 +1,88 @@
 import { Link } from 'react-router'
 import { useHousehold } from '../../app/household-context'
-import { formatMoney, formatSigned } from '../../lib/money'
-import type { Movement } from '../../types/domain'
+import { formatMoney } from '../../lib/money'
+import type { AnnotatedEntry } from '../../lib/calculations/ledger'
 import { CategoryIcon, TransferIcon } from './CategoryIcon'
-import { movementDetail, movementPath, movementTitle } from './describe'
+import {
+  effectText,
+  movementDetail,
+  movementPath,
+  movementTitle,
+  transferSentence,
+} from './describe'
 
 interface MovementRowProps {
-  movement: Movement
-  /** Efecto en el saldo de quien mira (del motor de balance). */
-  effect: number
-  /** Muestra la fecha en la línea secundaria (historial sin agrupar por día). */
-  showDate?: string
+  entry: AnnotatedEntry
 }
 
 const kindLabel = { expense: 'Gasto', income: 'Ingreso', transfer: 'Transferencia' } as const
 
-/** Fila del libro: icono y tipo, descripción, quién/división y efecto en tu saldo. */
-export function MovementRow({ movement, effect, showDate }: MovementRowProps) {
+const toneClasses = {
+  positive: 'text-positive',
+  negative: 'text-negative',
+  neutral: 'text-fg-muted',
+} as const
+
+/**
+ * Fila del libro: a la derecha el monto real del movimiento (neutro); debajo de la descripción,
+ * qué le hizo a tu saldo en palabras. El verde y el rojo solo van en esa frase.
+ */
+export function MovementRow({ entry }: MovementRowProps) {
   const data = useHousehold()
+  const { movement, effect, before, after } = entry
   const category =
     movement.kind === 'transfer'
       ? null
-      : data.categories.find((entry) => entry.id === movement.categoryId)
+      : data.categories.find((item) => item.id === movement.categoryId)
   const voided = movement.status === 'voided'
+  const effectLine = effectText(movement, effect, before, after, data)
 
-  const effectTone = effect > 0 ? 'text-positive' : effect < 0 ? 'text-negative' : 'text-fg-muted'
-  const effectHint = effect > 0 ? 'a tu favor' : effect < 0 ? 'en tu contra' : 'no cambia el saldo'
+  const title =
+    movement.kind === 'transfer' && !movement.notes?.trim()
+      ? transferSentence(movement, data)
+      : movementTitle(movement)
+  const detail =
+    movement.kind === 'transfer' && movement.notes?.trim()
+      ? transferSentence(movement, data)
+      : movementDetail(movement, data)
 
   return (
     <li>
       <Link
         to={movementPath(movement)}
-        className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/70"
+        className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/70"
       >
         <span
-          className={`grid size-10 shrink-0 place-items-center rounded-full ${
-            movement.kind === 'income'
-              ? 'bg-positive-bg text-positive'
-              : movement.kind === 'transfer'
-                ? 'bg-surface-2 text-fg'
-                : 'bg-surface-2 text-fg'
+          className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-full ${
+            movement.kind === 'income' ? 'bg-positive-bg text-positive' : 'bg-surface-2 text-fg'
           }`}
         >
           {movement.kind === 'transfer' ? <TransferIcon /> : <CategoryIcon icon={category?.icon} />}
         </span>
 
         <span className="flex min-w-0 flex-1 flex-col">
-          <span
-            className={`truncate font-medium ${voided ? 'text-fg-muted line-through' : 'text-fg'}`}
-          >
-            {movementTitle(movement)}
+          <span className="flex items-baseline justify-between gap-3">
+            <span
+              className={`truncate font-medium ${voided ? 'text-fg-muted line-through' : 'text-fg'}`}
+            >
+              <span className="sr-only">{kindLabel[movement.kind]}: </span>
+              {title}
+            </span>
+            <span
+              className={`shrink-0 tabular font-semibold ${voided ? 'text-fg-muted line-through' : 'text-fg'}`}
+            >
+              {formatMoney(movement.amount)}
+            </span>
           </span>
           <span className="truncate text-sm text-fg-muted">
-            <span className="sr-only">{kindLabel[movement.kind]}. </span>
-            {voided ? 'Anulado: ' : ''}
-            {showDate ? `${showDate}, ` : ''}
-            {movementDetail(movement, data)}
+            {detail}
             {category && movement.kind === 'income' ? `, ${category.name}` : ''}
           </span>
-        </span>
-
-        <span className="flex shrink-0 flex-col items-end tabular">
-          {movement.kind === 'income' || voided ? (
-            <span className="font-semibold text-fg-muted">{formatMoney(movement.amount)}</span>
-          ) : (
-            <span className={`font-semibold ${effectTone}`}>{formatSigned(effect)}</span>
+          {effectLine && (
+            <span className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>
+              {effectLine.text}
+            </span>
           )}
-          <span className="text-xs text-fg-muted">
-            {movement.kind === 'expense' && !voided
-              ? `de ${formatMoney(movement.amount)}`
-              : voided
-                ? 'sin efecto'
-                : movement.kind === 'income'
-                  ? 'ingreso'
-                  : effectHint}
-          </span>
-          <span className="sr-only">{effectHint}</span>
         </span>
       </Link>
     </li>

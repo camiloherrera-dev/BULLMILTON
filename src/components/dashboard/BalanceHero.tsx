@@ -4,16 +4,20 @@ import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   CheckIcon,
+  QuestionIcon,
   UserPlusIcon,
 } from '@phosphor-icons/react'
 import { memberName, useHousehold } from '../../app/household-context'
 import { formatMoney } from '../../lib/money'
 import type { Debt } from '../../lib/calculations/balance'
+import type { BalanceBreakdown } from '../../lib/calculations/ledger'
 import { buttonClasses } from '../ui/buttonClasses'
+import { BalanceExplainer } from './BalanceExplainer'
 
 interface BalanceHeroProps {
   myBalance: number
   debts: Debt[]
+  breakdown: BalanceBreakdown
 }
 
 function settlePath(debt: Debt) {
@@ -26,10 +30,11 @@ function settlePath(debt: Debt) {
 }
 
 /** Saldo a escala grande; al hacer scroll se compacta en una barra fija (signature del libro). */
-export function BalanceHero({ myBalance, debts }: BalanceHeroProps) {
+export function BalanceHero({ myBalance, debts, breakdown }: BalanceHeroProps) {
   const data = useHousehold()
   const sentinel = useRef<HTMLDivElement>(null)
   const [compact, setCompact] = useState(false)
+  const [explaining, setExplaining] = useState(false)
 
   useEffect(() => {
     const element = sentinel.current
@@ -69,7 +74,7 @@ export function BalanceHero({ myBalance, debts }: BalanceHeroProps) {
     },
     negative: {
       icon: <ArrowDownRightIcon aria-hidden="true" className="size-4" weight="bold" />,
-      label: 'En tu contra',
+      label: 'Te toca abonar',
       classes: 'bg-negative-bg text-negative',
     },
     settled: {
@@ -103,6 +108,14 @@ export function BalanceHero({ myBalance, debts }: BalanceHeroProps) {
               Registrar abono
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => setExplaining(true)}
+            className={buttonClasses('ghost', 'sm', 'text-fg-muted hover:text-fg')}
+          >
+            <QuestionIcon aria-hidden="true" className="size-4" weight="bold" />
+            ¿Cómo se calcula?
+          </button>
           {activeOthers.length === 0 && (
             <Link to="/ajustes#invitar" className={buttonClasses('secondary', 'sm')}>
               <UserPlusIcon aria-hidden="true" className="size-4" weight="bold" />
@@ -122,6 +135,11 @@ export function BalanceHero({ myBalance, debts }: BalanceHeroProps) {
           </ul>
         )}
         <div ref={sentinel} aria-hidden="true" />
+        <BalanceExplainer
+          open={explaining}
+          onClose={() => setExplaining(false)}
+          breakdown={breakdown}
+        />
       </section>
 
       <div

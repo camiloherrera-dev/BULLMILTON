@@ -1,8 +1,13 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router'
 import { NotebookIcon } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
 import { buildLedger, calculateBalance, toBalanceInput } from '../../lib/calculations/balance'
+import {
+  annotateLedger,
+  balanceBreakdown,
+  limitEntries,
+  periodBridge,
+} from '../../lib/calculations/ledger'
 import { summarizePeriod } from '../../lib/calculations/reports'
 import { endOfMonth, startOfMonth, todayBogota } from '../../lib/dates'
 import { BalanceHero } from '../../components/dashboard/BalanceHero'
@@ -12,7 +17,8 @@ import { PendingRecurring } from '../../components/dashboard/PendingRecurring'
 import { ButtonLink } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/States'
 
-const LEDGER_DAYS = 14
+/** Inicio muestra solo lo último; el resto está en Movimientos. */
+const LEDGER_ROWS = 8
 
 /** Inicio: el libro diario del hogar (dirección "Libro diario", ver .impeccable/surfaces). */
 export function DashboardPage() {
@@ -20,23 +26,27 @@ export function DashboardPage() {
   const { movements, members, userId } = data
   const today = todayBogota()
 
-  const { balance, ledger, summary, totalDays } = useMemo(() => {
+  const { balance, breakdown, ledger, bridge, summary, totalRows } = useMemo(() => {
     const memberIds = members.map((member) => member.userId)
-    const fullLedger = buildLedger(movements, userId)
+    const fullLedger = annotateLedger(buildLedger(movements, userId))
+    const month = { from: startOfMonth(today), to: endOfMonth(today) }
     return {
       balance: calculateBalance(toBalanceInput(movements, memberIds)),
-      ledger: fullLedger.slice(0, LEDGER_DAYS),
-      totalDays: fullLedger.length,
-      summary: summarizePeriod(movements, memberIds, {
-        from: startOfMonth(today),
-        to: endOfMonth(today),
-      }),
+      breakdown: balanceBreakdown(movements, userId),
+      ledger: limitEntries(fullLedger, LEDGER_ROWS),
+      totalRows: fullLedger.reduce((sum, day) => sum + day.entries.length, 0),
+      bridge: periodBridge(movements, userId, month),
+      summary: summarizePeriod(movements, memberIds, month),
     }
   }, [movements, members, userId, today])
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 lg:px-10">
-      <BalanceHero myBalance={balance.balances[userId] ?? 0} debts={balance.debts} />
+      <BalanceHero
+        myBalance={balance.balances[userId] ?? 0}
+        debts={balance.debts}
+        breakdown={breakdown}
+      />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
         <div className="flex min-w-0 flex-col gap-6">
@@ -54,15 +64,16 @@ export function DashboardPage() {
             </EmptyState>
           ) : (
             <>
-              <Ledger days={ledger} />
-              {totalDays > LEDGER_DAYS && (
-                <Link
-                  to="/movimientos"
-                  className="self-start text-sm font-medium text-fg-muted underline hover:text-fg"
-                >
-                  Ver todo el historial
-                </Link>
-              )}
+              <Ledger days={ledger} heading="Últimos movimientos" />
+              <ButtonLink
+                to="/movimientos"
+                variant="secondary"
+                className="w-full sm:w-auto sm:self-start"
+              >
+                {totalRows > LEDGER_ROWS
+                  ? `Ver todo el historial (${totalRows})`
+                  : 'Ver todo el historial'}
+              </ButtonLink>
             </>
           )}
         </div>
@@ -71,7 +82,7 @@ export function DashboardPage() {
           <div className="hidden xl:block">
             <PendingRecurring />
           </div>
-          <MonthSummary summary={summary} month={today} />
+          <MonthSummary summary={summary} bridge={bridge} month={today} />
         </aside>
       </div>
     </div>

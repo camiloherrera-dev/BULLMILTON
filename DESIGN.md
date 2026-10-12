@@ -166,8 +166,8 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 - **Finance Green** (`positive`): efecto a tu favor, ingresos, completado.
 - **Deep Green** (`positive-bg`): fondo de chips e iconos de ingreso.
-- **Expense Red** (`negative`): efecto en tu contra, errores, borde de input inválido. Con moderación.
-- **Red Wash** (`negative-bg`): fondo del chip "En tu contra" y del botón de peligro.
+- **Expense Red** (`negative`): efecto que te deja debiendo más, errores, borde de input inválido. Con moderación.
+- **Red Wash** (`negative-bg`): fondo del chip "Te toca abonar" y del botón de peligro.
 
 ### Neutral
 
@@ -184,7 +184,7 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 **The Yellow Means Act Rule.** El amarillo marca acciones, el día de hoy y datos que piden atención (barras de magnitud, pendientes). Nunca es fondo decorativo.
 
-**The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("a tu favor", "en tu contra").
+**The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("Sebastián te debe $X más", "Le debes $X más"). En el libro, el monto de cada fila es neutro (`fg`) y el color solo va en la frase del efecto: verde si te deben más, rojo si debes más, gris si el saldo se acerca a cero.
 
 **The Theme Rule.** El tema por defecto es Bullmilton (oscuro, paleta de la spec). Desde el 2026-10-12, por decisión del usuario, cada cuenta elige en Ajustes → Apariencia entre seis temas (cuatro oscuros, dos claros) definidos solo en `src/styles/tokens.css` con `[data-theme]`. Todo tema nuevo redefine los mismos tokens, declara `on-primary` y pasa AA en texto (4,5:1). En temas claros `primary` es un tono oscuro y `primary-soft` su hover más oscuro.
 
@@ -265,7 +265,7 @@ Firmes y directos, sin adornos.
 
 ### Chips
 
-- **Estado del saldo:** 32px, píldora, icono Phosphor en negrita + texto ("A tu favor" en verde sobre Deep Green, "En tu contra" en rojo sobre Red Wash, "Están a paz y salvo" en gris sobre Slate).
+- **Estado del saldo:** 32px, píldora, icono Phosphor en negrita + texto ("A tu favor" en verde sobre Deep Green, "Te toca abonar" en rojo sobre Red Wash, "Están a paz y salvo" en gris sobre Slate).
 - **Periodo (reportes) y atajos de división:** 44px, píldora, Slate con texto Muted Gray.
 - **Seleccionado:** relleno Soft White con texto Deep Navy en semibold.
 

@@ -18,9 +18,9 @@ describe('formato de dinero (COP)', () => {
   })
 
   it('formatea efectos con signo', () => {
-    expect(formatSigned(66_500)).toBe('+66.500')
-    expect(formatSigned(-22_450)).toBe('−22.450')
-    expect(formatSigned(0)).toBe('0')
+    expect(formatSigned(66_500)).toBe('+$66.500')
+    expect(formatSigned(-22_450)).toBe('−$22.450')
+    expect(formatSigned(0)).toBe('$0')
   })
 
   it('formatea porcentajes en puntos básicos', () => {
