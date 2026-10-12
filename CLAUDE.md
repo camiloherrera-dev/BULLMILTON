@@ -24,17 +24,31 @@
 
 - RLS habilitado en **todas** las tablas expuestas. Acceso siempre derivado de
   `auth.uid()` → `household_members` → `household_id`.
+- Auth simplificada (decidido 2026-10-12): solo login/logout con email + contraseña, sesión
+  persistente y rutas protegidas. Sin registro ni recuperación en la app; las cuentas se crean en
+  el dashboard de Supabase.
 - Ninguna service key / secret key / password de Postgres en el frontend ni en variables
   `VITE_*`. En el cliente solo va la publishable (anon) key.
-- Tests de RLS con pgTAP (`supabase test db`). Si RLS falla, no se construyen más features hasta
+- Tests de RLS con pgTAP en `supabase/tests/database/`. Rápido sin Docker: `npm run test:db`;
+  referencia: `supabase test db` (Docker o CI). Si RLS falla, no se construyen más features hasta
   arreglarlo.
+- Cambios de esquema = migración nueva (`npx supabase migration new <nombre>`); nunca editar una
+  migración ya aplicada en la nube. Cada migración termina con
+  `revoke execute on all functions in schema public, private from public, anon;` y GRANTs
+  explícitos (por columna cuando aplique) solo a `authenticated`.
+- Funciones SECURITY DEFINER solo cuando RLS no alcanza, siempre con `set search_path = ''`.
+- Modelo, convención de saldo y claves de error: `docs/DATABASE.md`. Puesta en marcha:
+  `docs/SUPABASE.md`.
 - Operaciones con varios cambios relacionados (gasto + splits) van en una función/RPC atómica.
 - Nunca mostrar errores técnicos al usuario; mensajes humanos en la UI, detalle en logs.
 
 ## Dinero y fechas
 
 - Dinero siempre en enteros (`bigint` en Postgres, `number` entero en TS; COP sin decimales).
-  **Nunca float.** Siempre guardar `currency`.
+  **Nunca float.** Siempre guardar `currency`. Porcentajes en puntos básicos (`share_bp`, 10000 = 100 %).
+- Convención de saldo (corrige la spec §11):
+  `saldo = pagado − su_parte + transferencias_enviadas − transferencias_recibidas`;
+  > 0 le deben, < 0 debe.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos
   financieros dentro de JSX.
@@ -66,6 +80,8 @@
 ## Comandos
 
 - `npm run dev` — servidor de desarrollo
-- `npm run build` — typecheck + build de producción
+- `npm run build` — typecheck + build de producción + `check:secrets`
+- `npm run test:db` — migraciones + seed + tests pgTAP en PGlite (sin Docker)
+- `npm run db:push` / `npm run db:types` — aplicar migraciones al proyecto enlazado / generar tipos
 - `npm run lint` — ESLint
 - `npm run format` / `npm run format:check` — Prettier
