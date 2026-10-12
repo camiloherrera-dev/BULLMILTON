@@ -24,6 +24,14 @@
     color-scheme: dark;
     scrollbar-color: var(--color-surface-2) transparent;
     -webkit-text-size-adjust: 100%;
+    /* En móvil hay barras fijas abajo (acciones rápidas, botón Guardar): al llevar el foco a un
+       campo, el navegador deja este margen para que no quede tapado (WCAG 2.4.11). */
+    scroll-padding-bottom: 9rem;
+  }
+  @media (min-width: 64rem) {
+    :root {
+      scroll-padding-bottom: 0;
+    }
   }
 
   body {
@@ -79,7 +87,16 @@
 
   /* Modo privado: los montos (utilidad tabular, o líneas marcadas data-money) se ocultan hasta
      tocarlos; ver src/lib/privacy.ts. Los campos donde se escribe un monto quedan visibles. */
-  [data-private] :is(.tabular, [data-money]):not(input, textarea, [data-revealed]) {
+  [data-private]
+    :is(.tabular, [data-money]):not(
+      input,
+      textarea,
+      button,
+      label,
+      a,
+      [data-not-money],
+      [data-revealed]
+    ) {
     filter: blur(0.5em);
     cursor: pointer;
     user-select: none;

@@ -118,7 +118,10 @@ export function SplitEditor({
                   {checked && <CheckIcon className="size-3.5" weight="bold" />}
                 </span>
                 <span className="flex-1 font-medium">{name(member)}</span>
-                <span className="tabular text-sm text-fg-muted">
+                <span
+                  data-not-money={!checked || undefined}
+                  className="tabular text-sm text-fg-muted"
+                >
                   {!checked
                     ? 'no participa'
                     : `${member.userId === meId ? 'te toca' : 'le toca'} ${
@@ -161,7 +164,11 @@ export function SplitEditor({
                     autoComplete="off"
                     value={value.percents[member.userId] ?? ''}
                     onChange={(event) => setPercent(member.userId, event.target.value)}
+                    aria-label={`Porcentaje de ${name(member)}`}
                     aria-invalid={Boolean(percentErrors[member.userId])}
+                    aria-describedby={
+                      percentErrors[member.userId] ? `pct-error-${member.userId}` : undefined
+                    }
                     className={`${controlClasses} h-12 pr-8 text-right tabular`}
                   />
                   <span
@@ -173,11 +180,14 @@ export function SplitEditor({
                 </div>
               </div>
               {percentErrors[member.userId] && (
-                <p className="text-right text-sm text-negative">{percentErrors[member.userId]}</p>
+                <p id={`pct-error-${member.userId}`} className="text-right text-sm text-negative">
+                  {percentErrors[member.userId]}
+                </p>
               )}
             </div>
           ))}
           <p
+            data-not-money
             className={`text-right tabular text-sm ${totalBp === 10000 ? 'text-fg-muted' : 'text-negative'}`}
           >
             Total {(totalBp / 100).toLocaleString('es-CO', { maximumFractionDigits: 2 })} %

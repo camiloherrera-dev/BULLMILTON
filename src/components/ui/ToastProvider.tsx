@@ -13,11 +13,27 @@ interface Toast {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
   const nextId = useRef(0)
+  const timers = useRef(new Map<number, { handle: number; ms: number }>())
 
-  const dismiss = useCallback(
-    (id: number) => setToasts((current) => current.filter((toast) => toast.id !== id)),
-    [],
+  const dismiss = useCallback((id: number) => {
+    window.clearTimeout(timers.current.get(id)?.handle)
+    timers.current.delete(id)
+    setToasts((current) => current.filter((toast) => toast.id !== id))
+  }, [])
+
+  const schedule = useCallback(
+    (id: number, ms: number) => {
+      window.clearTimeout(timers.current.get(id)?.handle)
+      timers.current.set(id, { handle: window.setTimeout(() => dismiss(id), ms), ms })
+    },
+    [dismiss],
   )
+  // Pausar = cancelar el temporizador; al salir se da de nuevo el tiempo completo (WCAG 2.2.1).
+  const pause = (id: number) => window.clearTimeout(timers.current.get(id)?.handle)
+  const resume = (id: number) => {
+    const timer = timers.current.get(id)
+    if (timer) schedule(id, timer.ms)
+  }
 
   const show = useCallback(
     (message: string, tone: ToastTone = 'success', options: ToastOptions = {}) => {
@@ -26,9 +42,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const actions = options.actions ?? []
       setToasts((current) => [...current.slice(-2), { id, message, tone, actions }])
       // Con acciones hay que dar tiempo a leer y decidir (WCAG 2.2.1).
-      window.setTimeout(() => dismiss(id), actions.length ? 10000 : tone === 'error' ? 6000 : 3200)
+      schedule(id, actions.length ? 10000 : tone === 'error' ? 6000 : 3200)
     },
-    [dismiss],
+    [schedule],
   )
 
   const api = useMemo(() => ({ show }), [show])
@@ -44,6 +60,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.tone === 'error' ? 'alert' : 'status'}
+            onPointerEnter={() => pause(toast.id)}
+            onPointerLeave={() => resume(toast.id)}
+            onFocus={() => pause(toast.id)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) resume(toast.id)
+            }}
             className="pointer-events-auto flex w-full max-w-md flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-line-strong bg-surface py-2 pr-2 pl-4 text-sm font-medium text-fg shadow-[0_8px_24px_-8px_var(--shadow-tint)] motion-safe:animate-[toast-in_220ms_var(--ease-out-expo)]"
           >
             <span className="flex min-h-11 flex-1 items-center gap-2.5">

@@ -466,7 +466,8 @@ export function AppearancePage() {
             <span className="flex flex-1 flex-col">
               <span className="font-medium">Ocultar los montos</span>
               <span className="text-sm text-fg-muted">
-                Para abrir la app en público: los montos se ven borrosos hasta que los tocas.
+                Para abrir la app en público: los montos se ven borrosos hasta que los tocas. Con
+                teclado, apágalo aquí para verlos.
               </span>
             </span>
             <input

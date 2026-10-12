@@ -17,11 +17,13 @@ export function ScrollFade({
   useEffect(() => {
     const element = ref.current
     if (!element) return
-    const update = () =>
-      setEdges({
-        start: element.scrollLeft > 4,
-        end: element.scrollLeft + element.clientWidth < element.scrollWidth - 4,
-      })
+    const update = () => {
+      const start = element.scrollLeft > 4
+      const end = element.scrollLeft + element.clientWidth < element.scrollWidth - 4
+      setEdges((current) =>
+        current.start === start && current.end === end ? current : { start, end },
+      )
+    }
     update()
     element.addEventListener('scroll', update, { passive: true })
     const observer = new ResizeObserver(update)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import {
   ArchiveIcon,
   ArrowCounterClockwiseIcon,
@@ -16,12 +16,14 @@ import { CategoryBadge, CategoryIcon } from '../../components/movements/Category
 import { categorySolid } from '../../components/movements/categoryColors'
 import { iconChoices, iconLabels } from '../../components/movements/categoryIcons'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { TextInput } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { Segmented } from '../../components/ui/Segmented'
 import { useToast } from '../../components/ui/toast-context'
 
 function IconChooser({ value, onChange }: { value: string; onChange: (icon: string) => void }) {
+  const name = useId()
   return (
     <fieldset>
       <legend className="mb-2 text-sm font-medium">Icono</legend>
@@ -37,7 +39,7 @@ function IconChooser({ value, onChange }: { value: string; onChange: (icon: stri
           >
             <input
               type="radio"
-              name="icon"
+              name={name}
               value={icon}
               checked={value === icon}
               onChange={() => onChange(icon)}
@@ -60,6 +62,7 @@ function ColorChooser({
   value: CategoryColorId | null
   onChange: (color: CategoryColorId | null) => void
 }) {
+  const name = useId()
   const options: Array<{ id: CategoryColorId | null; name: string }> = [
     { id: null, name: 'Sin color' },
     ...categoryColors,
@@ -79,7 +82,7 @@ function ColorChooser({
             >
               <input
                 type="radio"
-                name="color"
+                name={name}
                 checked={checked}
                 onChange={() => onChange(option.id)}
                 className="sr-only"
@@ -102,6 +105,12 @@ function ColorChooser({
 
 function CategoryRow({ category }: { category: Category }) {
   const toast = useToast()
+  const data = useHousehold()
+  // Con movimientos no se puede borrar (la base de datos lo impide): solo archivar.
+  const inUse = data.movements.some(
+    (movement) => movement.kind !== 'transfer' && movement.categoryId === category.id,
+  )
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(category.name)
   const [icon, setIcon] = useState(category.icon ?? 'tag')
@@ -155,12 +164,16 @@ function CategoryRow({ category }: { category: Category }) {
     )
 
   return (
-    <li className={`flex items-center gap-3 py-2.5 ${category.archivedAt ? 'opacity-60' : ''}`}>
-      <CategoryBadge icon={category.icon} color={category.color} />
-      <span className="flex-1 font-medium">
-        {category.name}
+    <li className="flex items-center gap-3 py-2.5">
+      <span className={category.archivedAt ? 'opacity-50' : ''}>
+        <CategoryBadge icon={category.icon} color={category.color} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-medium">
+        <span className={category.archivedAt ? 'text-fg-muted' : ''}>{category.name}</span>
         {category.archivedAt && (
-          <span className="ml-2 text-sm font-normal text-fg-muted">Archivada</span>
+          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-fg-muted">
+            Archivada
+          </span>
         )}
       </span>
       <Button
@@ -193,14 +206,34 @@ function CategoryRow({ category }: { category: Category }) {
           icon={<ArchiveIcon aria-hidden="true" className="size-4" />}
         />
       )}
-      <Button
-        size="sm"
-        variant="ghost"
-        aria-label={`Borrar ${category.name}`}
-        disabled={busy}
-        onClick={() => run(() => deleteCategory(category.id), 'Categoría borrada')}
-        icon={<TrashIcon aria-hidden="true" className="size-4" />}
-      />
+      {inUse ? (
+        // Mismo ancho que el botón, para que las columnas de acciones queden alineadas.
+        <span aria-hidden="true" className="size-11 shrink-0" />
+      ) : (
+        <Button
+          size="sm"
+          variant="ghost"
+          aria-label={`Borrar ${category.name}`}
+          disabled={busy}
+          onClick={() => setConfirmDelete(true)}
+          icon={<TrashIcon aria-hidden="true" className="size-4" />}
+        />
+      )}
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`¿Borrar ${category.name}?`}
+        confirmLabel="Sí, borrar"
+        loading={busy}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() =>
+          run(() => deleteCategory(category.id), 'Categoría borrada').finally(() =>
+            setConfirmDelete(false),
+          )
+        }
+      >
+        No tiene movimientos, así que desaparece del todo. Si la usa un gasto recurrente, no se
+        podrá borrar: archívala.
+      </ConfirmDialog>
     </li>
   )
 }

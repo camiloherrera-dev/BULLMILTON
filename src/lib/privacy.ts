@@ -1,6 +1,7 @@
 // Modo privado (Ajustes → Apariencia): los montos se ven borrosos hasta tocarlos, para abrir la
 // app en público. El CSS oculta la utilidad `tabular` y las líneas con data-money; aquí se revela
 // tocado durante unos segundos. El primer toque solo revela (no abre la fila que lo contiene).
+// Con teclado no hay forma de "tocar" un monto: el camino es apagar el modo privado.
 
 const REVEAL_MS = 8000
 
@@ -11,6 +12,8 @@ function onPointer(event: MouseEvent) {
     ':is(.tabular, [data-money]):not(input):not(textarea)',
   )
   if (!amount || amount.hasAttribute('data-revealed')) return
+  // Los controles nunca se ocultan (su texto no es un monto) ni pierden su primer clic.
+  if (amount.matches('button, a, label, [role=button], [data-not-money]')) return
   event.preventDefault()
   event.stopPropagation()
   amount.setAttribute('data-revealed', '')

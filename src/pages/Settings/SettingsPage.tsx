@@ -248,7 +248,10 @@ function Invitations() {
           className="flex flex-wrap items-center gap-3 rounded-xl bg-surface px-4 py-3"
         >
           <div className="min-w-0 flex-1">
-            <p className="tabular text-xl font-semibold tracking-[0.18em] select-all">
+            <p
+              data-not-money
+              className="tabular text-xl font-semibold tracking-[0.18em] select-all"
+            >
               {item.code}
             </p>
             <p className="text-sm text-fg-muted">

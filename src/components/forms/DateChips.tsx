@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { addDays, todayBogota } from '../../lib/dates'
 import { Segmented } from '../ui/Segmented'
 import { TextInput } from '../ui/Field'
@@ -18,6 +18,7 @@ export function DateChips({ value, onChange, label = '¿Cuándo?', error }: Date
   const yesterday = addDays(today, -1)
   const derived: Choice = value === today ? 'today' : value === yesterday ? 'yesterday' : 'other'
   const [picking, setPicking] = useState(derived === 'other')
+  const errorId = useId()
   const choice: Choice = picking ? 'other' : derived
 
   return (
@@ -41,12 +42,13 @@ export function DateChips({ value, onChange, label = '¿Cuándo?', error }: Date
           type="date"
           aria-label="Fecha"
           aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
       )}
       {error && (
-        <p role="alert" className="text-sm text-negative">
+        <p id={errorId} role="alert" className="text-sm text-negative">
           {error}
         </p>
       )}

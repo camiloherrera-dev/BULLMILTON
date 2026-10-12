@@ -54,6 +54,8 @@ export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
   const [asTable, setAsTable] = useState(false)
   const max = Math.max(...months.map((month) => month.total))
   const people = Object.keys(names)
+  // En modo privado el eje no muestra cifras (las alturas solas no dicen montos exactos).
+  const hideAmounts = document.documentElement.hasAttribute('data-private')
 
   return (
     <div className="flex flex-col gap-3">
@@ -76,7 +78,7 @@ export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
         <button
           type="button"
           onClick={() => setAsTable((value) => !value)}
-          className="text-sm font-medium text-fg-muted underline hover:text-fg"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-fg-muted underline hover:text-fg"
         >
           {asTable ? 'Ver gráfico' : 'Ver como tabla'}
         </button>
@@ -144,6 +146,7 @@ export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
                 interval={0}
               />
               <YAxis
+                hide={hideAmounts}
                 tickFormatter={compact}
                 tickLine={false}
                 axisLine={false}
