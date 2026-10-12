@@ -32,7 +32,7 @@ queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿nos debemos algo?
 - Revisión más calmada en el computador: historial con filtros, reportes por periodo y categoría.
 - Gastos recurrentes del hogar (arriendo, internet, servicios, streaming) que se confirman cada mes.
 - Moneda: pesos colombianos (COP), sin decimales. Zona horaria: America/Bogota.
-- Solo dos cuentas, creadas a mano en Supabase; no hay registro público.
+- Dos cuentas; solo se registra quien tiene un código de invitación del hogar.
 
 ## Capabilities and Constraints
 

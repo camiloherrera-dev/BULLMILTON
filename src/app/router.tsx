@@ -3,6 +3,7 @@ import { HouseholdLayout, NotFound, ReportsRoute, RouteError } from './RouteScre
 import { PublicOnly, RequireAuth } from './guards'
 import { LoginPage } from '../pages/Login/LoginPage'
 import { ForgotPasswordPage } from '../pages/Password/ForgotPasswordPage'
+import { RegisterPage } from '../pages/Register/RegisterPage'
 import { ResetPasswordPage } from '../pages/Password/ResetPasswordPage'
 import { WelcomePage } from '../pages/Welcome/WelcomePage'
 import { DashboardPage } from '../pages/Dashboard/DashboardPage'
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
         element: (
           <PublicOnly>
             <LoginPage />
+          </PublicOnly>
+        ),
+      },
+      {
+        path: '/registro',
+        element: (
+          <PublicOnly>
+            <RegisterPage />
           </PublicOnly>
         ),
       },

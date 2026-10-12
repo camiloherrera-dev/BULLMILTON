@@ -16,7 +16,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-// Sin registro en la app: las cuentas se crean en Supabase (docs/SUPABASE.md).
+// Registro solo con código de invitación: /registro (lo hace cumplir un hook de Supabase Auth).
 // La contraseña olvidada se recupera por email: /recuperar → /restablecer.
 export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
@@ -79,6 +79,12 @@ export function LoginPage() {
         </Button>
       </form>
 
+      <p className="text-center text-sm text-fg-muted">
+        ¿Te invitaron?{' '}
+        <Link to="/registro" className="font-medium text-fg underline hover:text-primary">
+          Crea tu cuenta
+        </Link>
+      </p>
       <Link
         to="/recuperar"
         className="inline-flex min-h-11 items-center self-center text-sm font-medium text-fg-muted underline hover:text-fg"

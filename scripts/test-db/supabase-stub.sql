@@ -3,6 +3,7 @@
 create role anon nologin noinherit;
 create role authenticated nologin noinherit;
 create role service_role nologin noinherit bypassrls;
+create role supabase_auth_admin nologin noinherit;
 create schema auth;
 create schema extensions;
 grant usage on schema public, extensions, auth to anon, authenticated, service_role;

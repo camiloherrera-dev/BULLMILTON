@@ -233,8 +233,10 @@ function Invitations() {
 
   const copy = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(code)
-      toast.show('Código copiado')
+      // Enlace directo al registro con el código ya puesto (sirve también si ya tiene cuenta:
+      // entra y escribe el código en la bienvenida).
+      await navigator.clipboard.writeText(`${window.location.origin}/registro?codigo=${code}`)
+      toast.show('Enlace de invitación copiado')
     } catch {
       toast.show('No se pudo copiar; selecciónalo y cópialo a mano.', 'error')
     }
@@ -264,7 +266,7 @@ function Invitations() {
             onClick={() => copy(item.code)}
             icon={<CopyIcon aria-hidden="true" className="size-4" />}
           >
-            Copiar
+            Copiar enlace
           </Button>
           <Button
             variant="ghost"

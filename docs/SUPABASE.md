@@ -16,9 +16,9 @@ supabase/
 
 ## Opción A — Proyecto en la nube (no necesita Docker)
 
-Autenticación simplificada (decisión del 2026-10-12, desviación de la spec §4.1): **sin registro
-público**. Las dos cuentas se crean a mano en el dashboard. La contraseña olvidada sí se recupera
-desde la app ("¿Olvidaste tu contraseña?" → correo → `/restablecer`); ver el paso 5.
+Autenticación (decisiones del 2026-10-12): **registro solo con código de invitación** en
+`/registro`, y la contraseña olvidada se recupera desde la app ("¿Olvidaste tu contraseña?" →
+correo → `/restablecer`). Ver el paso 5.
 
 Los comandos `npx supabase ...` piden datos de forma interactiva (navegador, contraseña,
 confirmación): ejecútalos en tu propia terminal, en la carpeta del proyecto.
@@ -43,16 +43,23 @@ confirmación): ejecútalos en tu propia terminal, en la carpeta del proyecto.
    ```
    El seed **no** se sube: tiene contraseñas conocidas y es solo para desarrollo local.
 5. **Configurar Auth** en el dashboard (el `config.toml` solo aplica al entorno local):
+   - **Primero el hook, después el registro** (en este orden; al revés, el registro quedaría
+     abierto unos minutos): _Authentication → Hooks → Before User Created_ → **Postgres** →
+     schema `public`, función `hook_before_user_created` → activarlo. La función la crea la
+     migración `20261012171142_invite_only_signup.sql`: rechaza cualquier cuenta sin un código de
+     invitación vigente. Con el hook activo, "Add user" del panel también pide código; las
+     cuentas nuevas se crean desde `/registro`.
    - _Authentication → Sign In / Providers_:
-     - **Allow new users to sign up: desactivado.**
+     - **Allow new users to sign up: activado** (solo después de activar el hook).
      - **Allow anonymous sign-ins: desactivado.**
      - Email: activado. "Confirm email" da igual (las cuentas se crean ya confirmadas).
    - _Authentication → URL Configuration_ (las redirecciones que no estén aquí se rechazan):
      - **Site URL**: `http://localhost:5173` en desarrollo; en producción, la URL de Vercel
        (`https://<tu-app>.vercel.app`).
      - **Redirect URLs** (añade cada una):
-       - `http://localhost:5173/restablecer`
-       - `https://<tu-app>.vercel.app/restablecer`
+       - `http://localhost:5173/restablecer` y `http://localhost:5173/entrar`
+       - `https://<tu-app>.vercel.app/restablecer` y `https://<tu-app>.vercel.app/entrar`
+         (`/entrar` es a donde lleva el correo de confirmación del registro)
        - Si usas despliegues de vista previa de Vercel:
          `https://<tu-app>-*-<tu-equipo>.vercel.app/restablecer`
        - Si conectas un dominio propio: `https://<tu-dominio>/restablecer`

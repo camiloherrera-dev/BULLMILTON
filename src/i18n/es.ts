@@ -25,6 +25,8 @@ export const errorMessages = {
   category_in_use: 'Esa categoría tiene movimientos. Archívala en lugar de borrarla.',
   duplicate_category: 'Ya existe una categoría con ese nombre.',
   person_color_taken: 'Ese color ya lo usa alguien del hogar. Elige otro.',
+  email_taken: 'Ya hay una cuenta con ese email. Entra con ella o recupera la contraseña.',
+  signup_disabled: 'El registro está cerrado. Pide a quien creó el hogar que lo active.',
   unknown: 'Algo salió mal. Inténtalo de nuevo.',
 } as const
 

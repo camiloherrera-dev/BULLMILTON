@@ -13,8 +13,8 @@ export function useAuth(): AuthState {
 }
 
 /** Solo para componentes dentro de rutas protegidas. */
-export function useSignedInUser(): { userId: string; email: string } {
+export function useSignedInUser(): { userId: string; email: string; session: Session } {
   const auth = useAuth()
   if (auth.status !== 'signedIn') throw new Error('useSignedInUser fuera de una ruta protegida')
-  return { userId: auth.userId, email: auth.email }
+  return { userId: auth.userId, email: auth.email, session: auth.session }
 }

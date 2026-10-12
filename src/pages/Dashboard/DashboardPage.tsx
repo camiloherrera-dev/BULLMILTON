@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { NotebookIcon } from '@phosphor-icons/react'
+import { Link } from 'react-router'
+import { CaretRightIcon, NotebookIcon } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
 import { buildLedger, calculateBalance, toBalanceInput } from '../../lib/calculations/balance'
 import {
@@ -10,6 +11,7 @@ import {
 } from '../../lib/calculations/ledger'
 import { summarizePeriod } from '../../lib/calculations/reports'
 import { endOfMonth, startOfMonth, todayBogota } from '../../lib/dates'
+import { formatMoney } from '../../lib/money'
 import { DebtCard } from '../../components/dashboard/DebtCard'
 import { Ledger } from '../../components/dashboard/Ledger'
 import { MoneyLeftHero } from '../../components/dashboard/MoneyLeftHero'
@@ -79,7 +81,23 @@ export function DashboardPage() {
           )}
         </div>
         <div className="xl:col-start-2 xl:row-start-2">
-          <MonthSummary summary={summary} month={today} />
+          {/* En el celular basta una línea (lo demás está arriba y en Reportes). */}
+          <div className="hidden lg:block">
+            <MonthSummary summary={summary} month={today} />
+          </div>
+          <Link
+            to="/reportes"
+            className="flex min-h-14 items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 transition-colors hover:bg-surface-2/50 lg:hidden"
+          >
+            <span className="flex flex-col">
+              <span className="text-sm text-fg-muted">Gastado entre los dos este mes</span>
+              <span className="tabular font-semibold">{formatMoney(summary.totalExpenses)}</span>
+            </span>
+            <span className="flex items-center gap-1 text-sm font-medium text-fg-muted">
+              Reportes
+              <CaretRightIcon aria-hidden="true" className="size-4" />
+            </span>
+          </Link>
         </div>
       </div>
     </div>

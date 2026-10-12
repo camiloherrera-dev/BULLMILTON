@@ -26,7 +26,8 @@
   `auth.uid()` → `household_members` → `household_id`.
 - Auth simplificada (decidido 2026-10-12): login/logout con email + contraseña, sesión
   persistente, rutas protegidas y recuperación de contraseña por email (`/recuperar` →
-  `/restablecer`). Sin registro en la app; las cuentas se crean en el dashboard de Supabase.
+  `/restablecer`). Registro solo con código de invitación (`/registro`), exigido por el hook
+  `public.hook_before_user_created` de Supabase Auth.
 - Ninguna service key / secret key / password de Postgres en el frontend ni en variables
   `VITE_*`. En el cliente solo va la publishable (anon) key.
 - Tests de RLS con pgTAP en `supabase/tests/database/`. Rápido sin Docker: `npm run test:db`;

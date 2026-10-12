@@ -26,6 +26,8 @@ export function errorKey(error: unknown): ErrorKey {
     return 'invalid_credentials'
   if (code === 'weak_password' || /weak password|at least \d+ characters/i.test(message))
     return 'weak_password'
+  if (code === 'user_already_exists' || /already registered/i.test(message)) return 'email_taken'
+  if (code === 'signup_disabled' || /signups not allowed/i.test(message)) return 'signup_disabled'
   if (code === '23503' && /categor/i.test(message)) return 'category_in_use'
   if (code === '23505' && /categor/i.test(message)) return 'duplicate_category'
   if (code === 'PGRST301' || /JWT expired/i.test(message)) return 'not_authenticated'

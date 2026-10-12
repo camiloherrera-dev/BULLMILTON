@@ -865,6 +865,7 @@ export type Database = {
         }
         Returns: string
       }
+      hook_before_user_created: { Args: { event: Json }; Returns: Json }
       leave_household: { Args: { p_household_id: string }; Returns: undefined }
       skip_recurring_expense: {
         Args: { p_recurring_expense_id: string }

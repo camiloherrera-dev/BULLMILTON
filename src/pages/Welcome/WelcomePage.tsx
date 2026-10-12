@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -75,7 +75,7 @@ function CreateForm() {
   )
 }
 
-function JoinForm() {
+function JoinForm({ defaultCode, autoJoin }: { defaultCode?: string; autoJoin?: boolean }) {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const {
@@ -84,6 +84,7 @@ function JoinForm() {
     formState: { errors, isSubmitting },
   } = useForm<z.input<typeof joinSchema>, unknown, z.output<typeof joinSchema>>({
     resolver: zodResolver(joinSchema),
+    defaultValues: { code: defaultCode ?? '' },
   })
 
   const onSubmit = handleSubmit(async ({ code }) => {
@@ -96,6 +97,14 @@ function JoinForm() {
       setError(toUserMessage(caught, 'No pudimos unirte al hogar.'))
     }
   })
+
+  // Quien se registró con un código se une solo, una vez (StrictMode monta dos veces).
+  const tried = useRef(false)
+  useEffect(() => {
+    if (!autoJoin || tried.current) return
+    tried.current = true
+    void onSubmit()
+  }, [autoJoin, onSubmit])
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
@@ -127,8 +136,10 @@ function JoinForm() {
 
 /** Primer ingreso (FASE 3): crear el hogar o unirse con un código. */
 export function WelcomePage() {
-  const { userId, email } = useSignedInUser()
-  const [mode, setMode] = useState<Mode>('create')
+  const { userId, email, session } = useSignedInUser()
+  // Código con el que se registró (/registro lo guarda en los metadatos de la cuenta).
+  const invited = (session.user.user_metadata?.invite_code as string | undefined) ?? undefined
+  const [mode, setMode] = useState<Mode>(invited ? 'join' : 'create')
   const existing = useResource(`household:${userId}`, () => fetchMyHousehold(userId))
 
   if (existing.loading) return <FullScreenLoader />
@@ -155,7 +166,11 @@ export function WelcomePage() {
         ]}
       />
 
-      {mode === 'create' ? <CreateForm /> : <JoinForm />}
+      {mode === 'create' ? (
+        <CreateForm />
+      ) : (
+        <JoinForm defaultCode={invited} autoJoin={Boolean(invited)} />
+      )}
 
       <p className="text-sm text-fg-muted">
         Entraste como {email}.{' '}
