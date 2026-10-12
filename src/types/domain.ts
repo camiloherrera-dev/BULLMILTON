@@ -35,6 +35,7 @@ export interface Audit {
   updatedAt: string
 }
 
+/** Parte de una persona en un gasto o en un ingreso compartido. */
 export interface ExpenseSplit {
   userId: string
   shareBp: number
@@ -60,12 +61,15 @@ export interface Expense extends Audit {
 export interface Income extends Audit {
   kind: 'income'
   id: string
+  /** Quién recibió el dinero. De quién es lo dicen los splits (solo reportes, no saldo). */
   userId: string
   source: string
   amount: number
   currency: string
   date: string
   categoryId: string | null
+  splitType: SplitType
+  splits: ExpenseSplit[]
   notes: string | null
   status: RecordStatus
 }

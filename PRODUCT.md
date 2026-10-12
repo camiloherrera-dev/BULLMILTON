@@ -36,7 +36,7 @@ inmediato son: ¿cuánto debo?, ¿cuánto me deben?, ¿cuánto gastamos?, ¿en q
 ## Capabilities and Constraints
 
 - Funciones: login, household compartido con invitación por código, gastos con división 50/50 o
-  porcentual, ingresos individuales (no generan deuda), transferencias entre los dos, motor de
+  porcentual, ingresos individuales o compartidos (no generan deuda), transferencias entre los dos, motor de
   saldo, dashboard, historial con filtros, gastos recurrentes, reportes y exportación CSV/JSON.
 - Los movimientos no se borran: se anulan.
 - Especificación completa: `SHAREDFIN_ESPECIFICACION_COMPLETA_CLAUDE_COLORES.md` (el documento usa

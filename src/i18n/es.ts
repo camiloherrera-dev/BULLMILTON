@@ -9,6 +9,7 @@ export const errorMessages = {
   split_must_total_100: 'Los porcentajes deben sumar 100 %.',
   invalid_split: 'Revisa cómo se divide el gasto.',
   invalid_expense_splits: 'Revisa cómo se divide el gasto.',
+  invalid_income_splits: 'Revisa cómo se divide el ingreso.',
   invalid_recurring_splits: 'Revisa cómo se divide el gasto recurrente.',
   user_not_active_member: 'Esa persona ya no pertenece al hogar.',
   invalid_category: 'Elige una categoría válida.',

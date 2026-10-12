@@ -80,6 +80,8 @@ function income(userId: string, amount: number, extra: Partial<Income> = {}): In
     currency: 'COP',
     date: '2026-10-01',
     categoryId: null,
+    splitType: 'equal',
+    splits: [{ userId, shareBp: 10000, amount }],
     notes: null,
     status: 'active',
     ...audit(),
@@ -220,6 +222,15 @@ describe('movementEffect', () => {
   it('anulados e ingresos no tienen efecto', () => {
     expect(movementEffect({ ...fifty, status: 'voided' }, A)).toBe(0)
     expect(movementEffect(income(A, 500), A)).toBe(0)
+    const shared = income(A, 1_000_000, {
+      splits: [
+        { userId: A, shareBp: 5000, amount: 500_000 },
+        { userId: B, shareBp: 5000, amount: 500_000 },
+      ],
+    })
+    expect(movementEffect(shared, A)).toBe(0)
+    expect(movementEffect(shared, B)).toBe(0)
+    expect(balanceOf([shared])).toEqual(balanceOf([]))
   })
 })
 

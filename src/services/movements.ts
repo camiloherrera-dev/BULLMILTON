@@ -42,7 +42,7 @@ const audit = (row: {
 const EXPENSE_COLUMNS =
   'id, description, amount, currency, date, category_id, paid_by, split_type, notes, status, recurring_expense_id, created_by, created_at, updated_by, updated_at, expense_splits(user_id, share_bp, amount)'
 const INCOME_COLUMNS =
-  'id, user_id, source, amount, currency, date, category_id, notes, status, created_by, created_at, updated_by, updated_at'
+  'id, user_id, source, amount, currency, date, category_id, split_type, notes, status, created_by, created_at, updated_by, updated_at, income_splits(user_id, share_bp, amount)'
 const TRANSFER_COLUMNS =
   'id, from_user, to_user, amount, currency, date, notes, status, created_by, created_at, updated_by, updated_at'
 
@@ -111,6 +111,12 @@ export async function fetchAllMovements(householdId: string): Promise<Movement[]
       currency: row.currency,
       date: row.date,
       categoryId: row.category_id,
+      splitType: row.split_type as SplitType,
+      splits: row.income_splits.map((split) => ({
+        userId: split.user_id,
+        shareBp: split.share_bp,
+        amount: split.amount,
+      })),
       notes: row.notes,
       status: row.status as RecordStatus,
       ...audit(row),
@@ -200,47 +206,44 @@ export async function voidExpense(expenseId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Ingresos (solo los propios; la base de datos lo exige)
+// Ingresos (RPC atómicas: ingreso + reparto). Cualquier miembro registra los de cualquiera.
 // ---------------------------------------------------------------------------
 
 export interface IncomeInput {
+  /** Quién lo recibió. */
+  userId: string
   source: string
   amount: number
   date: string
   categoryId: string | null
+  /** De quién es: una sola persona (equal con un participante) o compartido. */
+  split: SplitInput
   notes: string
 }
 
-export async function createIncome(householdId: string, input: IncomeInput): Promise<void> {
-  assertOk(
-    await supabase.from('incomes').insert({
-      household_id: householdId,
-      source: input.source.trim(),
-      amount: input.amount,
-      date: input.date,
-      category_id: input.categoryId,
-      notes: input.notes.trim() || null,
-    }),
+const incomeParams = (input: IncomeInput) => ({
+  p_user_id: input.userId,
+  p_source: input.source.trim(),
+  p_amount: input.amount,
+  // Categoría opcional: sin el parámetro la RPC guarda null (también al editar).
+  ...(input.categoryId ? { p_category_id: input.categoryId } : {}),
+  p_date: input.date,
+  p_notes: input.notes.trim(),
+  ...splitParams(input.split),
+})
+
+export async function createIncome(householdId: string, input: IncomeInput): Promise<string> {
+  return unwrap(
+    await supabase.rpc('create_income', { p_household_id: householdId, ...incomeParams(input) }),
   )
 }
 
 export async function updateIncome(incomeId: string, input: IncomeInput): Promise<void> {
-  assertOk(
-    await supabase
-      .from('incomes')
-      .update({
-        source: input.source.trim(),
-        amount: input.amount,
-        date: input.date,
-        category_id: input.categoryId,
-        notes: input.notes.trim() || null,
-      })
-      .eq('id', incomeId),
-  )
+  assertOk(await supabase.rpc('update_income', { p_income_id: incomeId, ...incomeParams(input) }))
 }
 
 export async function voidIncome(incomeId: string): Promise<void> {
-  assertOk(await supabase.from('incomes').update({ status: 'voided' }).eq('id', incomeId))
+  assertOk(await supabase.rpc('void_income', { p_income_id: incomeId }))
 }
 
 // ---------------------------------------------------------------------------

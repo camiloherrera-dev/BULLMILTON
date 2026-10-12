@@ -20,7 +20,7 @@ interface SplitEditorProps {
 
 const presets = [5000, 6000, 7000, 10000]
 
-/** División de un gasto: partes iguales entre quienes participan o porcentajes que suman 100 %. */
+/** División de un gasto o ingreso: partes iguales entre quienes participan o porcentajes que suman 100 %. */
 export function SplitEditor({
   value,
   onChange,

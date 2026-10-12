@@ -28,7 +28,7 @@ npm run format:check         # Prettier
 ## Qué hace
 
 - **Inicio**: libro diario del hogar; el saldo entre los dos arriba y cada día con su saldo al cierre.
-- **Registrar**: gasto (50/50 o porcentajes, quién pagó), ingreso (propio) y transferencia (abono).
+- **Registrar**: gasto (50/50 o porcentajes, quién pagó), ingreso (propio o compartido, de cualquiera de los dos) y transferencia (abono).
 - **Movimientos**: historial con búsqueda y filtros por periodo, tipo, categoría y persona.
 - **Recurrentes**: plantillas mensuales/trimestrales que aparecen en Inicio cuando vencen.
 - **Reportes**: totales, aportes vs. lo que correspondía, ingresos, categorías y evolución mensual.

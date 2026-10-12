@@ -34,7 +34,8 @@ saldo < 0  → debe dinero
 Ejemplo de la spec §9: A paga 1.000.000 (50/50) → A = +500.000, B = −500.000.
 B transfiere 300.000 a A → A = +200.000, B = −200.000 → "B debe 200.000 a A". ✓
 
-Solo cuentan los registros con `status = 'active'`. Los ingresos no afectan el saldo (§6).
+Solo cuentan los registros con `status = 'active'`. Los ingresos no afectan el saldo (§6), ni siquiera
+los compartidos: su reparto (`income_splits`) solo sirve para los reportes de cada persona.
 El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componentes.
 
 **Dato de control con el seed local:** Ana pagó 1.335.000 y le corresponden 768.950; Beto pagó
@@ -54,18 +55,18 @@ El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componente
 
 ## Tablas
 
-| Tabla                              | Para qué                                                    | Escritura desde el cliente                                    |
-| ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| `profiles`                         | Nombre visible de cada cuenta (se crea sola al registrarse) | `update (display_name)` del propio perfil                     |
-| `households`                       | Espacio compartido                                          | `update (name)`; crear solo con `create_household()`          |
-| `household_members`                | Pertenencia; `left_at` en lugar de borrar                   | Solo vía RPC                                                  |
-| `invitations`                      | Códigos de un solo uso, 7 días                              | Crear vía RPC; revocar (`delete`) las no usadas               |
-| `categories`                       | Categorías por household, `kind` = `expense` / `income`     | CRUD; borrar falla si está en uso (se archiva)                |
-| `expenses`                         | Gastos                                                      | Vía RPC (insert directo exige splits en la misma transacción) |
-| `expense_splits`                   | Parte de cada persona en un gasto                           | Vía RPC                                                       |
-| `incomes`                          | Ingresos individuales; no generan deuda                     | Insert/update solo los **propios**                            |
-| `transfers`                        | Dinero entre miembros (`from_user ≠ to_user`)               | Insert/update por cualquier miembro                           |
-| `recurring_expenses` (+ `_splits`) | Plantillas de gastos periódicos (mensual/trimestral)        | RPC en FASE 9                                                 |
+| Tabla                              | Para qué                                                     | Escritura desde el cliente                                               |
+| ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `profiles`                         | Nombre visible de cada cuenta (se crea sola al registrarse)  | `update (display_name)` del propio perfil                                |
+| `households`                       | Espacio compartido                                           | `update (name)`; crear solo con `create_household()`                     |
+| `household_members`                | Pertenencia; `left_at` en lugar de borrar                    | Solo vía RPC                                                             |
+| `invitations`                      | Códigos de un solo uso, 7 días                               | Crear vía RPC; revocar (`delete`) las no usadas                          |
+| `categories`                       | Categorías por household, `kind` = `expense` / `income`      | CRUD; borrar falla si está en uso (se archiva)                           |
+| `expenses`                         | Gastos                                                       | Vía RPC (insert directo exige splits en la misma transacción)            |
+| `expense_splits`                   | Parte de cada persona en un gasto                            | Vía RPC                                                                  |
+| `incomes` (+ `income_splits`)      | Ingresos; `user_id` = quién lo recibió, splits = de quién es | Vía RPC `create_income`/`update_income`/`void_income`, cualquier miembro |
+| `transfers`                        | Dinero entre miembros (`from_user ≠ to_user`)                | Insert/update por cualquier miembro                                      |
+| `recurring_expenses` (+ `_splits`) | Plantillas de gastos periódicos (mensual/trimestral)         | RPC en FASE 9                                                            |
 
 ## Gastos recurrentes (migración 04)
 
@@ -113,14 +114,14 @@ El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componente
 
 ## Decisiones respecto a la spec (Regla 2)
 
-| Spec                                              | Implementación                                                                                       | Motivo                                                                            |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| §11 fórmula de saldo                              | Signo de transferencias corregido                                                                    | La fórmula original invierte el efecto de los pagos                               |
-| §30 `expense_splits.percentage`                   | `share_bp integer` (puntos básicos)                                                                  | Precisión exacta sin decimales; §12 permite "precisión controlada"                |
-| §30 `incomes`/`transfers` sin estado ni auditoría | Añadidos `status`, `voided_*`, `created_by`, `updated_by`                                            | Lo exige §22                                                                      |
-| §30 `recurring_expenses.split_type`               | + tabla `recurring_expense_splits`                                                                   | Guardar porcentajes personalizados de la plantilla                                |
-| §13 categorías base                               | Copiadas a cada household al crearlo                                                                 | Políticas RLS más simples (sin `household_id NULL`)                               |
-| §5 abandonar household                            | `left_at` en lugar de borrar                                                                         | El historial sigue apuntando a esa persona                                        |
-| —                                                 | `expenses.recurring_expense_id` + índice único por fecha                                             | Impide generar dos veces el mismo gasto recurrente (FASE 9)                       |
-| §6 ingresos                                       | Solo el dueño crea/edita sus ingresos                                                                | "Pertenecen al usuario que los recibe"                                            |
-| §4.1 registro y recuperación de contraseña        | Sin registro público; 2 cuentas creadas en el dashboard; contraseña se restablece desde el dashboard | Solo dos usuarios conocidos; menos superficie de ataque y sin depender del correo |
+| Spec                                              | Implementación                                                                                         | Motivo                                                                            |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| §11 fórmula de saldo                              | Signo de transferencias corregido                                                                      | La fórmula original invierte el efecto de los pagos                               |
+| §30 `expense_splits.percentage`                   | `share_bp integer` (puntos básicos)                                                                    | Precisión exacta sin decimales; §12 permite "precisión controlada"                |
+| §30 `incomes`/`transfers` sin estado ni auditoría | Añadidos `status`, `voided_*`, `created_by`, `updated_by`                                              | Lo exige §22                                                                      |
+| §30 `recurring_expenses.split_type`               | + tabla `recurring_expense_splits`                                                                     | Guardar porcentajes personalizados de la plantilla                                |
+| §13 categorías base                               | Copiadas a cada household al crearlo                                                                   | Políticas RLS más simples (sin `household_id NULL`)                               |
+| §5 abandonar household                            | `left_at` en lugar de borrar                                                                           | El historial sigue apuntando a esa persona                                        |
+| —                                                 | `expenses.recurring_expense_id` + índice único por fecha                                               | Impide generar dos veces el mismo gasto recurrente (FASE 9)                       |
+| §6 ingresos                                       | Pueden ser compartidos (`income_splits`) y cualquier miembro registra los de cualquiera (migración 05) | Pedido del usuario (2026-10-12). Siguen sin generar deuda: solo reportes          |
+| §4.1 registro y recuperación de contraseña        | Sin registro público; 2 cuentas creadas en el dashboard; contraseña se restablece desde el dashboard   | Solo dos usuarios conocidos; menos superficie de ataque y sin depender del correo |

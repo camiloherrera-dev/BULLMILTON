@@ -25,7 +25,7 @@ function involves(movement: Movement, userId: string): boolean {
     case 'expense':
       return movement.paidBy === userId || movement.splits.some((split) => split.userId === userId)
     case 'income':
-      return movement.userId === userId
+      return movement.userId === userId || movement.splits.some((split) => split.userId === userId)
     case 'transfer':
       return movement.fromUser === userId || movement.toUser === userId
   }

@@ -38,7 +38,12 @@ const expense = (
   ...audit,
 })
 
-const income = (date: string, userId: string, amount: number): Income => ({
+const income = (
+  date: string,
+  userId: string,
+  amount: number,
+  splits: Income['splits'] = [{ userId, shareBp: 10000, amount }],
+): Income => ({
   kind: 'income',
   id: `i-${date}`,
   userId,
@@ -47,6 +52,8 @@ const income = (date: string, userId: string, amount: number): Income => ({
   currency: 'COP',
   date,
   categoryId: null,
+  splitType: 'equal',
+  splits,
   notes: null,
   status: 'active',
   ...audit,
@@ -110,6 +117,18 @@ describe('summarizePeriod', () => {
     const share = summary.people.reduce((sum, person) => sum + person.share, 0)
     expect(paid).toBe(summary.totalExpenses)
     expect(share).toBe(summary.totalExpenses)
+  })
+})
+
+describe('summarizePeriod con ingresos compartidos', () => {
+  it('cada persona suma su parte del ingreso, no quien lo recibió', () => {
+    const shared = income('2026-10-02', A, 800_001, [
+      { userId: A, shareBp: 5000, amount: 400_001 },
+      { userId: B, shareBp: 5000, amount: 400_000 },
+    ])
+    const summary = summarizePeriod([shared], [A, B], october)
+    expect(summary.totalIncomes).toBe(800_001)
+    expect(summary.people.map((person) => person.incomes)).toEqual([400_001, 400_000])
   })
 })
 

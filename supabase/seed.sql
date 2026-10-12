@@ -73,8 +73,11 @@ begin
       jsonb_build_object('user_id', v_beto, 'share_bp', 3000)),
     v_month_start + 5);
 
-  insert into public.incomes (household_id, user_id, source, amount, date, category_id)
-  values (v_household, v_ana, 'Salario', 3200000, v_month_start, (v_cat ->> 'Trabajo')::uuid);
+  perform public.create_income(v_household, v_ana, 'Salario', 3200000, (v_cat ->> 'Trabajo')::uuid,
+    p_date => v_month_start);
+  -- Ingreso compartido: lo recibió Ana, es de los dos (solo reportes; no crea deuda).
+  perform public.create_income(v_household, v_ana, 'Mesada papás', 800000, (v_cat ->> 'Mesada')::uuid,
+    'equal', jsonb_build_array(v_ana, v_beto), v_month_start + 1);
 
   -- Gastos (Beto)
   perform set_config('request.jwt.claims', json_build_object('sub', v_beto, 'role', 'authenticated')::text, true);
@@ -83,8 +86,8 @@ begin
   perform public.create_expense(v_household, 'Netflix', 44900, (v_cat ->> 'Suscripciones')::uuid, v_beto,
     p_date => v_month_start + 4);
 
-  insert into public.incomes (household_id, user_id, source, amount, date, category_id)
-  values (v_household, v_beto, 'Freelance', 1500000, v_month_start + 1, (v_cat ->> 'Freelance')::uuid);
+  perform public.create_income(v_household, v_beto, 'Freelance', 1500000, (v_cat ->> 'Freelance')::uuid,
+    p_date => v_month_start + 1);
 
   insert into public.transfers (household_id, from_user, to_user, amount, date, notes)
   values (v_household, v_beto, v_ana, 300000, v_month_start + 6, 'Abono arriendo');

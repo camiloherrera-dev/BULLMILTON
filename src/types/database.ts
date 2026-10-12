@@ -314,6 +314,48 @@ export type Database = {
           },
         ]
       }
+      income_splits: {
+        Row: {
+          amount: number
+          household_id: string
+          id: string
+          income_id: string
+          share_bp: number
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          household_id: string
+          id?: string
+          income_id: string
+          share_bp: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          household_id?: string
+          id?: string
+          income_id?: string
+          share_bp?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'income_splits_household_id_user_id_fkey'
+            columns: ['household_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'household_members'
+            referencedColumns: ['household_id', 'user_id']
+          },
+          {
+            foreignKeyName: 'income_splits_income_id_household_id_fkey'
+            columns: ['income_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'incomes'
+            referencedColumns: ['id', 'household_id']
+          },
+        ]
+      }
       incomes: {
         Row: {
           amount: number
@@ -326,6 +368,7 @@ export type Database = {
           id: string
           notes: string | null
           source: string
+          split_type: string
           status: string
           updated_at: string
           updated_by: string | null
@@ -344,6 +387,7 @@ export type Database = {
           id?: string
           notes?: string | null
           source: string
+          split_type?: string
           status?: string
           updated_at?: string
           updated_by?: string | null
@@ -362,6 +406,7 @@ export type Database = {
           id?: string
           notes?: string | null
           source?: string
+          split_type?: string
           status?: string
           updated_at?: string
           updated_by?: string | null
@@ -473,19 +518,25 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string
+          font: string
           id: string
+          theme: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           display_name: string
+          font?: string
           id: string
+          theme?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           display_name?: string
+          font?: string
           id?: string
+          theme?: string
           updated_at?: string
         }
         Relationships: []
@@ -743,6 +794,20 @@ export type Database = {
         Returns: string
       }
       create_household: { Args: { p_name: string }; Returns: string }
+      create_income: {
+        Args: {
+          p_amount: number
+          p_category_id?: string
+          p_date?: string
+          p_household_id: string
+          p_notes?: string
+          p_participants?: Json
+          p_source: string
+          p_split_type?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       create_invitation: {
         Args: { p_household_id: string }
         Returns: {
@@ -792,6 +857,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_income: {
+        Args: {
+          p_amount: number
+          p_category_id?: string
+          p_date?: string
+          p_income_id: string
+          p_notes?: string
+          p_participants?: Json
+          p_source: string
+          p_split_type?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       update_recurring_expense: {
         Args: {
           p_active?: boolean
@@ -809,6 +888,7 @@ export type Database = {
         Returns: undefined
       }
       void_expense: { Args: { p_expense_id: string }; Returns: undefined }
+      void_income: { Args: { p_income_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

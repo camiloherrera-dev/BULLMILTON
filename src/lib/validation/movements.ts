@@ -72,13 +72,21 @@ export const expenseSchema = z
 
 export type ExpenseFormValues = z.infer<typeof expenseSchema>
 
-export const incomeSchema = z.object({
-  source: z.string().trim().min(1, 'Escribe de dónde viene.').max(120, 'Máximo 120 caracteres.'),
-  amount: moneyField,
-  date: dayField,
-  categoryId: z.string(),
-  notes: notesField,
-})
+export const incomeSchema = z
+  .object({
+    source: z.string().trim().min(1, 'Escribe de dónde viene.').max(120, 'Máximo 120 caracteres.'),
+    amount: moneyField,
+    date: dayField,
+    categoryId: z.string(),
+    userId: z.string().min(1, 'Elige quién lo recibió.'),
+    /** false: es 100 % de quien lo recibió. true: se reparte (solo para reportes). */
+    shared: z.boolean(),
+    notes: notesField,
+    ...splitFields,
+  })
+  .superRefine((value, context) => {
+    if (value.shared) refineSplit(value, context)
+  })
 
 export type IncomeFormValues = z.infer<typeof incomeSchema>
 

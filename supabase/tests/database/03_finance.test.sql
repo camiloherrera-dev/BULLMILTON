@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(37);
+select plan(36);
 
 -- ---------------------------------------------------------------------------
 -- Helpers y datos
@@ -337,26 +337,18 @@ select is(
 select pg_temp.login_as(pg_temp.id('a'));
 
 select lives_ok(
-  $$ insert into public.incomes (household_id, source, amount, category_id)
-     values (pg_temp.id('h'), 'Salario', 3000000, pg_temp.id('trabajo')) $$,
+  $$ select public.create_income(pg_temp.id('h'), pg_temp.id('a'), 'Salario', 3000000, pg_temp.id('trabajo')) $$,
   'A registra un ingreso propio'
 );
 
 select throws_ok(
-  $$ insert into public.incomes (household_id, user_id, source, amount)
-     values (pg_temp.id('h'), pg_temp.id('b'), 'Ingreso ajeno', 1000) $$,
-  '42501',
-  null,
-  'A no puede registrar ingresos a nombre de B'
-);
-
-select throws_ok(
-  $$ insert into public.incomes (household_id, source, amount, category_id)
-     values (pg_temp.id('h'), 'Categoría de gasto', 1000, pg_temp.id('comida')) $$,
+  $$ select public.create_income(pg_temp.id('h'), pg_temp.id('a'), 'Categoría de gasto', 1000, pg_temp.id('comida')) $$,
   '23514',
   'invalid_category',
   'Un ingreso no puede usar una categoría de gasto'
 );
+
+-- Ingresos compartidos y registro a nombre de otro: 05_incomes.test.sql.
 
 select pg_temp.login_as(pg_temp.id('b'));
 

@@ -15,6 +15,7 @@ export interface PersonSummary {
   paid: number
   /** Lo que le correspondía de los gastos (su parte de los splits). */
   share: number
+  /** Su parte de los ingresos (los compartidos cuentan según el reparto). */
   incomes: number
   transfersSent: number
   transfersReceived: number
@@ -70,7 +71,7 @@ export function summarizePeriod(
         break
       case 'income':
         summary.totalIncomes += movement.amount
-        person(movement.userId).incomes += movement.amount
+        for (const split of movement.splits) person(split.userId).incomes += split.amount
         break
       case 'transfer':
         summary.totalTransfers += movement.amount

@@ -84,7 +84,9 @@ export function buildExport(input: ExportInput) {
         'categoria',
         'monto',
         'moneda',
-        'persona',
+        'recibio',
+        'division',
+        ...people.map((person) => `parte_${person.displayName}`),
         'estado',
         'nota',
         'creado',
@@ -97,6 +99,14 @@ export function buildExport(input: ExportInput) {
         income.amount,
         income.currency,
         name(income.userId),
+        income.splits.length === 1
+          ? 'una persona'
+          : income.splitType === 'equal'
+            ? 'iguales'
+            : 'porcentaje',
+        ...people.map(
+          (person) => income.splits.find((split) => split.userId === person.userId)?.amount ?? 0,
+        ),
         income.status === 'active' ? 'activo' : 'anulado',
         income.notes,
         income.createdAt,
