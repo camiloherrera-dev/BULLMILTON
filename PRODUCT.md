@@ -16,14 +16,15 @@ celular (registrar un gasto justo al pagar) como en el computador (revisar histo
 ## Product Purpose
 
 BULLMILTON es una libreta financiera compartida: registra gastos, ingresos y transferencias, y
-responde al instante quién le debe cuánto a quién. El éxito es que ninguno de los dos tenga que
-hacer cuentas a mano ni discutir saldos: abrir la app, ver el saldo, registrar en pocos toques.
+responde al instante cuánto del dinero del mes le queda a cada uno y, en segundo plano, quién le
+debe cuánto a quién. El éxito es que ninguno de los dos tenga que hacer cuentas a mano: abrir la
+app, ver cuánto le queda, registrar en pocos toques.
 
 ## Positioning
 
 No es una app bancaria ni de contabilidad: es una herramienta privada para un hogar de dos
-personas, con el saldo entre ambos como respuesta principal. Las preguntas que debe contestar de
-inmediato son: ¿cuánto debo?, ¿cuánto me deben?, ¿cuánto gastamos?, ¿en qué gastamos?
+personas. Las preguntas que debe contestar de inmediato son: ¿cuánto me queda este mes?, ¿cuánto le
+queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿nos debemos algo?
 
 ## Operating Context
 
@@ -58,7 +59,9 @@ inmediato son: ¿cuánto debo?, ¿cuánto me deben?, ¿cuánto gastamos?, ¿en q
 
 ## Product Principles
 
-1. El saldo entre los dos es la respuesta principal y siempre está a la vista.
+1. Lo que le queda a cada uno este mes (su parte de los ingresos menos su parte de los gastos) es
+   la respuesta principal (decisión del usuario, 2026-10-12). El saldo entre los dos sigue a mano,
+   como cuenta secundaria para saldar.
 2. Registrar un movimiento debe tomar segundos; las acciones + Gasto / + Ingreso / + Transferencia
    siempre a mano.
 3. Claridad antes que densidad: números grandes y legibles, nada de tablas enormes en móvil.
