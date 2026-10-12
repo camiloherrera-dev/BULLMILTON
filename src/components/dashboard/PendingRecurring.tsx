@@ -44,7 +44,9 @@ function PendingItem({ item }: { item: RecurringExpense }) {
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-auto tabular font-semibold sm:mr-2">{formatMoney(item.amount)}</span>
+        <span className="mr-auto tabular font-semibold sm:mr-2 xl:w-full">
+          {formatMoney(item.amount)}
+        </span>
         <Button
           size="sm"
           variant="ghost"
