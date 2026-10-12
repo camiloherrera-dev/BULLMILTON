@@ -88,7 +88,7 @@ export function SplitEditor({
 
       {value.splitType === 'equal' ? (
         <fieldset aria-describedby={error ? errorId : undefined} className="flex flex-col gap-1">
-          <legend className="sr-only">Quiénes participan</legend>
+          <legend className="mb-1 text-sm font-medium text-fg">¿Entre quiénes?</legend>
           {active.map((member) => {
             const checked = value.participants.includes(member.userId)
             return (
@@ -119,11 +119,11 @@ export function SplitEditor({
                 </span>
                 <span className="flex-1 font-medium">{name(member)}</span>
                 <span className="tabular text-sm text-fg-muted">
-                  {checked && preview.has(member.userId)
-                    ? formatMoney(preview.get(member.userId)!)
-                    : checked
-                      ? ''
-                      : 'no participa'}
+                  {!checked
+                    ? 'no participa'
+                    : `${member.userId === meId ? 'te toca' : 'le toca'} ${
+                        preview.has(member.userId) ? formatMoney(preview.get(member.userId)!) : '—'
+                      }`}
                 </span>
               </label>
             )

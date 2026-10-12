@@ -12,12 +12,15 @@ import { incomeSchema, type IncomeFormValues } from '../../lib/validation/moveme
 import { createIncome, updateIncome, voidIncome } from '../../services/movements'
 import type { Income } from '../../types/domain'
 import { CategoryPicker } from '../../components/forms/CategoryPicker'
+import { DateChips } from '../../components/forms/DateChips'
 import { AuditNote, FormFooter, VoidSection, VoidedNotice } from '../../components/forms/FormParts'
 import { MoneyInput } from '../../components/forms/MoneyInput'
+import { NoteField } from '../../components/forms/NoteField'
 import { SplitEditor } from '../../components/forms/SplitEditor'
 import { defaultSplit, splitFromForm, splitToForm } from '../../components/forms/split'
+import { useSavedToast } from '../../components/forms/useSavedToast'
 import { Button } from '../../components/ui/Button'
-import { Field, TextArea, TextInput } from '../../components/ui/Field'
+import { Field, TextInput } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { Segmented } from '../../components/ui/Segmented'
 import { EmptyState } from '../../components/ui/States'
@@ -27,6 +30,7 @@ function IncomeForm({ income }: { income?: Income }) {
   const data = useHousehold()
   const goBack = useGoBack()
   const toast = useToast()
+  const savedToast = useSavedToast()
   const readOnly = income?.status === 'voided'
 
   const categories = data.categories.filter(
@@ -92,10 +96,20 @@ function IncomeForm({ income }: { income?: Income }) {
       notes: values.notes,
     }
     try {
-      if (income) await updateIncome(income.id, input)
-      else await createIncome(data.household.id, input)
-      invalidateData()
-      toast.show(income ? 'Ingreso actualizado' : 'Ingreso guardado')
+      if (income) {
+        await updateIncome(income.id, input)
+        invalidateData()
+        toast.show('Ingreso actualizado')
+      } else {
+        const id = await createIncome(data.household.id, input)
+        invalidateData()
+        savedToast({
+          message: 'Ingreso guardado',
+          undo: () => voidIncome(id),
+          undoneMessage: 'Ingreso anulado',
+          againPath: '/ingresos/nuevo',
+        })
+      }
       goBack()
     } catch (error) {
       toast.show(
@@ -133,6 +147,13 @@ function IncomeForm({ income }: { income?: Income }) {
                 />
               )}
             </Field>
+          )}
+        />
+        <Controller
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <DateChips value={field.value} onChange={field.onChange} error={errors.date?.message} />
           )}
         />
         <Field label="¿De dónde viene?" error={errors.source?.message}>
@@ -222,28 +243,11 @@ function IncomeForm({ income }: { income?: Income }) {
             />
           )}
         />
-        <Field label="Fecha" error={errors.date?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextInput
-              id={id}
-              type="date"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register('date')}
-            />
-          )}
-        </Field>
-        <Field label="Nota (opcional)" error={errors.notes?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextArea
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              maxLength={500}
-              {...register('notes')}
-            />
-          )}
-        </Field>
+        <NoteField
+          registration={register('notes')}
+          hasValue={Boolean(defaultValues.notes)}
+          error={errors.notes?.message}
+        />
       </fieldset>
 
       {!readOnly && (

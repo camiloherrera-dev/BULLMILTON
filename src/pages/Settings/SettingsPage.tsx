@@ -1,17 +1,19 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   CaretRightIcon,
   CopyIcon,
   DownloadSimpleIcon,
+  KeyIcon,
   PaletteIcon,
   RepeatIcon,
   SignOutIcon,
   TagIcon,
   TrashIcon,
+  WarningIcon,
 } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
 import { useSignedInUser } from '../../app/auth-context'
@@ -83,12 +85,15 @@ function NameForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isDirty },
+    control,
+    formState: { errors, isSubmitting },
     reset,
   } = useForm<z.infer<typeof nameSchema>>({
     resolver: zodResolver(nameSchema),
     defaultValues: { name: initial },
   })
+  // Cambió de verdad (escribir y volver al mismo nombre no cuenta).
+  const changed = (useWatch({ control, name: 'name' }) ?? '').trim() !== initial.trim()
   const onSubmit = handleSubmit(async ({ name }) => {
     try {
       await onSave(name)
@@ -112,8 +117,13 @@ function NameForm({
           />
         )}
       </Field>
-      <Button type="submit" variant="secondary" loading={isSubmitting} disabled={!isDirty}>
-        Guardar
+      <Button
+        type="submit"
+        variant={changed ? 'primary' : 'secondary'}
+        loading={isSubmitting}
+        disabled={!changed}
+      >
+        {changed ? 'Guardar' : 'Sin cambios'}
       </Button>
     </form>
   )
@@ -135,6 +145,7 @@ const passwordSchema = z
 
 function PasswordForm() {
   const toast = useToast()
+  const [open, setOpen] = useState(false)
   const {
     register,
     handleSubmit,
@@ -148,8 +159,20 @@ function PasswordForm() {
       return
     }
     reset({ password: '', confirm: '' })
+    setOpen(false)
     toast.show('Contraseña actualizada')
   })
+  if (!open)
+    return (
+      <Button
+        variant="secondary"
+        className="self-start"
+        onClick={() => setOpen(true)}
+        icon={<KeyIcon aria-hidden="true" className="size-4" weight="bold" />}
+      >
+        Cambiar contraseña
+      </Button>
+    )
   return (
     <form
       onSubmit={onSubmit}
@@ -180,9 +203,20 @@ function PasswordForm() {
           />
         )}
       </Field>
-      <Button type="submit" variant="secondary" loading={isSubmitting}>
-        Cambiar
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" loading={isSubmitting}>
+          Cambiar
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            reset({ password: '', confirm: '' })
+            setOpen(false)
+          }}
+        >
+          Cancelar
+        </Button>
+      </div>
     </form>
   )
 }
@@ -459,11 +493,25 @@ export function SettingsPage() {
           >
             Cerrar sesión
           </Button>
-          <Button variant="danger" onClick={() => setConfirmLeave(true)}>
-            Salir del hogar
-          </Button>
         </div>
       </Section>
+
+      <section
+        aria-labelledby="peligro-title"
+        className="mt-6 flex flex-col gap-3 rounded-2xl border border-negative/40 p-5"
+      >
+        <h2 id="peligro-title" className="flex items-center gap-2 text-lg font-semibold">
+          <WarningIcon aria-hidden="true" className="size-5 text-negative" weight="bold" />
+          Zona de peligro
+        </h2>
+        <p className="text-sm text-fg-muted">
+          Salir del hogar te quita el acceso a {data.household.name}. No se puede deshacer desde
+          aquí.
+        </p>
+        <Button variant="danger" className="self-start" onClick={() => setConfirmLeave(true)}>
+          Salir del hogar
+        </Button>
+      </section>
 
       <ConfirmDialog
         open={confirmLeave}
@@ -483,8 +531,23 @@ export function SettingsPage() {
           }
         }}
       >
-        Dejarás de ver los movimientos de {data.household.name}. El historial se conserva y podrás
-        volver con un código nuevo.
+        <ul className="flex list-disc flex-col gap-1.5 pl-5">
+          <li>Dejarás de ver los movimientos, el saldo y los reportes de {data.household.name}.</li>
+          <li>
+            Nada se borra: lo que registraste y lo que se deben sigue en el historial para{' '}
+            {activeMembers.filter((member) => member.userId !== userId).length
+              ? activeMembers
+                  .filter((member) => member.userId !== userId)
+                  .map((member) => member.displayName)
+                  .join(', ')
+              : 'el hogar'}
+            .
+          </li>
+          <li>
+            No podrás registrar ni anular movimientos. Para volver necesitas un código de invitación
+            nuevo de alguien del hogar.
+          </li>
+        </ul>
       </ConfirmDialog>
     </Page>
   )

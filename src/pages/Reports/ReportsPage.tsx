@@ -13,6 +13,7 @@ import { MonthlyChart } from '../../components/charts/MonthlyChart'
 import { CategoryIcon } from '../../components/movements/CategoryIcon'
 import { Field, TextInput } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
+import { ScrollFade } from '../../components/ui/ScrollFade'
 import { Segmented } from '../../components/ui/Segmented'
 import { EmptyState } from '../../components/ui/States'
 
@@ -86,7 +87,7 @@ export function ReportsPage() {
       <PageHeader title="Reportes" />
 
       <div className="-mx-4 mb-6 flex flex-col gap-3 px-4">
-        <div className="[scrollbar-width:none] overflow-x-auto pb-1">
+        <ScrollFade className="pb-1">
           <div role="radiogroup" aria-label="Periodo" className="flex w-max gap-2">
             {presets.map((value) => (
               <button
@@ -105,7 +106,7 @@ export function ReportsPage() {
               </button>
             ))}
           </div>
-        </div>
+        </ScrollFade>
         {preset === 'custom' && (
           <div className="grid grid-cols-2 gap-3 sm:max-w-md">
             <Field label="Desde">

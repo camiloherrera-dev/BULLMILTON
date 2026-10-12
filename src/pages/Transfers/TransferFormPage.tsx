@@ -12,9 +12,12 @@ import { transferSchema, type TransferFormValues } from '../../lib/validation/mo
 import { createTransfer, updateTransfer, voidTransfer } from '../../services/movements'
 import type { Transfer } from '../../types/domain'
 import { AuditNote, FormFooter, VoidSection, VoidedNotice } from '../../components/forms/FormParts'
+import { DateChips } from '../../components/forms/DateChips'
 import { MoneyInput } from '../../components/forms/MoneyInput'
+import { NoteField } from '../../components/forms/NoteField'
+import { useSavedToast } from '../../components/forms/useSavedToast'
 import { Button } from '../../components/ui/Button'
-import { Field, TextArea, TextInput } from '../../components/ui/Field'
+import { Field } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { Segmented } from '../../components/ui/Segmented'
 import { EmptyState } from '../../components/ui/States'
@@ -24,6 +27,7 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
   const data = useHousehold()
   const goBack = useGoBack()
   const toast = useToast()
+  const savedToast = useSavedToast()
   const [params] = useSearchParams()
   const readOnly = transfer?.status === 'voided'
 
@@ -81,10 +85,20 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
       notes: values.notes,
     }
     try {
-      if (transfer) await updateTransfer(transfer.id, input)
-      else await createTransfer(data.household.id, input)
-      invalidateData()
-      toast.show(transfer ? 'Transferencia actualizada' : 'Transferencia guardada')
+      if (transfer) {
+        await updateTransfer(transfer.id, input)
+        invalidateData()
+        toast.show('Transferencia actualizada')
+      } else {
+        const id = await createTransfer(data.household.id, input)
+        invalidateData()
+        savedToast({
+          message: 'Transferencia guardada',
+          undo: () => voidTransfer(id),
+          undoneMessage: 'Transferencia anulada',
+          againPath: '/transferencias/nueva',
+        })
+      }
       goBack()
     } catch (error) {
       toast.show(
@@ -128,6 +142,13 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
             </Field>
           )}
         />
+        <Controller
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <DateChips value={field.value} onChange={field.onChange} error={errors.date?.message} />
+          )}
+        />
         <div className="flex flex-col gap-2">
           <Controller
             control={control}
@@ -164,28 +185,11 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
             </p>
           )}
         </div>
-        <Field label="Fecha" error={errors.date?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextInput
-              id={id}
-              type="date"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register('date')}
-            />
-          )}
-        </Field>
-        <Field label="Nota (opcional)" error={errors.notes?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextArea
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              maxLength={500}
-              {...register('notes')}
-            />
-          )}
-        </Field>
+        <NoteField
+          registration={register('notes')}
+          hasValue={Boolean(transfer?.notes || prefillFrom)}
+          error={errors.notes?.message}
+        />
       </fieldset>
 
       {!readOnly && (

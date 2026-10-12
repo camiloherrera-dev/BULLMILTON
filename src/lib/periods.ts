@@ -11,7 +11,7 @@ export const periodLabels: Record<PeriodPreset, string> = {
   previousMonth: 'Mes anterior',
   last3Months: 'Últimos 3 meses',
   all: 'Todo',
-  custom: 'Personalizado',
+  custom: 'Rango personalizado',
 }
 
 export function resolvePeriod(

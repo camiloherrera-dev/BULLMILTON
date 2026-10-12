@@ -258,17 +258,22 @@ export interface TransferInput {
   notes: string
 }
 
-export async function createTransfer(householdId: string, input: TransferInput): Promise<void> {
-  assertOk(
-    await supabase.from('transfers').insert({
-      household_id: householdId,
-      from_user: input.fromUser,
-      to_user: input.toUser,
-      amount: input.amount,
-      date: input.date,
-      notes: input.notes.trim() || null,
-    }),
+export async function createTransfer(householdId: string, input: TransferInput): Promise<string> {
+  const { id } = unwrap(
+    await supabase
+      .from('transfers')
+      .insert({
+        household_id: householdId,
+        from_user: input.fromUser,
+        to_user: input.toUser,
+        amount: input.amount,
+        date: input.date,
+        notes: input.notes.trim() || null,
+      })
+      .select('id')
+      .single(),
   )
+  return id
 }
 
 export async function updateTransfer(transferId: string, input: TransferInput): Promise<void> {

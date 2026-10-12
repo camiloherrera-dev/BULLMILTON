@@ -1,27 +1,35 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react'
-import { ToastContext, type ToastTone } from './toast-context'
+import { ToastContext, type ToastAction, type ToastOptions, type ToastTone } from './toast-context'
 
 interface Toast {
   id: number
   message: string
   tone: ToastTone
+  actions: ToastAction[]
 }
 
-/** Avisos breves tras guardar o fallar (spec §42: "Gasto guardado ✓"). */
+/** Avisos breves tras guardar o fallar (spec §42: "Gasto guardado ✓"), con acciones opcionales. */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
   const nextId = useRef(0)
 
-  const show = useCallback((message: string, tone: ToastTone = 'success') => {
-    nextId.current += 1
-    const id = nextId.current
-    setToasts((current) => [...current.slice(-2), { id, message, tone }])
-    window.setTimeout(
-      () => setToasts((current) => current.filter((toast) => toast.id !== id)),
-      tone === 'error' ? 6000 : 3200,
-    )
-  }, [])
+  const dismiss = useCallback(
+    (id: number) => setToasts((current) => current.filter((toast) => toast.id !== id)),
+    [],
+  )
+
+  const show = useCallback(
+    (message: string, tone: ToastTone = 'success', options: ToastOptions = {}) => {
+      nextId.current += 1
+      const id = nextId.current
+      const actions = options.actions ?? []
+      setToasts((current) => [...current.slice(-2), { id, message, tone, actions }])
+      // Con acciones hay que dar tiempo a leer y decidir (WCAG 2.2.1).
+      window.setTimeout(() => dismiss(id), actions.length ? 10000 : tone === 'error' ? 6000 : 3200)
+    },
+    [dismiss],
+  )
 
   const api = useMemo(() => ({ show }), [show])
 
@@ -36,18 +44,41 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.tone === 'error' ? 'alert' : 'status'}
-            className="pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-medium text-fg shadow-[0_8px_24px_-8px_var(--shadow-tint)] motion-safe:animate-[toast-in_220ms_var(--ease-out-expo)]"
+            className="pointer-events-auto flex w-full max-w-md flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-line-strong bg-surface py-2 pr-2 pl-4 text-sm font-medium text-fg shadow-[0_8px_24px_-8px_var(--shadow-tint)] motion-safe:animate-[toast-in_220ms_var(--ease-out-expo)]"
           >
-            {toast.tone === 'success' ? (
-              <CheckCircleIcon aria-hidden="true" className="size-5 text-positive" weight="fill" />
-            ) : (
-              <WarningCircleIcon
-                aria-hidden="true"
-                className="size-5 text-negative"
-                weight="fill"
-              />
+            <span className="flex min-h-11 flex-1 items-center gap-2.5">
+              {toast.tone === 'success' ? (
+                <CheckCircleIcon
+                  aria-hidden="true"
+                  className="size-5 shrink-0 text-positive"
+                  weight="fill"
+                />
+              ) : (
+                <WarningCircleIcon
+                  aria-hidden="true"
+                  className="size-5 shrink-0 text-negative"
+                  weight="fill"
+                />
+              )}
+              {toast.message}
+            </span>
+            {toast.actions.length > 0 && (
+              <span className="flex gap-1">
+                {toast.actions.map((action) => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={() => {
+                      dismiss(toast.id)
+                      action.onClick()
+                    }}
+                    className="h-11 rounded-lg px-3 font-semibold text-primary transition-colors hover:bg-surface-2"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </span>
             )}
-            {toast.message}
           </div>
         ))}
       </div>

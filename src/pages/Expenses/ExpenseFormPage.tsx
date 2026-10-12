@@ -12,12 +12,15 @@ import { expenseSchema, type ExpenseFormValues } from '../../lib/validation/move
 import { createExpense, updateExpense, voidExpense } from '../../services/movements'
 import type { Expense } from '../../types/domain'
 import { CategoryPicker } from '../../components/forms/CategoryPicker'
+import { DateChips } from '../../components/forms/DateChips'
 import { AuditNote, FormFooter, VoidSection, VoidedNotice } from '../../components/forms/FormParts'
 import { MoneyInput } from '../../components/forms/MoneyInput'
+import { NoteField } from '../../components/forms/NoteField'
 import { SplitEditor } from '../../components/forms/SplitEditor'
 import { defaultSplit, splitFromForm, splitToForm } from '../../components/forms/split'
+import { useSavedToast } from '../../components/forms/useSavedToast'
 import { Button } from '../../components/ui/Button'
-import { Field, TextArea, TextInput } from '../../components/ui/Field'
+import { Field, TextInput } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { Segmented } from '../../components/ui/Segmented'
 import { EmptyState } from '../../components/ui/States'
@@ -27,6 +30,7 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
   const data = useHousehold()
   const goBack = useGoBack()
   const toast = useToast()
+  const savedToast = useSavedToast()
   const readOnly = expense?.status === 'voided'
 
   const categories = data.categories.filter(
@@ -83,10 +87,20 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
       notes: values.notes.trim(),
     }
     try {
-      if (expense) await updateExpense(expense.id, input)
-      else await createExpense(data.household.id, input)
-      invalidateData()
-      toast.show(expense ? 'Gasto actualizado' : 'Gasto guardado')
+      if (expense) {
+        await updateExpense(expense.id, input)
+        invalidateData()
+        toast.show('Gasto actualizado')
+      } else {
+        const id = await createExpense(data.household.id, input)
+        invalidateData()
+        savedToast({
+          message: 'Gasto guardado',
+          undo: () => voidExpense(id),
+          undoneMessage: 'Gasto anulado',
+          againPath: '/gastos/nuevo',
+        })
+      }
       goBack()
     } catch (error) {
       toast.show(toUserMessage(error, 'No pudimos guardar el gasto. Inténtalo de nuevo.'), 'error')
@@ -116,6 +130,14 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
                 />
               )}
             </Field>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <DateChips value={field.value} onChange={field.onChange} error={errors.date?.message} />
           )}
         />
 
@@ -182,29 +204,11 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
           )}
         />
 
-        <Field label="Fecha" error={errors.date?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextInput
-              id={id}
-              type="date"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register('date')}
-            />
-          )}
-        </Field>
-
-        <Field label="Nota (opcional)" error={errors.notes?.message}>
-          {({ id, describedBy, invalid }) => (
-            <TextArea
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              maxLength={500}
-              {...register('notes')}
-            />
-          )}
-        </Field>
+        <NoteField
+          registration={register('notes')}
+          hasValue={Boolean(defaultValues.notes)}
+          error={errors.notes?.message}
+        />
       </fieldset>
 
       {!readOnly && (
