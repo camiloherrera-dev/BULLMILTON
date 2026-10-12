@@ -28,7 +28,7 @@ function IconChooser({ value, onChange }: { value: string; onChange: (icon: stri
             key={icon}
             className={`grid size-11 cursor-pointer place-items-center rounded-xl border has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary ${
               value === icon
-                ? 'border-primary bg-primary-wash text-primary'
+                ? 'border-transparent bg-fg text-canvas'
                 : 'border-transparent bg-surface-2 text-fg-muted hover:text-fg'
             }`}
           >

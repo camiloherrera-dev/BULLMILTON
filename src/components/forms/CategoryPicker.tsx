@@ -37,7 +37,7 @@ export function CategoryPicker({
               key={category.id || 'none'}
               className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary ${
                 selected
-                  ? 'border-primary bg-primary-wash text-fg'
+                  ? 'border-transparent bg-fg font-semibold text-canvas'
                   : 'border-transparent bg-surface-2 text-fg-muted hover:text-fg'
               }`}
             >
@@ -49,10 +49,7 @@ export function CategoryPicker({
                 onChange={() => onChange(category.id)}
                 className="sr-only"
               />
-              <CategoryIcon
-                icon={category.icon}
-                className={`size-5 shrink-0 ${selected ? 'text-primary' : ''}`}
-              />
+              <CategoryIcon icon={category.icon} className="size-5 shrink-0" />
               <span className="truncate">{category.name}</span>
             </label>
           )
