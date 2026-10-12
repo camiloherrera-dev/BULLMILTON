@@ -7,6 +7,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    // Las fuentes nunca se incrustan como data: (la CSP de vercel.json solo permite
+    // font-src 'self'); el resto de assets pequeños sigue el límite por defecto.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined),
     rolldownOptions: {
       output: {
         // Librerías en chunks propios: cambian poco y el navegador las mantiene en caché
