@@ -178,21 +178,30 @@ export function ReportsPage() {
             </p>
           </Panel>
 
-          <Panel title="Ingresos">
+          <Panel title="Lo que le queda a cada uno">
             <div>
-              <p className="text-sm text-fg-muted">Total</p>
+              <p className="text-sm text-fg-muted">Ingresos del periodo</p>
               <p className="tabular text-3xl font-semibold tracking-tight">
                 {formatMoney(summary.totalIncomes)}
               </p>
             </div>
             <dl className="flex flex-col divide-y divide-line">
               {people.map((person) => (
-                <div
-                  key={person.userId}
-                  className="flex items-baseline justify-between gap-3 py-2.5 text-sm"
-                >
-                  <dt className="font-medium">{names[person.userId]}</dt>
-                  <dd className="tabular font-semibold">{formatMoney(person.incomes)}</dd>
+                <div key={person.userId} className="flex flex-col gap-1 py-3 text-sm">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="font-medium">{names[person.userId]}</dt>
+                    <dd
+                      className={`tabular font-semibold ${person.left < 0 ? 'text-negative' : ''}`}
+                    >
+                      {person.left < 0
+                        ? `se pasó por ${formatMoney(-person.left)}`
+                        : `le queda ${formatMoney(person.left)}`}
+                    </dd>
+                  </div>
+                  <dd className="flex flex-wrap justify-between gap-x-3 tabular text-xs text-fg-muted">
+                    <span>le entró {formatMoney(person.incomes)}</span>
+                    <span>gastó {formatMoney(person.share)}</span>
+                  </dd>
                 </div>
               ))}
               <div className="flex items-baseline justify-between gap-3 py-2.5 text-sm text-fg-muted">
@@ -200,6 +209,10 @@ export function ReportsPage() {
                 <dd className="tabular">{formatMoney(summary.totalTransfers)}</dd>
               </div>
             </dl>
+            <p className="text-xs text-fg-muted">
+              Le queda = su parte de los ingresos menos su parte de los gastos. Las transferencias
+              solo saldan cuentas entre ustedes, no cambian lo que le queda a nadie.
+            </p>
           </Panel>
 
           <Panel

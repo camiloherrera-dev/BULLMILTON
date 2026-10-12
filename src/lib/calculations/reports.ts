@@ -17,6 +17,11 @@ export interface PersonSummary {
   share: number
   /** Su parte de los ingresos (los compartidos cuentan según el reparto). */
   incomes: number
+  /**
+   * Lo que le queda del periodo: su parte de los ingresos menos su parte de los gastos.
+   * Negativo = gastó más de lo que le entró. Las transferencias no cuentan (solo saldan deudas).
+   */
+  left: number
   transfersSent: number
   transfersReceived: number
 }
@@ -46,7 +51,15 @@ export function summarizePeriod(
   const person = (userId: string) => {
     let entry = people.get(userId)
     if (!entry) {
-      entry = { userId, paid: 0, share: 0, incomes: 0, transfersSent: 0, transfersReceived: 0 }
+      entry = {
+        userId,
+        paid: 0,
+        share: 0,
+        incomes: 0,
+        left: 0,
+        transfersSent: 0,
+        transfersReceived: 0,
+      }
       people.set(userId, entry)
     }
     return entry
@@ -81,6 +94,7 @@ export function summarizePeriod(
     }
   }
 
+  for (const entry of people.values()) entry.left = entry.incomes - entry.share
   summary.people = [...people.values()]
   return summary
 }

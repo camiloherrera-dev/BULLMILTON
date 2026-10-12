@@ -10,8 +10,9 @@ import {
 } from '../../lib/calculations/ledger'
 import { summarizePeriod } from '../../lib/calculations/reports'
 import { endOfMonth, startOfMonth, todayBogota } from '../../lib/dates'
-import { BalanceHero } from '../../components/dashboard/BalanceHero'
+import { DebtCard } from '../../components/dashboard/DebtCard'
 import { Ledger } from '../../components/dashboard/Ledger'
+import { MoneyLeftHero } from '../../components/dashboard/MoneyLeftHero'
 import { MonthSummary } from '../../components/dashboard/MonthSummary'
 import { PendingRecurring } from '../../components/dashboard/PendingRecurring'
 import { ButtonLink } from '../../components/ui/Button'
@@ -20,7 +21,10 @@ import { EmptyState } from '../../components/ui/States'
 /** Inicio muestra solo lo último; el resto está en Movimientos. */
 const LEDGER_ROWS = 8
 
-/** Inicio: el libro diario del hogar (dirección "Libro diario", ver .impeccable/surfaces). */
+/**
+ * Inicio: cuánto le queda a cada uno este mes, las cuentas entre ustedes y el libro diario
+ * (dirección "Libro diario", ver .impeccable/surfaces).
+ */
 export function DashboardPage() {
   const data = useHousehold()
   const { movements, members, userId } = data
@@ -42,16 +46,13 @@ export function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 lg:px-10">
-      <BalanceHero
-        myBalance={balance.balances[userId] ?? 0}
-        debts={balance.debts}
-        breakdown={breakdown}
-      />
+      <MoneyLeftHero people={summary.people} month={today} />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
         <div className="flex min-w-0 flex-col gap-6">
-          <div className="xl:hidden">
+          <div className="flex flex-col gap-6 xl:hidden">
             <PendingRecurring />
+            <DebtCard debts={balance.debts} breakdown={breakdown} bridge={bridge} />
           </div>
           {ledger.length === 0 ? (
             <EmptyState
@@ -79,10 +80,11 @@ export function DashboardPage() {
         </div>
 
         <aside className="flex flex-col gap-6 xl:sticky xl:top-8">
-          <div className="hidden xl:block">
+          <div className="hidden flex-col gap-6 xl:flex">
             <PendingRecurring />
+            <DebtCard debts={balance.debts} breakdown={breakdown} bridge={bridge} />
           </div>
-          <MonthSummary summary={summary} bridge={bridge} month={today} />
+          <MonthSummary summary={summary} month={today} />
         </aside>
       </div>
     </div>

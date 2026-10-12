@@ -97,6 +97,7 @@ describe('summarizePeriod', () => {
         paid: 1_240_000,
         share: 680_000,
         incomes: 3_200_000,
+        left: 2_520_000,
         transfersSent: 0,
         transfersReceived: 300_000,
       },
@@ -105,6 +106,7 @@ describe('summarizePeriod', () => {
         paid: 120_000,
         share: 680_000,
         incomes: 0,
+        left: -680_000,
         transfersSent: 300_000,
         transfersReceived: 0,
       },
@@ -129,6 +131,52 @@ describe('summarizePeriod con ingresos compartidos', () => {
     const summary = summarizePeriod([shared], [A, B], october)
     expect(summary.totalIncomes).toBe(800_001)
     expect(summary.people.map((person) => person.incomes)).toEqual([400_001, 400_000])
+  })
+})
+
+describe('summarizePeriod: lo que le queda a cada uno', () => {
+  it('ingreso de 2.000.000 repartido y un gasto solo mío de 30.000', () => {
+    const shared = income('2026-10-02', A, 2_000_000, [
+      { userId: A, shareBp: 5000, amount: 1_000_000 },
+      { userId: B, shareBp: 5000, amount: 1_000_000 },
+    ])
+    const mine = expense('2026-10-03', A, 30_000, 'comida', [30_000, 0])
+    const people = summarizePeriod([shared, mine], [A, B], october).people
+    expect(people.map((person) => person.left)).toEqual([970_000, 1_000_000])
+  })
+
+  it('un gasto compartido descuenta la parte de cada uno, sin importar quién pagó', () => {
+    const shared = income('2026-10-02', A, 2_000_000, [
+      { userId: A, shareBp: 5000, amount: 1_000_000 },
+      { userId: B, shareBp: 5000, amount: 1_000_000 },
+    ])
+    const groceries = expense('2026-10-03', B, 100_000, 'comida', [50_000, 50_000])
+    const people = summarizePeriod([shared, groceries], [A, B], october).people
+    expect(people.map((person) => person.left)).toEqual([950_000, 950_000])
+  })
+
+  it('las transferencias no cambian lo que le queda a nadie', () => {
+    const withTransfer = summarizePeriod(movements, [A, B], october).people
+    const without = summarizePeriod(
+      movements.filter((movement) => movement.kind !== 'transfer'),
+      [A, B],
+      october,
+    ).people
+    expect(withTransfer.map((person) => person.left)).toEqual(without.map((person) => person.left))
+  })
+
+  it('lo que queda entre todos = ingresos − gastos del periodo', () => {
+    const summary = summarizePeriod(movements, [A, B], october)
+    const left = summary.people.reduce((sum, person) => sum + person.left, 0)
+    expect(left).toBe(summary.totalIncomes - summary.totalExpenses)
+  })
+
+  it('solo cuenta el periodo pedido', () => {
+    const september = summarizePeriod(movements, [A, B], {
+      from: '2026-09-01',
+      to: '2026-09-30',
+    }).people
+    expect(september.map((person) => person.left)).toEqual([-40_000, -40_000])
   })
 })
 
