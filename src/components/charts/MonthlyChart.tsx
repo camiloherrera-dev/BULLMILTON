@@ -98,7 +98,7 @@ export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
                   scope="col"
                   className="hidden py-2 text-right font-medium sm:table-cell"
                 >
-                  Pagó {names[userId]}
+                  {names[userId] === 'Tú' ? 'Pagaste' : `Pagó ${names[userId]}`}
                 </th>
               ))}
             </tr>
