@@ -1,0 +1,33 @@
+/*
+ * BULLMILTON — tokens de diseño (spec §40.1).
+ * ÚNICO lugar donde viven los valores de color. Los componentes usan las utilidades
+ * que Tailwind genera desde aquí (bg-canvas, bg-surface, text-fg, bg-primary, ...)
+ * o las variables CSS (var(--color-primary)). Nunca HEX sueltos.
+ */
+
+@theme {
+  /* Sin la paleta por defecto de Tailwind: solo existen los colores de la spec. */
+  --color-*: initial;
+
+  /* Fondos */
+  --color-canvas: #0b0f14; /* Deep Navy — fondo general */
+  --color-surface: #151b22; /* Dark Slate — cards, paneles, navegación */
+  --color-surface-2: #202832; /* Slate — inputs, elementos secundarios, hover */
+
+  /* Texto */
+  --color-fg: #f3f4f6; /* Soft White — títulos y contenido principal */
+  --color-fg-muted: #9ca3af; /* Muted Gray — descripciones y metadatos */
+
+  /* Acción */
+  --color-primary: #f4c542; /* Finance Yellow — botones principales, acciones */
+  --color-primary-soft: #ffe58a; /* Soft Yellow — hover, badges, fondos sutiles */
+  --color-on-primary: var(--color-canvas); /* texto sobre amarillo */
+
+  /* Estados financieros */
+  --color-positive: #35c978; /* Finance Green — ingresos, a favor, completado */
+  --color-positive-bg: #123d2a; /* Deep Green — fondo de badges/alertas positivas */
+  --color-negative: #f05252; /* Expense Red — errores, saldos negativos (con moderación) */
+
+  /* Tipografía: pila del sistema mientras DESIGN.md (FASE 2) no fije otra. */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
