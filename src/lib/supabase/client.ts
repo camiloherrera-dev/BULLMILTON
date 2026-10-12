@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { Database } from '../../types/database'
 
 // Única instancia del cliente Supabase en el navegador.
 // Solo usa la publishable key: es pública por diseño y RLS protege los datos.
@@ -13,10 +14,10 @@ if (!url || !publishableKey) {
   )
 }
 
-export const supabase = createClient(url, publishableKey, {
+export const supabase = createClient<Database>(url, publishableKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
   },
 })

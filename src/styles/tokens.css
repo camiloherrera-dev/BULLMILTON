@@ -1,5 +1,5 @@
 /*
- * BULLMILTON — tokens de diseño (spec §40.1).
+ * BULLMILTON: tokens de diseño (spec §40.1).
  * ÚNICO lugar donde viven los valores de color. Los componentes usan las utilidades
  * que Tailwind genera desde aquí (bg-canvas, bg-surface, text-fg, bg-primary, ...)
  * o las variables CSS (var(--color-primary)). Nunca HEX sueltos.
@@ -10,24 +10,38 @@
   --color-*: initial;
 
   /* Fondos */
-  --color-canvas: #0b0f14; /* Deep Navy — fondo general */
-  --color-surface: #151b22; /* Dark Slate — cards, paneles, navegación */
-  --color-surface-2: #202832; /* Slate — inputs, elementos secundarios, hover */
+  --color-canvas: #0b0f14; /* Deep Navy: fondo general */
+  --color-surface: #151b22; /* Dark Slate: cards, paneles, navegación */
+  --color-surface-2: #202832; /* Slate: inputs, elementos secundarios, hover */
 
   /* Texto */
-  --color-fg: #f3f4f6; /* Soft White — títulos y contenido principal */
-  --color-fg-muted: #9ca3af; /* Muted Gray — descripciones y metadatos */
+  --color-fg: #f3f4f6; /* Soft White: títulos y contenido principal */
+  --color-fg-muted: #9ca3af; /* Muted Gray: descripciones y metadatos */
 
   /* Acción */
-  --color-primary: #f4c542; /* Finance Yellow — botones principales, acciones */
-  --color-primary-soft: #ffe58a; /* Soft Yellow — hover, badges, fondos sutiles */
+  --color-primary: #f4c542; /* Finance Yellow: botones principales, acciones */
+  --color-primary-soft: #ffe58a; /* Soft Yellow: hover, badges, fondos sutiles */
   --color-on-primary: var(--color-canvas); /* texto sobre amarillo */
 
   /* Estados financieros */
-  --color-positive: #35c978; /* Finance Green — ingresos, a favor, completado */
-  --color-positive-bg: #123d2a; /* Deep Green — fondo de badges/alertas positivas */
-  --color-negative: #f05252; /* Expense Red — errores, saldos negativos (con moderación) */
+  --color-positive: #35c978; /* Finance Green: ingresos, a favor, completado */
+  --color-positive-bg: #123d2a; /* Deep Green: fondo de badges/alertas positivas */
+  --color-negative: #f05252; /* Expense Red: errores, saldos negativos (con moderación) */
 
-  /* Tipografía: pila del sistema mientras DESIGN.md (FASE 2) no fije otra. */
+  /* Derivados (mezclas de los colores anteriores; no son colores nuevos) */
+  --color-line: color-mix(in oklab, var(--color-fg) 9%, transparent); /* reglas finas */
+  --color-line-strong: color-mix(in oklab, var(--color-fg) 16%, transparent);
+  --color-primary-wash: color-mix(in oklab, var(--color-primary) 14%, transparent);
+  --color-negative-bg: color-mix(in oklab, var(--color-negative) 16%, var(--color-surface));
+  --color-scrim: color-mix(in oklab, var(--color-canvas) 72%, transparent);
+
+  /* Tipografía: pila del sistema (superficie de trabajo; ver DESIGN.md). */
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /*
+   * Radios (una sola regla para toda la app):
+   * controles (botones, inputs) = xl (12px) · paneles = 2xl (16px) · chips = full.
+   */
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }

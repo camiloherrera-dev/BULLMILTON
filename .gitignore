@@ -30,3 +30,10 @@ dist-ssr
 
 # Claude Code: ajustes locales de cada máquina
 .claude/settings.local.json
+
+# Impeccable: cachés y artefactos locales (los briefs de superficie sí se versionan)
+.impeccable/hook.cache.json
+.impeccable/questions/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/config.local.json
