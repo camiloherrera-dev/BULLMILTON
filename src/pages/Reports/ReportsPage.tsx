@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { ChartPieIcon } from '@phosphor-icons/react'
+import { ChartPieIcon, CreditCardIcon, FunnelSimpleIcon } from '@phosphor-icons/react'
 import { memberName, personColor, useHousehold } from '../../app/household-context'
 import {
+  expenseCategoryIds,
   expensesByCategory,
   monthlyExpenses,
   summarizePeriod,
@@ -11,6 +12,7 @@ import { formatMoney } from '../../lib/money'
 import { periodLabels, resolvePeriod, type PeriodPreset } from '../../lib/periods'
 import { resolvePersonColors } from '../../lib/people'
 import { MonthlyChart } from '../../components/charts/MonthlyChart'
+import { CategoryChips } from '../../components/forms/CategoryChips'
 import { PersonAvatar } from '../../components/people/PersonColor'
 import { personBg } from '../../components/people/personClasses'
 import { CategoryIcon } from '../../components/movements/CategoryIcon'
@@ -50,29 +52,40 @@ export function ReportsPage() {
   const [preset, setPreset] = useState<PeriodPreset>('month')
   const [custom, setCustom] = useState({ from: startOfMonth(today), to: today })
   const [scope, setScope] = useState<'household' | 'mine'>('household')
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([])
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false)
 
   const range = resolvePeriod(preset, today, custom)
   const memberIds = data.members.map((member) => member.userId)
 
   const { summary, categories, months } = useMemo(() => {
+    // Filtro por categorías: solo afecta a los gastos (ingresos y transferencias siguen).
+    const movements =
+      categoryFilter.length === 0
+        ? data.movements
+        : data.movements.filter(
+            (movement) =>
+              movement.kind !== 'expense' ||
+              expenseCategoryIds(movement).some((id) => categoryFilter.includes(id)),
+          )
     // La evolución muestra al menos 6 meses terminando en el periodo elegido.
     const chartFrom = addMonths(startOfMonth(range.to), -5)
     return {
-      summary: summarizePeriod(data.movements, memberIds, range),
+      summary: summarizePeriod(movements, memberIds, range),
       categories: expensesByCategory(
-        data.movements,
+        movements,
         range,
         scope === 'mine' ? { userId: data.userId } : {},
       ),
       months: monthlyExpenses(
-        data.movements,
+        movements,
         { from: chartFrom < range.from ? chartFrom : range.from, to: range.to },
         memberIds,
       ),
     }
     // memberIds se deriva de data.members
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.movements, data.members, data.userId, range.from, range.to, scope])
+  }, [data.movements, data.members, data.userId, range.from, range.to, scope, categoryFilter])
 
   const names = Object.fromEntries(
     data.members.map((member) => [member.userId, memberName(data, member.userId, { you: true })]),
@@ -137,6 +150,37 @@ export function ReportsPage() {
             </Field>
           </div>
         )}
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => setShowCategoryFilter((value) => !value)}
+            aria-expanded={showCategoryFilter}
+            aria-controls="filtro-categorias"
+            className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-medium text-fg-muted hover:text-fg"
+          >
+            <FunnelSimpleIcon aria-hidden="true" className="size-4" weight="bold" />
+            {categoryFilter.length > 0
+              ? `Categorías (${categoryFilter.length})`
+              : 'Filtrar por categorías'}
+          </button>
+          {showCategoryFilter && (
+            <div id="filtro-categorias" className="rounded-2xl bg-surface p-4">
+              <CategoryChips
+                label="Solo gastos de estas categorías"
+                categories={data.categories.filter(
+                  (category) => category.kind === 'expense' && !category.archivedAt,
+                )}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+              />
+            </div>
+          )}
+          {categoryFilter.length > 0 && (
+            <p className="text-sm text-fg-muted">
+              Los gastos están filtrados por categoría; los ingresos y transferencias no.
+            </p>
+          )}
+        </div>
       </div>
 
       {summary.expenseCount === 0 && summary.totalIncomes === 0 && summary.totalTransfers === 0 ? (
@@ -153,6 +197,19 @@ export function ReportsPage() {
               </p>
               <p className="text-sm text-fg-muted">
                 {summary.expenseCount} {summary.expenseCount === 1 ? 'gasto' : 'gastos'}
+                {summary.cardExpenses > 0 && (
+                  <>
+                    {' · '}
+                    <CreditCardIcon
+                      aria-hidden="true"
+                      className="inline size-4 align-[-0.15em]"
+                    />{' '}
+                    con tarjeta{' '}
+                    <span className="tabular font-semibold text-fg">
+                      {formatMoney(summary.cardExpenses)}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
             <ul className="flex flex-col gap-4">
@@ -248,56 +305,66 @@ export function ReportsPage() {
             {categories.length === 0 ? (
               <p className="text-sm text-fg-muted">Sin gastos en este periodo.</p>
             ) : (
-              <table className="w-full text-sm">
-                <caption className="sr-only">Gasto por categoría, de mayor a menor</caption>
-                <thead className="sr-only">
-                  <tr>
-                    <th scope="col">Categoría</th>
-                    <th scope="col">Porcentaje</th>
-                    <th scope="col">Monto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.map((entry) => {
-                    const category = data.categories.find((item) => item.id === entry.categoryId)
-                    return (
-                      <tr key={entry.categoryId ?? 'none'} className="align-top">
-                        <th scope="row" className="py-2 pr-3 text-left font-medium">
-                          <span className="flex items-center gap-2">
-                            <CategoryIcon
-                              icon={category?.icon}
-                              className="size-4 shrink-0 text-fg-muted"
+              <>
+                <table className="w-full text-sm">
+                  <caption className="sr-only">Gasto por categoría, de mayor a menor</caption>
+                  <thead className="sr-only">
+                    <tr>
+                      <th scope="col">Categoría</th>
+                      <th scope="col">Porcentaje</th>
+                      <th scope="col">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((entry) => {
+                      const category = data.categories.find((item) => item.id === entry.categoryId)
+                      return (
+                        <tr key={entry.categoryId ?? 'none'} className="align-top">
+                          <th scope="row" className="py-2 pr-3 text-left font-medium">
+                            <span className="flex items-center gap-2">
+                              <CategoryIcon
+                                icon={category?.icon}
+                                className="size-4 shrink-0 text-fg-muted"
+                              />
+                              {category?.name ?? 'Sin categoría'}
+                            </span>
+                            <span
+                              aria-hidden="true"
+                              className={`mt-1.5 block h-1.5 rounded-full ${category?.color ? categorySolid[category.color] : 'bg-primary'}`}
+                              style={{
+                                width: `${Math.max(2, (entry.amount / maxCategory) * 100)}%`,
+                              }}
                             />
-                            {category?.name ?? 'Sin categoría'}
-                          </span>
-                          <span
-                            aria-hidden="true"
-                            className={`mt-1.5 block h-1.5 rounded-full ${category?.color ? categorySolid[category.color] : 'bg-primary'}`}
-                            style={{ width: `${Math.max(2, (entry.amount / maxCategory) * 100)}%` }}
-                          />
-                        </th>
-                        <td className="w-16 py-2 text-right tabular text-fg-muted">
-                          {Math.round(entry.shareBp / 100)} %
-                        </td>
-                        <td className="w-28 py-2 text-right tabular font-semibold">
-                          {formatMoney(entry.amount)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-line">
-                    <th scope="row" className="pt-2 text-left font-medium text-fg-muted">
-                      Total
-                    </th>
-                    <td />
-                    <td className="pt-2 text-right tabular font-semibold">
-                      {formatMoney(categoryTotal)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                          </th>
+                          <td className="w-16 py-2 text-right tabular text-fg-muted">
+                            {Math.round(entry.shareBp / 100)} %
+                          </td>
+                          <td className="w-28 py-2 text-right tabular font-semibold">
+                            {formatMoney(entry.amount)}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t border-line">
+                      <th scope="row" className="pt-2 text-left font-medium text-fg-muted">
+                        Total
+                      </th>
+                      <td />
+                      <td className="pt-2 text-right tabular font-semibold">
+                        {formatMoney(categoryTotal)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+                {scope === 'household' && categoryTotal > summary.totalExpenses && (
+                  <p className="text-xs text-fg-muted">
+                    Hay gastos con varias categorías: cuentan completos en cada una, por eso la suma
+                    supera el total gastado ({formatMoney(summary.totalExpenses)}).
+                  </p>
+                )}
+              </>
             )}
           </Panel>
 

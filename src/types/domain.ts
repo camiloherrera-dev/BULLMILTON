@@ -55,11 +55,15 @@ export interface Expense extends Audit {
   amount: number
   currency: string
   date: string
+  /** Categoría principal (icono del movimiento). */
   categoryId: string
+  /** Categorías adicionales, sin repetir la principal. */
+  extraCategoryIds: string[]
   paidBy: string
   splitType: SplitType
   splits: ExpenseSplit[]
   notes: string | null
+  paidWithCard: boolean
   status: RecordStatus
   recurringExpenseId: string | null
 }
@@ -112,6 +116,7 @@ export interface RecurringExpense extends Audit {
   splitType: SplitType
   splits: RecurringSplit[]
   notes: string | null
+  paidWithCard: boolean
   active: boolean
 }
 

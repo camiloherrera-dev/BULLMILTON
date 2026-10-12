@@ -13,6 +13,7 @@ import { formatMoneyInput, parseMoneyInput } from '../../lib/money'
 import { recurringSchema, type RecurringFormValues } from '../../lib/validation/movements'
 import { createRecurring, deleteRecurring, updateRecurring } from '../../services/recurring'
 import type { RecurringExpense } from '../../types/domain'
+import { CardCheckbox } from '../../components/forms/CardCheckbox'
 import { CategoryPicker } from '../../components/forms/CategoryPicker'
 import { FormFooter } from '../../components/forms/FormParts'
 import { MoneyInput } from '../../components/forms/MoneyInput'
@@ -56,6 +57,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
           categoryId: item.categoryId,
           paidBy: item.paidBy,
           notes: item.notes ?? '',
+          paidWithCard: item.paidWithCard,
           active: item.active,
           ...splitToForm(item.splitType, item.splits, data.members),
         }
@@ -67,6 +69,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
           categoryId: '',
           paidBy: data.userId,
           notes: '',
+          paidWithCard: false,
           active: true,
           ...defaultSplit(data.members),
         },
@@ -87,6 +90,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
       paidBy: values.paidBy,
       split: splitFromForm(values),
       notes: values.notes.trim(),
+      paidWithCard: values.paidWithCard,
       active: values.active,
     }
     try {
@@ -208,6 +212,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
           meId={data.userId}
           error={errors.participants?.message ?? percentErrors?.message}
         />
+        <CardCheckbox registration={register('paidWithCard')} />
         <Field label="Nota (opcional)" error={errors.notes?.message}>
           {({ id, describedBy, invalid }) => (
             <TextArea

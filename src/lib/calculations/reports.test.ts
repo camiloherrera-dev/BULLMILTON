@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Expense, Income, Movement, Transfer } from '../../types/domain'
-import { expensesByCategory, monthlyExpenses, summarizePeriod } from './reports'
+import { expenseCategoryIds, expensesByCategory, monthlyExpenses, summarizePeriod } from './reports'
 
 const A = 'a-user'
 const B = 'b-user'
@@ -34,6 +34,8 @@ const expense = (
   ],
   notes: null,
   status,
+  extraCategoryIds: [],
+  paidWithCard: false,
   recurringExpenseId: null,
   ...audit,
 })
@@ -199,6 +201,45 @@ describe('expensesByCategory', () => {
 
   it('sin gastos devuelve una lista vacía', () => {
     expect(expensesByCategory(movements, { from: '2020-01-01', to: '2020-01-31' })).toEqual([])
+  })
+
+  it('un gasto con varias categorías cuenta completo en cada una', () => {
+    const mixed: Expense = {
+      ...expense('2026-10-09', A, 90_000, 'comida', [45_000, 45_000]),
+      extraCategoryIds: ['aseo', 'comida'],
+    }
+    const totals = expensesByCategory([mixed], october)
+    expect(totals.map((entry) => [entry.categoryId, entry.amount])).toEqual([
+      ['aseo', 90_000],
+      ['comida', 90_000],
+    ])
+    expect(totals.reduce((sum, entry) => sum + entry.shareBp, 0)).toBe(10000)
+    expect(expensesByCategory([mixed], october, { userId: B })[0].amount).toBe(45_000)
+  })
+})
+
+describe('expenseCategoryIds', () => {
+  it('pone primero la principal y no repite', () => {
+    expect(expenseCategoryIds({ categoryId: 'a', extraCategoryIds: ['b', 'a', 'b'] })).toEqual([
+      'a',
+      'b',
+    ])
+  })
+})
+
+describe('summarizePeriod: pagado con tarjeta', () => {
+  it('suma aparte lo pagado con tarjeta, solo de gastos activos del periodo', () => {
+    const card = (amount: number, status: Expense['status'] = 'active'): Expense => ({
+      ...expense('2026-10-10', A, amount, 'comida', [amount / 2, amount / 2], status),
+      paidWithCard: true,
+    })
+    const summary = summarizePeriod(
+      [...movements, card(40_000), card(10_000, 'voided')],
+      [A, B],
+      october,
+    )
+    expect(summary.cardExpenses).toBe(40_000)
+    expect(summary.totalExpenses).toBe(1_360_000 + 40_000)
   })
 })
 

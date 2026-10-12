@@ -49,10 +49,11 @@ export function buildExport(input: ExportInput) {
         'id',
         'fecha',
         'descripcion',
-        'categoria',
+        'categorias',
         'monto',
         'moneda',
         'pago',
+        'tarjeta',
         'division',
         ...people.map((person) => `parte_${person.displayName}`),
         'estado',
@@ -63,10 +64,12 @@ export function buildExport(input: ExportInput) {
         expense.id,
         expense.date,
         expense.description,
-        categoryName(expense.categoryId),
+        // Varias categorías: la principal primero, separadas por " + ".
+        [expense.categoryId, ...expense.extraCategoryIds].map(categoryName).join(' + '),
         expense.amount,
         expense.currency,
         name(expense.paidBy),
+        expense.paidWithCard ? 'si' : 'no',
         expense.splitType === 'equal' ? 'iguales' : 'porcentaje',
         ...people.map(
           (person) => expense.splits.find((split) => split.userId === person.userId)?.amount ?? 0,
@@ -146,6 +149,7 @@ export function buildExport(input: ExportInput) {
         'proxima_fecha',
         'categoria',
         'paga',
+        'tarjeta',
         ...people.map((person) => `porcentaje_${person.displayName}`),
         'activo',
       ],
@@ -158,6 +162,7 @@ export function buildExport(input: ExportInput) {
         item.nextDueDate,
         categoryName(item.categoryId),
         name(item.paidBy),
+        item.paidWithCard ? 'si' : 'no',
         ...people.map(
           (person) =>
             (item.splits.find((split) => split.userId === person.userId)?.shareBp ?? 0) / 100,

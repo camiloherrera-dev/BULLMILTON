@@ -4,12 +4,13 @@ import { FunnelSimpleIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
 import { buildLedger } from '../../lib/calculations/balance'
 import { annotateLedger } from '../../lib/calculations/ledger'
-import { inRange } from '../../lib/calculations/reports'
+import { expenseCategoryIds, inRange } from '../../lib/calculations/reports'
 import { todayBogota } from '../../lib/dates'
 import { formatMoney } from '../../lib/money'
 import { isPeriodPreset, periodLabels, resolvePeriod, type PeriodPreset } from '../../lib/periods'
 import type { Movement, MovementKind } from '../../types/domain'
 import { Ledger } from '../../components/dashboard/Ledger'
+import { CategoryChips } from '../../components/forms/CategoryChips'
 import { movementTitle } from '../../components/movements/describe'
 import { Button } from '../../components/ui/Button'
 import { Field, Select, TextInput, controlClasses } from '../../components/ui/Field'
@@ -20,6 +21,14 @@ import { EmptyState } from '../../components/ui/States'
 const PAGE_DAYS = 30
 
 type KindFilter = 'all' | MovementKind
+type CardFilter = 'all' | 'si' | 'no'
+
+/** Categorías de un movimiento (un gasto puede tener varias; una transferencia, ninguna). */
+function categoriesOf(movement: Movement): string[] {
+  if (movement.kind === 'expense') return expenseCategoryIds(movement)
+  if (movement.kind === 'income') return movement.categoryId ? [movement.categoryId] : []
+  return []
+}
 
 function involves(movement: Movement, userId: string): boolean {
   switch (movement.kind) {
@@ -44,7 +53,10 @@ export function HistoryPage() {
     ? (params.get('periodo') as PeriodPreset)
     : 'all'
   const kind = (params.get('tipo') as KindFilter | null) ?? 'all'
-  const categoryId = params.get('categoria') ?? ''
+  const categoryParam = params.get('categoria') ?? ''
+  const categoryIds = useMemo(() => categoryParam.split(',').filter(Boolean), [categoryParam])
+  const card: CardFilter =
+    params.get('tarjeta') === 'si' ? 'si' : params.get('tarjeta') === 'no' ? 'no' : 'all'
   const person = params.get('persona') ?? ''
   const query = params.get('q') ?? ''
   const showVoided = params.get('anulados') === '1'
@@ -71,7 +83,8 @@ export function HistoryPage() {
   const activeFilters =
     Number(preset !== 'all') +
     Number(kind !== 'all') +
-    Number(Boolean(categoryId)) +
+    Number(categoryIds.length > 0) +
+    Number(card !== 'all') +
     Number(Boolean(person)) +
     Number(showVoided)
 
@@ -80,7 +93,10 @@ export function HistoryPage() {
     const matches = (movement: Movement) =>
       inRange(movement.date, range) &&
       (kind === 'all' || movement.kind === kind) &&
-      (!categoryId || (movement.kind !== 'transfer' && movement.categoryId === categoryId)) &&
+      (categoryIds.length === 0 || categoriesOf(movement).some((id) => categoryIds.includes(id))) &&
+      // "Con / sin tarjeta" solo aplica a gastos.
+      (card === 'all' ||
+        (movement.kind === 'expense' && movement.paidWithCard === (card === 'si'))) &&
       (!person || involves(movement, person)) &&
       (!needle ||
         movementTitle(movement).toLocaleLowerCase('es').includes(needle) ||
@@ -102,7 +118,7 @@ export function HistoryPage() {
         .filter((entry) => entry.movement.kind === 'expense' && entry.movement.status === 'active')
         .reduce((sum, entry) => sum + entry.movement.amount, 0),
     }
-  }, [data.movements, data.userId, range, kind, categoryId, person, query, showVoided])
+  }, [data.movements, data.userId, range, kind, categoryIds, card, person, query, showVoided])
 
   const categories = data.categories.filter((category) => kind === 'all' || kind === category.kind)
 
@@ -218,24 +234,31 @@ export function HistoryPage() {
                 </Field>
               </>
             )}
+            {(kind === 'all' || kind === 'expense') && (
+              <div className="sm:col-span-2">
+                <Segmented<CardFilter>
+                  label="Pago"
+                  size="sm"
+                  value={card}
+                  onChange={(value) => update({ tarjeta: value })}
+                  options={[
+                    { value: 'all', label: 'Todos' },
+                    { value: 'si', label: 'Con tarjeta' },
+                    { value: 'no', label: 'Sin tarjeta' },
+                  ]}
+                />
+              </div>
+            )}
             {kind !== 'transfer' && (
-              <Field label="Categoría">
-                {({ id }) => (
-                  <Select
-                    id={id}
-                    value={categoryId}
-                    onChange={(event) => update({ categoria: event.target.value })}
-                  >
-                    <option value="">Todas</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                        {kind === 'all' ? (category.kind === 'income' ? ' (ingreso)' : '') : ''}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Field>
+              <div className="sm:col-span-2">
+                <CategoryChips
+                  label="Categorías"
+                  categories={categories}
+                  value={categoryIds}
+                  onChange={(ids) => update({ categoria: ids.join(',') })}
+                  showKind={kind === 'all'}
+                />
+              </div>
             )}
             <label className="flex min-h-12 cursor-pointer items-center gap-3 self-end text-sm font-medium">
               <input
@@ -255,6 +278,7 @@ export function HistoryPage() {
                     periodo: null,
                     tipo: null,
                     categoria: null,
+                    tarjeta: null,
                     persona: null,
                     anulados: null,
                     desde: null,

@@ -13,6 +13,7 @@ export const errorMessages = {
   invalid_recurring_splits: 'Revisa cómo se divide el gasto recurrente.',
   user_not_active_member: 'Esa persona ya no pertenece al hogar.',
   invalid_category: 'Elige una categoría válida.',
+  too_many_categories: 'Un gasto puede tener máximo 6 categorías.',
   record_voided: 'Este movimiento fue anulado y ya no se puede modificar.',
   household_immutable: 'No se puede mover un movimiento a otro hogar.',
   not_found: 'No encontramos ese movimiento.',

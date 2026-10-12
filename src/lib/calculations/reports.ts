@@ -28,6 +28,8 @@ export interface PersonSummary {
 
 export interface PeriodSummary {
   totalExpenses: number
+  /** Parte de totalExpenses pagada con tarjeta. */
+  cardExpenses: number
   totalIncomes: number
   totalTransfers: number
   expenseCount: number
@@ -68,6 +70,7 @@ export function summarizePeriod(
 
   const summary: PeriodSummary = {
     totalExpenses: 0,
+    cardExpenses: 0,
     totalIncomes: 0,
     totalTransfers: 0,
     expenseCount: 0,
@@ -78,6 +81,7 @@ export function summarizePeriod(
     switch (movement.kind) {
       case 'expense':
         summary.totalExpenses += movement.amount
+        if (movement.paidWithCard) summary.cardExpenses += movement.amount
         summary.expenseCount += 1
         person(movement.paidBy).paid += movement.amount
         for (const split of movement.splits) person(split.userId).share += split.amount
@@ -124,7 +128,19 @@ function proportionalBp(amounts: number[]): number[] {
   return floors
 }
 
-/** Gasto por categoría en el periodo, de mayor a menor. */
+/** Todas las categorías de un gasto: la principal y luego las adicionales, sin repetir. */
+export function expenseCategoryIds(expense: {
+  categoryId: string
+  extraCategoryIds: ReadonlyArray<string>
+}): string[] {
+  return [...new Set([expense.categoryId, ...expense.extraCategoryIds])]
+}
+
+/**
+ * Gasto por categoría en el periodo, de mayor a menor. Un gasto con varias categorías cuenta
+ * completo en cada una, así que la suma por categorías puede superar el total gastado; los
+ * porcentajes son sobre esa suma.
+ */
 export function expensesByCategory(
   movements: ReadonlyArray<Movement>,
   range: DateRange,
@@ -137,7 +153,8 @@ export function expensesByCategory(
       ? (movement.splits.find((split) => split.userId === options.userId)?.amount ?? 0)
       : movement.amount
     if (amount === 0) continue
-    totals.set(movement.categoryId, (totals.get(movement.categoryId) ?? 0) + amount)
+    for (const categoryId of expenseCategoryIds(movement))
+      totals.set(categoryId, (totals.get(categoryId) ?? 0) + amount)
   }
   const entries = [...totals.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
   const shares = proportionalBp(entries.map(([, amount]) => amount))

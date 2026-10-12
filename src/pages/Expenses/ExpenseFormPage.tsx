@@ -11,7 +11,8 @@ import { formatMoneyInput, parseMoneyInput } from '../../lib/money'
 import { expenseSchema, type ExpenseFormValues } from '../../lib/validation/movements'
 import { createExpense, updateExpense, voidExpense } from '../../services/movements'
 import type { Expense } from '../../types/domain'
-import { CategoryPicker } from '../../components/forms/CategoryPicker'
+import { CardCheckbox } from '../../components/forms/CardCheckbox'
+import { CategoryMultiPicker } from '../../components/forms/CategoryMultiPicker'
 import { DateChips } from '../../components/forms/DateChips'
 import { AuditNote, FormFooter, VoidSection, VoidedNotice } from '../../components/forms/FormParts'
 import { MoneyInput } from '../../components/forms/MoneyInput'
@@ -35,7 +36,10 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
 
   const categories = data.categories.filter(
     (category) =>
-      category.kind === 'expense' && (!category.archivedAt || category.id === expense?.categoryId),
+      category.kind === 'expense' &&
+      (!category.archivedAt ||
+        category.id === expense?.categoryId ||
+        expense?.extraCategoryIds.includes(category.id)),
   )
   const activeMembers = data.members.filter(
     (member) => member.active || member.userId === expense?.paidBy,
@@ -47,18 +51,20 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
         description: expense.description,
         amount: formatMoneyInput(String(expense.amount)),
         date: expense.date,
-        categoryId: expense.categoryId,
+        categoryIds: [expense.categoryId, ...expense.extraCategoryIds],
         paidBy: expense.paidBy,
         notes: expense.notes ?? '',
+        paidWithCard: expense.paidWithCard,
         ...splitToForm(expense.splitType, expense.splits, data.members),
       }
     return {
       description: '',
       amount: '',
       date: todayBogota(),
-      categoryId: '',
+      categoryIds: [],
       paidBy: data.userId,
       notes: '',
+      paidWithCard: false,
       ...defaultSplit(data.members),
     }
   }, [expense, data.members, data.userId])
@@ -81,10 +87,11 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
       description: values.description.trim(),
       amount: parseMoneyInput(values.amount)!,
       date: values.date,
-      categoryId: values.categoryId,
+      categoryIds: values.categoryIds,
       paidBy: values.paidBy,
       split: splitFromForm(values),
       notes: values.notes.trim(),
+      paidWithCard: values.paidWithCard,
     }
     try {
       if (expense) {
@@ -157,14 +164,14 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
 
         <Controller
           control={control}
-          name="categoryId"
+          name="categoryIds"
           render={({ field }) => (
-            <CategoryPicker
-              label="Categoría"
+            <CategoryMultiPicker
+              label="Categorías"
               categories={categories}
               value={field.value}
               onChange={field.onChange}
-              error={errors.categoryId?.message}
+              error={errors.categoryIds?.message}
             />
           )}
         />
@@ -184,6 +191,8 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
             />
           )}
         />
+
+        <CardCheckbox registration={register('paidWithCard')} />
 
         <SplitEditor
           value={{ splitType, participants, percents }}

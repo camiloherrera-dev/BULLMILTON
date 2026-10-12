@@ -37,6 +37,8 @@ function expense(
     })),
     notes: null,
     status: 'active',
+    extraCategoryIds: [],
+    paidWithCard: false,
     recurringExpenseId: null,
     ...audit(),
     ...extra,

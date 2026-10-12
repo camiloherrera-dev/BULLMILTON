@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { CreditCardIcon } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
 import { formatMoney } from '../../lib/money'
 import type { AnnotatedEntry } from '../../lib/calculations/ledger'
@@ -86,6 +87,21 @@ export function MovementRow({ entry }: MovementRowProps) {
           <span data-money className="text-sm text-fg-muted">
             {detail}
             {category && movement.kind === 'income' ? `, ${category.name}` : ''}
+            {movement.kind === 'expense' && movement.extraCategoryIds.length > 0 && (
+              <span>
+                {` · también ${movement.extraCategoryIds
+                  .map((id) => data.categories.find((item) => item.id === id)?.name)
+                  .filter(Boolean)
+                  .join(', ')}`}
+              </span>
+            )}
+            {movement.kind === 'expense' && movement.paidWithCard && (
+              <span className="whitespace-nowrap">
+                {' · '}
+                <CreditCardIcon aria-hidden="true" className="inline size-4 align-[-0.2em]" />{' '}
+                tarjeta
+              </span>
+            )}
           </span>
           {effectLine && (
             <span data-money className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>

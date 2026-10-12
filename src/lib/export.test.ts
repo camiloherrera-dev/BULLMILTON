@@ -60,6 +60,8 @@ describe('buildExport', () => {
     ],
     notes: null,
     status: 'active',
+    extraCategoryIds: [],
+    paidWithCard: false,
     recurringExpenseId: null,
     createdBy: 'a',
     createdAt: '2026-10-01T12:00:00Z',
@@ -92,7 +94,7 @@ describe('buildExport', () => {
     const [header, row] = result.csv['gastos.csv'].replace('﻿', '').split('\r\n')
     expect(header).toContain('parte_Ana;parte_Beto')
     expect(row).toBe(
-      'e1;2026-10-01;Arriendo;Vivienda;1000000;COP;Ana;iguales;500000;500000;activo;;2026-10-01T12:00:00Z',
+      'e1;2026-10-01;Arriendo;Vivienda;1000000;COP;Ana;no;iguales;500000;500000;activo;;2026-10-01T12:00:00Z',
     )
   })
 

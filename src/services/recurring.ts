@@ -7,7 +7,7 @@ export async function fetchRecurring(householdId: string): Promise<RecurringExpe
     await supabase
       .from('recurring_expenses')
       .select(
-        'id, name, amount, currency, frequency, next_due_date, category_id, paid_by, split_type, notes, active, created_by, created_at, updated_by, updated_at, recurring_expense_splits(user_id, share_bp)',
+        'id, name, amount, currency, frequency, next_due_date, category_id, paid_by, split_type, notes, paid_with_card, active, created_by, created_at, updated_by, updated_at, recurring_expense_splits(user_id, share_bp)',
       )
       .eq('household_id', householdId)
       .order('next_due_date'),
@@ -27,6 +27,7 @@ export async function fetchRecurring(householdId: string): Promise<RecurringExpe
       shareBp: split.share_bp,
     })),
     notes: row.notes,
+    paidWithCard: row.paid_with_card,
     active: row.active,
     createdBy: row.created_by,
     createdAt: row.created_at,
@@ -44,6 +45,7 @@ export interface RecurringInput {
   paidBy: string
   split: SplitInput
   notes: string
+  paidWithCard: boolean
   active: boolean
 }
 
@@ -70,6 +72,7 @@ export async function createRecurring(householdId: string, input: RecurringInput
       p_category_id: input.categoryId,
       p_paid_by: input.paidBy,
       p_notes: input.notes,
+      p_paid_with_card: input.paidWithCard,
       ...splitParams(input.split),
     }),
   )
@@ -87,6 +90,7 @@ export async function updateRecurring(id: string, input: RecurringInput): Promis
       p_paid_by: input.paidBy,
       p_notes: input.notes,
       p_active: input.active,
+      p_paid_with_card: input.paidWithCard,
       ...splitParams(input.split),
     }),
   )

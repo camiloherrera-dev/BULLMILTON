@@ -63,9 +63,14 @@ export const expenseSchema = z
     description: z.string().trim().min(1, 'Escribe qué fue.').max(120, 'Máximo 120 caracteres.'),
     amount: moneyField,
     date: dayField,
-    categoryId: z.string().min(1, 'Elige una categoría.'),
+    /** La primera es la principal. */
+    categoryIds: z
+      .array(z.string())
+      .min(1, 'Elige al menos una categoría.')
+      .max(6, 'Máximo 6 categorías.'),
     paidBy: z.string().min(1, 'Elige quién pagó.'),
     notes: notesField,
+    paidWithCard: z.boolean(),
     ...splitFields,
   })
   .superRefine(refineSplit)
@@ -114,6 +119,7 @@ export const recurringSchema = z
     categoryId: z.string().min(1, 'Elige una categoría.'),
     paidBy: z.string().min(1, 'Elige quién paga normalmente.'),
     notes: notesField,
+    paidWithCard: z.boolean(),
     active: z.boolean(),
     ...splitFields,
   })

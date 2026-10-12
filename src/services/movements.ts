@@ -40,7 +40,7 @@ const audit = (row: {
 })
 
 const EXPENSE_COLUMNS =
-  'id, description, amount, currency, date, category_id, paid_by, split_type, notes, status, recurring_expense_id, created_by, created_at, updated_by, updated_at, expense_splits(user_id, share_bp, amount)'
+  'id, description, amount, currency, date, category_id, paid_by, split_type, notes, paid_with_card, status, recurring_expense_id, created_by, created_at, updated_by, updated_at, expense_splits(user_id, share_bp, amount), expense_categories(category_id)'
 const INCOME_COLUMNS =
   'id, user_id, source, amount, currency, date, category_id, split_type, notes, status, created_by, created_at, updated_by, updated_at, income_splits(user_id, share_bp, amount)'
 const TRANSFER_COLUMNS =
@@ -90,8 +90,12 @@ export async function fetchAllMovements(householdId: string): Promise<Movement[]
       currency: row.currency,
       date: row.date,
       categoryId: row.category_id,
+      extraCategoryIds: row.expense_categories
+        .map((entry) => entry.category_id)
+        .filter((id) => id !== row.category_id),
       paidBy: row.paid_by,
       splitType: row.split_type as SplitType,
+      paidWithCard: row.paid_with_card,
       splits: row.expense_splits.map((split) => ({
         userId: split.user_id,
         shareBp: split.share_bp,
@@ -165,10 +169,21 @@ export interface ExpenseInput {
   description: string
   amount: number
   date: string
-  categoryId: string
+  /** La primera es la principal; las demás van como adicionales. */
+  categoryIds: string[]
   paidBy: string
   split: SplitInput
   notes: string
+  paidWithCard: boolean
+}
+
+function categoryParams(input: ExpenseInput) {
+  const [primary, ...extra] = input.categoryIds
+  return {
+    p_category_id: primary,
+    p_extra_category_ids: extra,
+    p_paid_with_card: input.paidWithCard,
+  }
 }
 
 export async function createExpense(householdId: string, input: ExpenseInput): Promise<string> {
@@ -177,10 +192,10 @@ export async function createExpense(householdId: string, input: ExpenseInput): P
       p_household_id: householdId,
       p_description: input.description,
       p_amount: input.amount,
-      p_category_id: input.categoryId,
       p_paid_by: input.paidBy,
       p_date: input.date,
       p_notes: input.notes,
+      ...categoryParams(input),
       ...splitParams(input.split),
     }),
   )
@@ -192,7 +207,7 @@ export async function updateExpense(expenseId: string, input: ExpenseInput): Pro
       p_expense_id: expenseId,
       p_description: input.description,
       p_amount: input.amount,
-      p_category_id: input.categoryId,
+      ...categoryParams(input),
       p_paid_by: input.paidBy,
       p_date: input.date,
       p_notes: input.notes,

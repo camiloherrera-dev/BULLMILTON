@@ -72,6 +72,42 @@ export type Database = {
           },
         ]
       }
+      expense_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          expense_id: string
+          household_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          expense_id: string
+          household_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          expense_id?: string
+          household_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'expense_categories_category_id_household_id_fkey'
+            columns: ['category_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id', 'household_id']
+          },
+          {
+            foreignKeyName: 'expense_categories_expense_id_household_id_fkey'
+            columns: ['expense_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'expenses'
+            referencedColumns: ['id', 'household_id']
+          },
+        ]
+      }
       expense_splits: {
         Row: {
           amount: number
@@ -127,6 +163,7 @@ export type Database = {
           id: string
           notes: string | null
           paid_by: string
+          paid_with_card: boolean
           recurring_due_date: string | null
           recurring_expense_id: string | null
           split_type: string
@@ -148,6 +185,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_by: string
+          paid_with_card?: boolean
           recurring_due_date?: string | null
           recurring_expense_id?: string | null
           split_type?: string
@@ -169,6 +207,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_by?: string
+          paid_with_card?: boolean
           recurring_due_date?: string | null
           recurring_expense_id?: string | null
           split_type?: string
@@ -623,6 +662,7 @@ export type Database = {
           next_due_date: string
           notes: string | null
           paid_by: string
+          paid_with_card: boolean
           split_type: string
           updated_at: string
           updated_by: string | null
@@ -642,6 +682,7 @@ export type Database = {
           next_due_date: string
           notes?: string | null
           paid_by: string
+          paid_with_card?: boolean
           split_type?: string
           updated_at?: string
           updated_by?: string | null
@@ -661,6 +702,7 @@ export type Database = {
           next_due_date?: string
           notes?: string | null
           paid_by?: string
+          paid_with_card?: boolean
           split_type?: string
           updated_at?: string
           updated_by?: string | null
@@ -812,9 +854,11 @@ export type Database = {
           p_category_id: string
           p_date?: string
           p_description: string
+          p_extra_category_ids?: Json
           p_household_id: string
           p_notes?: string
           p_paid_by: string
+          p_paid_with_card?: boolean
           p_participants?: Json
           p_split_type?: string
         }
@@ -852,6 +896,7 @@ export type Database = {
           p_next_due_date: string
           p_notes?: string
           p_paid_by: string
+          p_paid_with_card?: boolean
           p_participants?: Json
           p_split_type?: string
         }
@@ -878,8 +923,10 @@ export type Database = {
           p_date?: string
           p_description: string
           p_expense_id: string
+          p_extra_category_ids?: Json
           p_notes?: string
           p_paid_by: string
+          p_paid_with_card?: boolean
           p_participants?: Json
           p_split_type?: string
         }
@@ -909,6 +956,7 @@ export type Database = {
           p_next_due_date: string
           p_notes?: string
           p_paid_by: string
+          p_paid_with_card?: boolean
           p_participants?: Json
           p_recurring_expense_id: string
           p_split_type?: string
