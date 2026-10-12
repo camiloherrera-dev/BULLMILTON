@@ -7,17 +7,11 @@ La app es un frontend estático (Vite) que habla directo con Supabase. `vercel.j
   `nosniff`, `Referrer-Policy` y `Permissions-Policy`;
 - caché larga para `/assets/*` (archivos con hash) y `no-cache` para `index.html`.
 
-## 1. Subir el repo a GitHub
+## 1. Repo en GitHub
 
-Crea un repositorio **privado** vacío en <https://github.com/new> (sin README) y luego:
-
-```bash
-git remote add origin https://github.com/<tu-usuario>/bullmilton.git
-git push -u origin main
-```
-
-Con el repo en GitHub, el CI (`.github/workflows/ci.yml`) corre lint, tipos, build, detector de
-secretos y los tests pgTAP contra un Supabase real en cada push.
+El repo está en <https://github.com/camiloherrera-dev/BULLMILTON> (rama `main`). Cada push corre
+el CI (`.github/workflows/ci.yml`): lint, formato, tipos, build con detector de secretos y los
+tests pgTAP sobre un Postgres de Supabase local. No necesita secretos.
 
 ## 2. Crear el proyecto en Vercel
 
@@ -31,15 +25,25 @@ secretos y los tests pgTAP contra un Supabase real en cada push.
 
 ## 3. Ajustar Supabase a la URL de producción
 
-En el dashboard de Supabase → _Authentication → URL Configuration_:
+En el dashboard de Supabase (detalle en `docs/SUPABASE.md`, paso 5):
 
-- **Site URL**: `https://<tu-app>.vercel.app`
-- **Redirect URLs**: añade `https://<tu-app>.vercel.app/**` y, para previews,
-  `https://*-<tu-usuario>.vercel.app/**`. Deja `http://localhost:5173/**` para desarrollo.
+1. _Authentication → URL Configuration_:
+   - **Site URL**: `https://<tu-app>.vercel.app`
+   - **Redirect URLs**: `https://<tu-app>.vercel.app/restablecer` y
+     `https://<tu-app>.vercel.app/entrar` (más las de `localhost:5173` para desarrollo).
+2. _Authentication → Hooks → Before User Created_ → Postgres → `public.hook_before_user_created`
+   → activar. **Antes** de permitir el registro.
+3. _Authentication → Sign In / Providers_ → **Allow new users to sign up: activado**; anónimos
+   desactivado.
+4. _Authentication → Emails_: plantilla "Reset Password" con el enlace `token_hash` y un SMTP
+   propio (el correo de Supabase solo envía unos pocos por hora).
 
 ## 4. Comprobar
 
-- Abre la URL, entra con tu cuenta y registra un gasto de prueba (luego anúlalo).
+- Abre la URL, entra con tu cuenta y registra un gasto de prueba (luego usa "Deshacer").
+- Ajustes → Invitar → "Copiar enlace": ábrelo en una ventana privada; con el código debe dejarte
+  crear la cuenta y entrar al hogar, con un código inventado no.
+- "¿Olvidaste tu contraseña?" con tu email: el enlace del correo debe abrir `/restablecer`.
 - Recarga en una ruta interna (p. ej. `/movimientos`): debe cargar, no dar 404.
 - En el navegador, _DevTools → Network_: las peticiones van solo a tu proyecto de Supabase.
 - <https://securityheaders.com> con tu URL: CSP y demás cabeceras presentes.
