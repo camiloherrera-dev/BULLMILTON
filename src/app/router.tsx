@@ -2,6 +2,8 @@ import { createBrowserRouter, Outlet } from 'react-router'
 import { HouseholdLayout, NotFound, ReportsRoute, RouteError } from './RouteScreens'
 import { PublicOnly, RequireAuth } from './guards'
 import { LoginPage } from '../pages/Login/LoginPage'
+import { ForgotPasswordPage } from '../pages/Password/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/Password/ResetPasswordPage'
 import { WelcomePage } from '../pages/Welcome/WelcomePage'
 import { DashboardPage } from '../pages/Dashboard/DashboardPage'
 import { HistoryPage } from '../pages/History/HistoryPage'
@@ -28,6 +30,16 @@ export const router = createBrowserRouter([
           </PublicOnly>
         ),
       },
+      {
+        path: '/recuperar',
+        element: (
+          <PublicOnly>
+            <ForgotPasswordPage />
+          </PublicOnly>
+        ),
+      },
+      // Sin guardia: el enlace del correo abre la sesión en esta misma pantalla.
+      { path: '/restablecer', element: <ResetPasswordPage /> },
       {
         element: <RequireAuth />,
         children: [

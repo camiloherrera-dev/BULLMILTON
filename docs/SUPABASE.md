@@ -17,8 +17,8 @@ supabase/
 ## Opción A — Proyecto en la nube (no necesita Docker)
 
 Autenticación simplificada (decisión del 2026-10-12, desviación de la spec §4.1): **sin registro
-público ni recuperación de contraseña en la app**. Las dos cuentas se crean a mano en el
-dashboard; si alguien olvida su contraseña, se cambia desde el dashboard.
+público**. Las dos cuentas se crean a mano en el dashboard. La contraseña olvidada sí se recupera
+desde la app ("¿Olvidaste tu contraseña?" → correo → `/restablecer`); ver el paso 5.
 
 Los comandos `npx supabase ...` piden datos de forma interactiva (navegador, contraseña,
 confirmación): ejecútalos en tu propia terminal, en la carpeta del proyecto.
@@ -47,8 +47,26 @@ confirmación): ejecútalos en tu propia terminal, en la carpeta del proyecto.
      - **Allow new users to sign up: desactivado.**
      - **Allow anonymous sign-ins: desactivado.**
      - Email: activado. "Confirm email" da igual (las cuentas se crean ya confirmadas).
-   - _Authentication → URL Configuration_: Site URL `http://localhost:5173` (en la FASE 13 pasa
-     a ser la URL de Vercel).
+   - _Authentication → URL Configuration_ (las redirecciones que no estén aquí se rechazan):
+     - **Site URL**: `http://localhost:5173` en desarrollo; en producción, la URL de Vercel
+       (`https://<tu-app>.vercel.app`).
+     - **Redirect URLs** (añade cada una):
+       - `http://localhost:5173/restablecer`
+       - `https://<tu-app>.vercel.app/restablecer`
+       - Si usas despliegues de vista previa de Vercel:
+         `https://<tu-app>-*-<tu-equipo>.vercel.app/restablecer`
+       - Si conectas un dominio propio: `https://<tu-dominio>/restablecer`
+   - _Authentication → Emails → Reset Password_ (plantilla): cambia el enlace por
+     ```html
+     <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery"
+       >Elegir una contraseña nueva</a
+     >
+     ```
+     Es la misma plantilla que `supabase/templates/recovery.html` (la local). Con ella el enlace
+     funciona aunque se abra en otro navegador o dispositivo. Si dejas la plantilla por defecto
+     también funciona, pero solo en el navegador donde se abra el enlace.
+   - El correo por defecto de Supabase permite muy pocos envíos por hora y es solo para pruebas.
+     Para uso diario configura un SMTP propio en _Authentication → Emails → SMTP Settings_.
    - _Authentication → Policies / Password_ (si está disponible): longitud mínima 8.
 6. **Crear las dos cuentas**: _Authentication → Users → Add user → Create new user_.
    - Email y contraseña de cada uno, con **Auto Confirm User** marcado.

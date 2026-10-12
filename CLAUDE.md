@@ -24,9 +24,9 @@
 
 - RLS habilitado en **todas** las tablas expuestas. Acceso siempre derivado de
   `auth.uid()` → `household_members` → `household_id`.
-- Auth simplificada (decidido 2026-10-12): solo login/logout con email + contraseña, sesión
-  persistente y rutas protegidas. Sin registro ni recuperación en la app; las cuentas se crean en
-  el dashboard de Supabase.
+- Auth simplificada (decidido 2026-10-12): login/logout con email + contraseña, sesión
+  persistente, rutas protegidas y recuperación de contraseña por email (`/recuperar` →
+  `/restablecer`). Sin registro en la app; las cuentas se crean en el dashboard de Supabase.
 - Ninguna service key / secret key / password de Postgres en el frontend ni en variables
   `VITE_*`. En el cliente solo va la publishable (anon) key.
 - Tests de RLS con pgTAP en `supabase/tests/database/`. Rápido sin Docker: `npm run test:db`;

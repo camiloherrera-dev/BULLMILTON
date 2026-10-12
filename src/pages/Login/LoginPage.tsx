@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -15,7 +16,8 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-// Sin registro ni recuperación en la app: las dos cuentas se crean en Supabase (docs/SUPABASE.md).
+// Sin registro en la app: las cuentas se crean en Supabase (docs/SUPABASE.md).
+// La contraseña olvidada se recupera por email: /recuperar → /restablecer.
 export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const {
@@ -77,9 +79,12 @@ export function LoginPage() {
         </Button>
       </form>
 
-      <p className="text-sm text-fg-muted">
-        ¿Olvidaste la contraseña? Se cambia desde el panel de Supabase, en Authentication → Users.
-      </p>
+      <Link
+        to="/recuperar"
+        className="inline-flex min-h-11 items-center self-center text-sm font-medium text-fg-muted underline hover:text-fg"
+      >
+        ¿Olvidaste tu contraseña?
+      </Link>
     </main>
   )
 }

@@ -22,6 +22,7 @@ import { formatDay, toBogotaDay } from '../../lib/dates'
 import { toUserMessage } from '../../lib/errors'
 import { currentAppearance, fonts, themes } from '../../lib/appearance'
 import { buildExport, downloadFile } from '../../lib/export'
+import { newPasswordSchema, type NewPasswordValues } from '../../lib/validation/password'
 import { supabase } from '../../lib/supabase/client'
 import {
   createInvitation,
@@ -129,20 +130,6 @@ function NameForm({
   )
 }
 
-const passwordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Mínimo 8 caracteres.')
-      .regex(/[A-Za-z]/, 'Incluye al menos una letra.')
-      .regex(/\d/, 'Incluye al menos un número.'),
-    confirm: z.string(),
-  })
-  .refine((value) => value.password === value.confirm, {
-    path: ['confirm'],
-    message: 'Las contraseñas no coinciden.',
-  })
-
 function PasswordForm() {
   const toast = useToast()
   const [open, setOpen] = useState(false)
@@ -151,7 +138,7 @@ function PasswordForm() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof passwordSchema>>({ resolver: zodResolver(passwordSchema) })
+  } = useForm<NewPasswordValues>({ resolver: zodResolver(newPasswordSchema) })
   const onSubmit = handleSubmit(async ({ password }) => {
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
