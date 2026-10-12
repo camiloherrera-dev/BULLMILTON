@@ -7,10 +7,13 @@ import { MovementRow } from '../movements/MovementRow'
 export function Ledger({ days, heading }: { days: LedgerDay[]; heading?: string }) {
   const today = todayBogota()
   return (
-    <section aria-label={heading ?? 'Libro diario'} className="flex flex-col gap-5">
+    <section
+      aria-label={heading ?? 'Libro diario'}
+      className="flex flex-col gap-1 rounded-2xl bg-surface px-4 py-3 sm:px-5"
+    >
       {days.map((day) => (
         <div key={day.date}>
-          <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
+          <div className="flex items-baseline justify-between gap-3 border-b-[3px] border-double border-line-strong pt-3 pb-2">
             <h2
               className={`text-sm font-semibold first-letter:uppercase ${day.date === today ? 'text-primary' : 'text-fg'}`}
             >
@@ -21,7 +24,7 @@ export function Ledger({ days, heading }: { days: LedgerDay[]; heading?: string 
               <span className="font-semibold text-fg">{formatSigned(day.closingBalance)}</span>
             </p>
           </div>
-          <ul className="pt-1">
+          <ul className="divide-y divide-line">
             {day.entries.map((entry) => (
               <MovementRow
                 key={entry.movement.id}

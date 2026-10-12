@@ -36,10 +36,10 @@ export function Segmented<T extends string>({
           <label
             key={option.value}
             className={`relative flex flex-1 cursor-pointer items-center justify-center rounded-lg px-2 text-center font-medium transition-colors duration-150 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-45 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary ${
-              size === 'md' ? 'min-h-10 text-sm' : 'min-h-9 text-[0.8125rem]'
+              size === 'md' ? 'min-h-11 text-sm' : 'min-h-10 text-[0.8125rem]'
             } ${
               option.value === value
-                ? 'bg-surface text-fg shadow-[0_1px_2px_var(--color-canvas)]'
+                ? 'bg-fg font-semibold text-canvas'
                 : 'text-fg-muted hover:text-fg'
             }`}
           >

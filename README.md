@@ -8,7 +8,7 @@ Especificación: [`SHAREDFIN_ESPECIFICACION_COMPLETA_CLAUDE_COLORES.md`](./SHARE
 
 ## Stack
 
-React 19 · Vite 8 · TypeScript · Tailwind CSS v4 · Supabase (Postgres + Auth + RLS) · Vercel
+React 19 · Vite 8 · TypeScript · Tailwind CSS v4 · React Router · React Hook Form + Zod · Recharts · Phosphor Icons · Supabase (Postgres + Auth + RLS) · Vercel
 
 ## Desarrollo local
 
@@ -16,16 +16,31 @@ Requiere Node.js ≥ 22.12.
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
-npm run build        # typecheck + build de producción
-npm run lint         # ESLint
-npm run format:check # Prettier
+cp .env.example .env.local   # URL + publishable key de Supabase
+npm run dev                  # http://localhost:5173
+npm test                     # tests unitarios (motor de balance, reportes, exportación)
+npm run test:db              # migraciones + tests pgTAP de RLS (sin Docker)
+npm run build                # typecheck + build + detector de secretos
+npm run lint                 # ESLint
+npm run format:check         # Prettier
 ```
+
+## Qué hace
+
+- **Inicio**: libro diario del hogar; el saldo entre los dos arriba y cada día con su saldo al cierre.
+- **Registrar**: gasto (50/50 o porcentajes, quién pagó), ingreso (propio) y transferencia (abono).
+- **Movimientos**: historial con búsqueda y filtros por periodo, tipo, categoría y persona.
+- **Recurrentes**: plantillas mensuales/trimestrales que aparecen en Inicio cuando vencen.
+- **Reportes**: totales, aportes vs. lo que correspondía, ingresos, categorías y evolución mensual.
+- **Ajustes**: perfil, contraseña, hogar e invitación, categorías y exportación CSV/JSON.
+- Los movimientos no se borran: se anulan y quedan en el historial.
 
 ## Supabase
 
 - Puesta en marcha (nube sin Docker, o local con Docker): [`docs/SUPABASE.md`](./docs/SUPABASE.md)
 - Modelo de datos, RLS, convención de saldo y claves de error: [`docs/DATABASE.md`](./docs/DATABASE.md)
+- Despliegue en Vercel: [`docs/DEPLOY.md`](./docs/DEPLOY.md)
+- Revisión de seguridad y robustez (FASE 14): [`docs/HARDENING.md`](./docs/HARDENING.md)
 
 ```bash
 cp .env.example .env.local   # URL + publishable key (nunca la secret key)

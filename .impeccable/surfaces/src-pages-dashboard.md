@@ -15,11 +15,11 @@ Restricciones: paleta y tema oscuro fijados por la spec §40.1 (tokens en src/st
 
 THESIS: Inicio es un libro diario del hogar: los movimientos agrupados por día, cada día cerrado con el saldo acumulado entre los dos. Rechaza el dashboard de tarjetas sueltas (saldo + widgets + lista genérica).
 
-OWN-WORLD: Fondo Deep Navy; filas de libro sobre Dark Slate con reglas finas; cifras tabulares alineadas a la derecha en una columna de saldo; amarillo solo para acciones y el día de hoy; verde/rojo con signo (+ / −) y texto para el efecto en el saldo.
+OWN-WORLD: Fondo Deep Navy; filas de libro sobre Dark Slate con reglas finas; cifras tabulares alineadas a la derecha en una columna de saldo; amarillo para acciones, el día de hoy y datos que requieren atención (barras de magnitud, como el boceto de la spec §40.1; nunca como fondo decorativo); verde/rojo con signo (+ / −) y texto para el efecto en el saldo.
 
 STORY: Abro la app, leo "Beto te debe $266.050", recorro los últimos días viendo cómo llegó ahí cada movimiento, y registro uno nuevo con un toque.
 
-FIRST VIEWPORT: Arriba, el saldo a escala grande (frase + cifra) que al hacer scroll se compacta en una barra fija; debajo, encabezados de día (fecha a la izquierda, "saldo X" a la derecha) con sus movimientos (descripción, quién/división, efecto con signo); acciones + Gasto / + Ingreso / + Transferencia fijas en la zona del pulgar sobre la barra de navegación inferior. En escritorio: libro a la izquierda, resumen del mes y pendientes a la derecha.
+FIRST VIEWPORT: Arriba, el saldo a escala grande (frase + cifra) que al hacer scroll se compacta en una barra fija; debajo, encabezados de día (fecha a la izquierda, "saldo X" a la derecha) con sus movimientos (descripción, quién/división, efecto con signo); acciones + Gasto / + Ingreso / + Transferencia fijas en la zona del pulgar sobre la barra de navegación inferior. En escritorio: libro a la izquierda, pendientes y resumen del mes a la derecha. En móvil los pendientes van sobre el libro (prioridad de pulgar) y el resumen después.
 
 FORM: "Libro diario", candidata 3 de 7 de mi lista; seed key ad03ba28.
 

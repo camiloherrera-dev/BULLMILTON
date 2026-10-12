@@ -138,7 +138,7 @@ export function SplitEditor({
                   key={bp}
                   type="button"
                   onClick={() => applyPreset(bp)}
-                  className="h-9 rounded-full bg-surface-2 px-3.5 tabular text-sm font-medium hover:bg-line-strong"
+                  className="h-11 rounded-full bg-surface-2 px-4 tabular text-sm font-medium hover:bg-line-strong"
                 >
                   {bp / 100}/{(10000 - bp) / 100}
                 </button>
@@ -162,7 +162,7 @@ export function SplitEditor({
                     value={value.percents[member.userId] ?? ''}
                     onChange={(event) => setPercent(member.userId, event.target.value)}
                     aria-invalid={Boolean(percentErrors[member.userId])}
-                    className={`${controlClasses} h-11 pr-8 text-right tabular`}
+                    className={`${controlClasses} h-12 pr-8 text-right tabular`}
                   />
                   <span
                     aria-hidden="true"

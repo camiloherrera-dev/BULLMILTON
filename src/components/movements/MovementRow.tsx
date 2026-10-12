@@ -31,14 +31,14 @@ export function MovementRow({ movement, effect, showDate }: MovementRowProps) {
     <li>
       <Link
         to={movementPath(movement)}
-        className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors duration-150 hover:bg-surface-2/70"
+        className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/70"
       >
         <span
           className={`grid size-10 shrink-0 place-items-center rounded-full ${
             movement.kind === 'income'
               ? 'bg-positive-bg text-positive'
               : movement.kind === 'transfer'
-                ? 'bg-primary-wash text-primary'
+                ? 'bg-surface-2 text-fg'
                 : 'bg-surface-2 text-fg'
           }`}
         >

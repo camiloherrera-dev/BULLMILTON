@@ -67,6 +67,17 @@ El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componente
 | `transfers`                        | Dinero entre miembros (`from_user ≠ to_user`)               | Insert/update por cualquier miembro                           |
 | `recurring_expenses` (+ `_splits`) | Plantillas de gastos periódicos (mensual/trimestral)        | RPC en FASE 9                                                 |
 
+## Gastos recurrentes (migración 04)
+
+- `anchor_day` guarda el día del mes de la plantilla: una del 31 cae el 30 de abril y vuelve al 31
+  en mayo (`private.next_occurrence`).
+- Al abrir la app, Inicio muestra las plantillas activas con `next_due_date <= hoy` (Bogotá).
+- `generate_recurring_expense(id, monto?, fecha?)` crea el gasto con la división de la plantilla y
+  adelanta la próxima fecha, todo en una transacción y con `FOR UPDATE`. El índice único
+  `(recurring_expense_id, recurring_due_date)` impide generar dos veces la misma ocurrencia.
+- `skip_recurring_expense(id)` adelanta la fecha sin crear gasto. Borrar una plantilla conserva
+  los gastos ya generados (`ON DELETE SET NULL (recurring_expense_id)`).
+
 ## Seguridad
 
 - **RLS en todas las tablas.** Regla única: `household_id in (select private.current_household_ids())`,

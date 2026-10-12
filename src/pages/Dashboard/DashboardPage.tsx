@@ -40,7 +40,9 @@ export function DashboardPage() {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
         <div className="flex min-w-0 flex-col gap-6">
-          <PendingRecurring />
+          <div className="xl:hidden">
+            <PendingRecurring />
+          </div>
           {ledger.length === 0 ? (
             <EmptyState
               icon={<NotebookIcon />}
@@ -66,6 +68,9 @@ export function DashboardPage() {
         </div>
 
         <aside className="flex flex-col gap-6 xl:sticky xl:top-8">
+          <div className="hidden xl:block">
+            <PendingRecurring />
+          </div>
           <MonthSummary summary={summary} month={today} />
         </aside>
       </div>

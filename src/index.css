@@ -41,14 +41,18 @@
     cursor: pointer;
   }
 
+  /* Movimiento reducido: se quitan desplazamientos y pulsos; los cambios de estado siguen
+     visibles (opacidad, color) y el spinner de carga sigue girando porque es feedback. */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+    html {
+      scroll-behavior: auto;
+    }
+    .animate-pulse {
+      animation: none;
+    }
+    [class*='translate-y'],
+    [class*='scale-'] {
+      transform: none !important;
     }
   }
 }

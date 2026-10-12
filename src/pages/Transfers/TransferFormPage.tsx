@@ -181,6 +181,7 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
               id={id}
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={500}
               {...register('notes')}
             />
           )}

@@ -112,6 +112,7 @@ function IncomeForm({ income }: { income?: Income }) {
               autoComplete="off"
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={120}
               {...register('source')}
             />
           )}
@@ -146,6 +147,7 @@ function IncomeForm({ income }: { income?: Income }) {
               id={id}
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={500}
               {...register('notes')}
             />
           )}

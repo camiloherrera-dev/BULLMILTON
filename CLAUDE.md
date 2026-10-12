@@ -75,12 +75,17 @@
   - FASE 12: revisión completa con audit + critique + harden.
 - No añadir dependencias de UI ni de animación sin justificarlo (sección 34). Stack permitido
   de base: react, react-dom, react-router, tailwindcss, @supabase/supabase-js, recharts, zod,
-  react-hook-form.
+  react-hook-form. Añadidas con justificación: @hookform/resolvers (puente Zod ↔ RHF),
+  @phosphor-icons/react (iconos: la spec pide icono por tipo/categoría y las skills prohíben
+  emoji o SVG a mano), vitest (tests del motor financiero), PGlite + pgtap (tests de BD sin Docker).
+- Estructura del Inicio: "Libro diario" (ver `.impeccable/surfaces/`). Producto: `PRODUCT.md`.
+  Sistema visual: `DESIGN.md`.
 
 ## Comandos
 
 - `npm run dev` — servidor de desarrollo
 - `npm run build` — typecheck + build de producción + `check:secrets`
+- `npm test` — tests unitarios (Vitest)
 - `npm run test:db` — migraciones + seed + tests pgTAP en PGlite (sin Docker)
 - `npm run db:push` / `npm run db:types` — aplicar migraciones al proyecto enlazado / generar tipos
 - `npm run lint` — ESLint

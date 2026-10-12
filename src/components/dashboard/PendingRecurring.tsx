@@ -36,14 +36,14 @@ function PendingItem({ item }: { item: RecurringExpense }) {
   }
 
   return (
-    <li className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
+    <li className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center xl:flex-col xl:items-stretch">
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{item.name}</p>
         <p className="text-sm text-fg-muted">
           Vencía el {formatDay(item.nextDueDate)}, paga {nameInSentence(data, item.paidBy)}
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="mr-auto tabular font-semibold sm:mr-2">{formatMoney(item.amount)}</span>
         <Button
           size="sm"
@@ -56,7 +56,7 @@ function PendingItem({ item }: { item: RecurringExpense }) {
         </Button>
         <Link
           to={`/recurrentes/${item.id}/confirmar`}
-          className="inline-flex h-10 items-center rounded-xl px-3 text-sm font-semibold text-fg hover:bg-surface-2"
+          className="inline-flex h-11 items-center rounded-xl px-3 text-sm font-semibold text-fg hover:bg-surface-2"
         >
           Ajustar
         </Link>

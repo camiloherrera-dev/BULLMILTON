@@ -114,6 +114,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
               autoComplete="off"
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={120}
               {...register('name')}
             />
           )}
@@ -213,6 +214,7 @@ function RecurringForm({ item }: { item?: RecurringExpense }) {
               id={id}
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={500}
               {...register('notes')}
             />
           )}

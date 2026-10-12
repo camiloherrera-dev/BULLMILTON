@@ -63,6 +63,7 @@ function CreateForm() {
             id={id}
             aria-describedby={describedBy}
             aria-invalid={invalid}
+            maxLength={60}
             {...register('name')}
           />
         )}

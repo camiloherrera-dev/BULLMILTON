@@ -79,10 +79,16 @@ export function AppShell() {
   // En móvil, la barra inferior solo vive en las pestañas principales; formularios y detalles
   // tienen su botón de volver y su botón de guardar en la zona del pulgar.
   const onTab = navItems.some((item) => item.to === pathname)
-  const showMobileActions = pathname === '/' || pathname === '/movimientos'
+  const showMobileActions = onTab
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+      <a
+        href="#contenido"
+        className="sr-only z-50 rounded-xl bg-primary px-4 py-3 font-semibold text-on-primary focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Saltar al contenido
+      </a>
       <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex">
         <div className="px-2">
           <p className="text-lg font-bold tracking-tight">BULLMILTON</p>
@@ -99,7 +105,7 @@ export function AppShell() {
 
       <main
         id="contenido"
-        className={`min-w-0 ${showMobileActions ? 'pb-[calc(8.5rem+env(safe-area-inset-bottom))]' : onTab ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : ''} lg:pb-0`}
+        className={`min-w-0 ${showMobileActions ? 'pb-[calc(9rem+env(safe-area-inset-bottom))]' : ''} lg:pb-0`}
       >
         <Outlet />
       </main>

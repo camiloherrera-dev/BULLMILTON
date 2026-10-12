@@ -127,6 +127,7 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
               autoComplete="off"
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={120}
               {...register('description')}
             />
           )}
@@ -199,6 +200,7 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
               id={id}
               aria-describedby={describedBy}
               aria-invalid={invalid}
+              maxLength={500}
               {...register('notes')}
             />
           )}

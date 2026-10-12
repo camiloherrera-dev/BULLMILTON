@@ -117,7 +117,7 @@ export function MonthlyChart({ months, names }: MonthlyChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: 'var(--color-fg-muted)', fontSize: 12 }}
-                interval="preserveStartEnd"
+                interval={0}
               />
               <YAxis
                 tickFormatter={compact}

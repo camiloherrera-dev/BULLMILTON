@@ -9,7 +9,7 @@ import {
 import { CaretDownIcon, WarningCircleIcon } from '@phosphor-icons/react'
 
 export const controlClasses =
-  'w-full rounded-xl border border-transparent bg-surface-2 px-3.5 text-fg placeholder:text-fg-muted transition-[border-color,box-shadow] duration-150 hover:border-line-strong focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-wash aria-invalid:border-negative disabled:opacity-50'
+  'w-full rounded-xl border border-transparent bg-surface-2 px-3.5 text-base text-fg placeholder:text-fg-muted transition-[border-color,box-shadow] duration-150 hover:border-line-strong focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-wash aria-invalid:border-negative disabled:opacity-50'
 
 interface FieldProps {
   label: string

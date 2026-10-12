@@ -30,7 +30,9 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
           Ver reportes
         </Link>
       </div>
-      <p className="mt-3 text-sm text-fg-muted">Gastado entre todos</p>
+      <p className="mt-3 text-sm text-fg-muted">
+        Gastado entre {people.length === 2 ? 'los dos' : 'todos'}
+      </p>
       <p className="tabular text-3xl font-semibold tracking-tight">
         {formatMoney(summary.totalExpenses)}
       </p>
@@ -41,7 +43,8 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
             <div className="flex items-baseline justify-between gap-3 text-sm">
               <dt className="font-medium">{memberName(data, person.userId, { you: true })}</dt>
               <dd className="tabular">
-                pagó <span className="font-semibold">{formatMoney(person.paid)}</span>
+                {person.userId === data.userId ? 'pagaste' : 'pagó'}{' '}
+                <span className="font-semibold">{formatMoney(person.paid)}</span>
               </dd>
             </div>
             <div
@@ -50,9 +53,17 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
               style={{ width: `${Math.max(2, (person.paid / maxPaid) * 100)}%` }}
             />
             <dd className="flex flex-wrap justify-between gap-x-3 tabular text-xs text-fg-muted">
-              <span>le tocaba {formatMoney(person.share)}</span>
+              <span>
+                {person.userId === data.userId ? 'te tocaba' : 'le tocaba'}{' '}
+                {formatMoney(person.share)}
+              </span>
               {person.incomes > 0 && <span>ingresos {formatMoney(person.incomes)}</span>}
-              {person.transfersSent > 0 && <span>abonó {formatMoney(person.transfersSent)}</span>}
+              {person.transfersSent > 0 && (
+                <span>
+                  {person.userId === data.userId ? 'abonaste' : 'abonó'}{' '}
+                  {formatMoney(person.transfersSent)}
+                </span>
+              )}
             </dd>
           </div>
         ))}

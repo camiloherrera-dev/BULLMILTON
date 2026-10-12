@@ -95,10 +95,10 @@ export function ReportsPage() {
                 role="radio"
                 aria-checked={preset === value}
                 onClick={() => setPreset(value)}
-                className={`h-10 rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors duration-150 ${
+                className={`h-11 rounded-full px-4 text-sm whitespace-nowrap transition-colors duration-150 ${
                   preset === value
-                    ? 'bg-fg text-canvas'
-                    : 'bg-surface-2 text-fg-muted hover:text-fg'
+                    ? 'bg-fg font-semibold text-canvas'
+                    : 'bg-surface-2 font-medium text-fg-muted hover:text-fg'
                 }`}
               >
                 {periodLabels[value]}
@@ -156,7 +156,8 @@ export function ReportsPage() {
                   <div className="flex items-baseline justify-between gap-3 text-sm">
                     <dt className="font-medium">{names[person.userId]}</dt>
                     <dd className="tabular">
-                      aportó <span className="font-semibold">{formatMoney(person.paid)}</span>
+                      {person.userId === data.userId ? 'aportaste' : 'aportó'}{' '}
+                      <span className="font-semibold">{formatMoney(person.paid)}</span>
                     </dd>
                   </div>
                   <div
@@ -165,14 +166,15 @@ export function ReportsPage() {
                     style={{ width: `${Math.max(2, (person.paid / maxPaid) * 100)}%` }}
                   />
                   <dd className="tabular text-xs text-fg-muted">
-                    le correspondía {formatMoney(person.share)}
+                    {person.userId === data.userId ? 'te correspondía' : 'le correspondía'}{' '}
+                    {formatMoney(person.share)}
                   </dd>
                 </div>
               ))}
             </dl>
             <p className="text-xs text-fg-muted">
-              "Aportó" es lo que cada uno pagó de su bolsillo; "le correspondía" es su parte según
-              la división.
+              Lo aportado es lo que cada uno pagó de su bolsillo; lo que correspondía es su parte
+              según la división de cada gasto.
             </p>
           </Panel>
 

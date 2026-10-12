@@ -88,7 +88,7 @@ export function BalanceHero({ myBalance, debts }: BalanceHeroProps) {
         <h1 id="saldo" className="text-lg text-fg-muted">
           {sentence}
         </h1>
-        <p className="mt-1 tabular text-5xl font-semibold tracking-tight sm:text-6xl">
+        <p className="mt-1 tabular text-[clamp(2.25rem,12vw,3.75rem)] leading-tight font-semibold tracking-tight [overflow-wrap:anywhere]">
           {formatMoney(amount)}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
