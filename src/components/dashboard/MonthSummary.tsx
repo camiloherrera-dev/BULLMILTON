@@ -1,8 +1,10 @@
 import { Link } from 'react-router'
-import { memberName, useHousehold } from '../../app/household-context'
+import { memberName, personColor, useHousehold } from '../../app/household-context'
 import { formatMonthName } from '../../lib/dates'
 import { formatMoney } from '../../lib/money'
 import type { PeriodSummary } from '../../lib/calculations/reports'
+import { PersonAvatar } from '../people/PersonColor'
+import { personBg } from '../people/personClasses'
 
 interface MonthSummaryProps {
   summary: PeriodSummary
@@ -21,7 +23,7 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
   const maxPaid = Math.max(1, ...people.map((person) => person.paid))
 
   return (
-    <section aria-labelledby="mes" className="rounded-2xl bg-surface p-5">
+    <section aria-labelledby="mes" className="rounded-2xl bg-surface p-(--card-p)">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="mes" className="text-base font-semibold">
           Gastos de {monthName}
@@ -44,7 +46,14 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
         {people.map((person) => (
           <li key={person.userId} className="flex flex-col gap-1.5">
             <p className="flex items-baseline justify-between gap-3 text-sm">
-              <span className="font-medium">{memberName(data, person.userId, { you: true })}</span>
+              <span className="inline-flex items-center gap-2 font-medium">
+                <PersonAvatar
+                  name={memberName(data, person.userId)}
+                  color={personColor(data, person.userId)}
+                  size="sm"
+                />
+                {memberName(data, person.userId, { you: true })}
+              </span>
               <span className="tabular">
                 {person.userId === data.userId ? 'pagaste' : 'pagó'}{' '}
                 <span className="font-semibold">{formatMoney(person.paid)}</span>
@@ -53,7 +62,7 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
             {person.paid > 0 && (
               <div
                 aria-hidden="true"
-                className="h-1.5 rounded-full bg-primary"
+                className={`h-1.5 rounded-full ${personBg[personColor(data, person.userId)]}`}
                 style={{ width: `${(person.paid / maxPaid) * 100}%` }}
               />
             )}

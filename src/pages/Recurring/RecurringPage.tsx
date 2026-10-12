@@ -7,7 +7,7 @@ import { toUserMessage } from '../../lib/errors'
 import { formatMoney } from '../../lib/money'
 import { frequencyLabels } from '../../i18n/es'
 import type { RecurringExpense } from '../../types/domain'
-import { CategoryIcon } from '../../components/movements/CategoryIcon'
+import { CategoryBadge } from '../../components/movements/CategoryIcon'
 import { ButtonLink } from '../../components/ui/Button'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { EmptyState, ErrorState, LedgerSkeleton } from '../../components/ui/States'
@@ -22,9 +22,7 @@ function RecurringRow({ item }: { item: RecurringExpense }) {
         to={`/recurrentes/${item.id}`}
         className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/70"
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2">
-          <CategoryIcon icon={category?.icon} />
-        </span>
+        <CategoryBadge icon={category?.icon} color={category?.color} />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate font-medium">{item.name}</span>
           <span className="truncate text-sm text-fg-muted">

@@ -2,11 +2,15 @@ import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatMonthName, formatMonthShort } from '../../lib/dates'
 import { formatAmount, formatMoney } from '../../lib/money'
+import type { PersonColorId } from '../../lib/appearance'
 import type { MonthTotal } from '../../lib/calculations/reports'
+import { personBg } from '../people/personClasses'
 
 interface MonthlyChartProps {
   months: MonthTotal[]
   names: Record<string, string>
+  /** Color de cada persona: cada columna se apila por quién pagó. */
+  colors: Record<string, PersonColorId>
 }
 
 function compact(value: number): string {
@@ -41,14 +45,29 @@ function ChartTooltip({ active, payload, names }: TooltipProps) {
   )
 }
 
-/** Evolución mensual del gasto (spec §19): columnas de una sola serie, con tooltip y vista de tabla. */
-export function MonthlyChart({ months, names }: MonthlyChartProps) {
+/**
+ * Evolución mensual del gasto (spec §19): columnas apiladas por quién pagó, cada persona en su
+ * color, con leyenda (los nombres, no solo el color), tooltip y vista de tabla.
+ */
+export function MonthlyChart({ months, names, colors }: MonthlyChartProps) {
   const [asTable, setAsTable] = useState(false)
   const max = Math.max(...months.map((month) => month.total))
+  const people = Object.keys(names)
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ul aria-label="Leyenda" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-fg-muted">
+          {people.map((userId) => (
+            <li key={userId} className="inline-flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className={`size-2.5 rounded-sm ${personBg[colors[userId] ?? 'azul']}`}
+              />
+              pagó {names[userId]}
+            </li>
+          ))}
+        </ul>
         <button
           type="button"
           onClick={() => setAsTable((value) => !value)}
@@ -131,13 +150,21 @@ export function MonthlyChart({ months, names }: MonthlyChartProps) {
                 content={<ChartTooltip names={names} />}
                 isAnimationActive={false}
               />
-              <Bar
-                dataKey="total"
-                fill="var(--color-primary)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={36}
-                isAnimationActive={false}
-              />
+              {people.map((userId, index) => (
+                <Bar
+                  key={userId}
+                  stackId="pagado"
+                  name={names[userId]}
+                  dataKey={(month: MonthTotal) => month.byPerson[userId] ?? 0}
+                  fill={`var(--color-person-${colors[userId] ?? 'azul'})`}
+                  // Separación de 2 px entre tramos, del color del panel.
+                  stroke="var(--color-surface)"
+                  strokeWidth={2}
+                  radius={index === people.length - 1 ? [4, 4, 0, 0] : 0}
+                  maxBarSize={36}
+                  isAnimationActive={false}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         </div>

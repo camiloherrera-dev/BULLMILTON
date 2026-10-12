@@ -24,6 +24,7 @@ export const errorMessages = {
   rate_limited: 'Demasiados intentos. Espera un momento e inténtalo de nuevo.',
   category_in_use: 'Esa categoría tiene movimientos. Archívala en lugar de borrarla.',
   duplicate_category: 'Ya existe una categoría con ese nombre.',
+  person_color_taken: 'Ese color ya lo usa alguien del hogar. Elige otro.',
   unknown: 'Algo salió mal. Inténtalo de nuevo.',
 } as const
 

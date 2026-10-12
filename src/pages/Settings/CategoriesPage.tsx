@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   ArchiveIcon,
   ArrowCounterClockwiseIcon,
+  CheckIcon,
   PencilSimpleIcon,
   TrashIcon,
 } from '@phosphor-icons/react'
@@ -10,7 +11,9 @@ import { invalidateData } from '../../hooks/useResource'
 import { toUserMessage } from '../../lib/errors'
 import { createCategory, deleteCategory, updateCategory } from '../../services/household'
 import type { Category, CategoryKind } from '../../types/domain'
-import { CategoryIcon } from '../../components/movements/CategoryIcon'
+import { categoryColors, type CategoryColorId } from '../../lib/appearance'
+import { CategoryBadge, CategoryIcon } from '../../components/movements/CategoryIcon'
+import { categorySolid } from '../../components/movements/categoryColors'
 import { iconChoices, iconLabels } from '../../components/movements/categoryIcons'
 import { Button } from '../../components/ui/Button'
 import { TextInput } from '../../components/ui/Field'
@@ -49,11 +52,60 @@ function IconChooser({ value, onChange }: { value: string; onChange: (icon: stri
   )
 }
 
+/** Paleta curada de colores; "Sin color" deja el círculo neutro. */
+function ColorChooser({
+  value,
+  onChange,
+}: {
+  value: CategoryColorId | null
+  onChange: (color: CategoryColorId | null) => void
+}) {
+  const options: Array<{ id: CategoryColorId | null; name: string }> = [
+    { id: null, name: 'Sin color' },
+    ...categoryColors,
+  ]
+  return (
+    <fieldset>
+      <legend className="mb-2 text-sm font-medium">Color</legend>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((option) => {
+          const checked = value === option.id
+          return (
+            <label
+              key={option.id ?? 'none'}
+              className={`grid size-11 cursor-pointer place-items-center rounded-full border-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${
+                checked ? 'border-fg' : 'border-transparent'
+              }`}
+            >
+              <input
+                type="radio"
+                name="color"
+                checked={checked}
+                onChange={() => onChange(option.id)}
+                className="sr-only"
+                aria-label={option.name}
+              />
+              <span
+                className={`grid size-8 place-items-center rounded-full ${
+                  option.id ? categorySolid[option.id] : 'border border-line-strong bg-surface-2'
+                } ${option.id ? 'text-on-swatch' : 'text-fg'}`}
+              >
+                {checked && <CheckIcon aria-hidden="true" className="size-4" weight="bold" />}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
+  )
+}
+
 function CategoryRow({ category }: { category: Category }) {
   const toast = useToast()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(category.name)
   const [icon, setIcon] = useState(category.icon ?? 'tag')
+  const [color, setColor] = useState(category.color)
   const [busy, setBusy] = useState(false)
 
   const run = async (action: () => Promise<void>, success: string) => {
@@ -83,13 +135,14 @@ function CategoryRow({ category }: { category: Category }) {
           onChange={(event) => setName(event.target.value)}
         />
         <IconChooser value={icon} onChange={setIcon} />
+        <ColorChooser value={color} onChange={setColor} />
         <div className="flex gap-2">
           <Button
             size="sm"
             loading={busy}
             disabled={!name.trim()}
             onClick={() =>
-              run(() => updateCategory(category.id, { name, icon }), 'Categoría actualizada')
+              run(() => updateCategory(category.id, { name, icon, color }), 'Categoría actualizada')
             }
           >
             Guardar
@@ -103,9 +156,7 @@ function CategoryRow({ category }: { category: Category }) {
 
   return (
     <li className={`flex items-center gap-3 py-2.5 ${category.archivedAt ? 'opacity-60' : ''}`}>
-      <span className="grid size-10 place-items-center rounded-full bg-surface-2">
-        <CategoryIcon icon={category.icon} />
-      </span>
+      <CategoryBadge icon={category.icon} color={category.color} />
       <span className="flex-1 font-medium">
         {category.name}
         {category.archivedAt && (
@@ -161,13 +212,14 @@ export function CategoriesPage() {
   const [kind, setKind] = useState<CategoryKind>('expense')
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('tag')
+  const [color, setColor] = useState<CategoryColorId | null>(null)
   const [busy, setBusy] = useState(false)
   const list = data.categories.filter((category) => category.kind === kind)
 
   const add = async () => {
     setBusy(true)
     try {
-      await createCategory(data.household.id, kind, name, icon)
+      await createCategory(data.household.id, kind, name, icon, color)
       invalidateData()
       setName('')
       toast.show('Categoría creada')
@@ -223,6 +275,7 @@ export function CategoriesPage() {
             />
           </div>
           <IconChooser value={icon} onChange={setIcon} />
+          <ColorChooser value={color} onChange={setColor} />
           <Button type="submit" className="self-start" loading={busy} disabled={!name.trim()}>
             Crear categoría
           </Button>

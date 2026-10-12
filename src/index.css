@@ -1,6 +1,24 @@
 @import 'tailwindcss';
 @import './styles/tokens.css';
 
+/* "Movimiento reducido: siempre" (Ajustes → Apariencia) cuenta igual que la preferencia del
+   sistema: las utilidades motion-reduce: / motion-safe: respetan ambas. */
+@custom-variant motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    @slot;
+  }
+  &:where([data-motion='reducido'], [data-motion='reducido'] *) {
+    @slot;
+  }
+}
+@custom-variant motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    &:where(:not([data-motion='reducido'], [data-motion='reducido'] *)) {
+      @slot;
+    }
+  }
+}
+
 @layer base {
   :root {
     color-scheme: dark;
@@ -51,6 +69,20 @@
     .animate-pulse {
       animation: none;
     }
+  }
+  [data-motion='reducido'] {
+    scroll-behavior: auto;
+  }
+  [data-motion='reducido'] .animate-pulse {
+    animation: none;
+  }
+
+  /* Modo privado: los montos (utilidad tabular, o líneas marcadas data-money) se ocultan hasta
+     tocarlos; ver src/lib/privacy.ts. Los campos donde se escribe un monto quedan visibles. */
+  [data-private] :is(.tabular, [data-money]):not(input, textarea, [data-revealed]) {
+    filter: blur(0.5em);
+    cursor: pointer;
+    user-select: none;
   }
 }
 

@@ -144,7 +144,7 @@ Rechazo confirmado: el dashboard de tarjetas sueltas (saldo + widgets + lista ge
 
 **Key Characteristics:**
 
-- Tema oscuro único; sin tema claro.
+- Bullmilton oscuro por defecto; cada cuenta puede personalizarlo (ver "Personalización").
 - Capas tonales canvas, surface, surface-2 en lugar de sombras.
 - Cifras tabulares, alineadas a la derecha, con signo explícito.
 - Amarillo solo para acción, el día de hoy y datos que piden atención.
@@ -186,7 +186,9 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 **The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("Sebastián te debe $X más", "Le debes $X más"). En el libro, el monto de cada fila es neutro (`fg`) y el color solo va en la frase del efecto: verde si te deben más, rojo si debes más, gris si el saldo se acerca a cero.
 
-**The Theme Rule.** El tema por defecto es Bullmilton (oscuro, paleta de la spec). Desde el 2026-10-12, por decisión del usuario, cada cuenta elige en Ajustes → Apariencia entre seis temas (cuatro oscuros, dos claros) definidos solo en `src/styles/tokens.css` con `[data-theme]`. Todo tema nuevo redefine los mismos tokens, declara `on-primary` y pasa AA en texto (4,5:1). En temas claros `primary` es un tono oscuro y `primary-soft` su hover más oscuro.
+**The Theme Rule.** El tema por defecto es Bullmilton oscuro (paleta de la spec). Desde el 2026-10-12, por decisión del usuario, cada cuenta personaliza su apariencia (sección "Personalización"). Todo valor vive solo en `src/styles/tokens.css`; todo tema o acento nuevo redefine los mismos tokens, declara `on-primary` y pasa AA, cosa que comprueba `src/styles/tokens.test.ts`. En modo claro `primary` es un tono oscuro y `primary-soft` su hover, más oscuro.
+
+**The Semantic Colors Never Change Rule.** El acento solo cambia `primary`, `primary-soft` y `on-primary`. El verde y el rojo del dinero (`positive`, `negative`) son de cada tema y modo, nunca del acento, y los colores de persona se eligieron lejos de ambos.
 
 ## Typography
 
@@ -298,19 +300,43 @@ Firmes y directos, sin adornos.
 
 La estructura que define a BULLMILTON.
 
-- **Encabezado de día:** fecha a la izquierda (14px, 600; en amarillo si es hoy) y "saldo X" a la derecha en Muted Gray con la cifra de cierre en Soft White semibold y tabular; debajo, doble regla de 3px en `line-strong`.
-- **Filas:** sobre la hoja Dark Slate, separadas por `line`; círculo de icono de 40px (Deep Green para ingresos, Slate para el resto), descripción en 500 con línea secundaria de quién y división en Muted Gray, y columna de efecto a la derecha: cifra con signo en verde o rojo, subtexto de 12px ("de $X", "a tu favor"). Ingresos y anulados muestran el monto en gris; los anulados van tachados.
-- **Hover:** fondo Slate al 70% con radio de control.
+- **Encabezado de día:** fecha a la izquierda (14px, 600; en el acento si es hoy) y, a la derecha, cómo cerró la cuenta entre los dos en palabras ("Le debías $213.220", "Sebastián te debía $229.555", "Estaban a mano") con la cifra en Soft White semibold tabular; debajo, doble regla de 3px en `line-strong`. En Inicio los días son `h3` bajo un `h2` "Últimos movimientos" solo para lectores de pantalla.
+- **Filas:** círculo de 40px (la categoría con su color, Deep Green para ingresos, Slate para transferencias); título en 500 que puede ocupar dos líneas; a la derecha el **monto real** del movimiento en Soft White. Debajo: quién pagó, división y "tu parte $X" (lo que descuenta de lo que te queda) en Muted Gray, y una frase con el efecto en la cuenta entre los dos: verde si te deben más, rojo si debes más, gris si la deuda baja o no cambia. Los anulados van tachados con "Anulado: no cuenta".
+- **Relleno vertical:** `--row-y` (densidad). **Hover:** Slate al 50% (con 70% el rojo bajaba de 4,5:1).
+- Inicio muestra las últimas 8 filas y un botón secundario "Ver todo el historial (N)".
 
-### Saldo grande y barra compacta (signature)
+### "Te queda" y barra compacta (signature)
 
-- **Saldo:** frase en 18px Muted Gray ("Beto te debe") sobre la cifra Display tabular; debajo, chip de estado y acción secundaria ("Registrar abono").
-- **Barra compacta:** al salir el saldo del viewport, una barra fija de 48px en Dark Slate con borde `line` aparece arriba (frase a la izquierda, cifra en verde o rojo a la derecha), entrando con opacidad y 8px de desplazamiento en 200ms `ease-out-expo`.
+- **Te queda:** desde el 2026-10-12 (decisión del usuario) la respuesta principal es cuánto del dinero del mes le queda a cada uno: su parte de los ingresos menos su parte de los gastos. Frase en 18px Muted Gray ("Te queda en octubre") sobre la cifra Display tabular; barra de 8px que se llena en `positive` con lo que queda (más llena = más dinero); "Te entraron" y "Tu parte de los gastos"; enlace a tus movimientos del mes y "¿Cómo se calcula?".
+- **Estados:** sin ingresos registrados aún, "Llevas en gastos este mes" en neutro (no es una alarma); si de verdad se pasó, "Te pasaste este mes por" en rojo con icono.
+- **El otro:** tarjeta Dark Slate con su avatar, lo que le queda y su barra; lleva a sus movimientos del mes.
+- **Cuentas entre ustedes:** tarjeta secundaria con la deuda, "Registrar abono" y una hoja "¿Cómo se calcula?" con el desglose (pagado, lo que te correspondía, transferencias) y el paso del mes.
+- **Barra compacta:** al salir la cifra del viewport, una barra fija de 48px en Dark Slate con borde `line` aparece arriba, entrando con opacidad y 8px de desplazamiento en 200ms `ease-out-expo`.
+
+### Personalización (Ajustes → Apariencia)
+
+Todo se aplica con atributos en `<html>` (`src/lib/appearance.ts` → `appearanceAttributes`), se guarda en `profiles` con un `check` por valor, y la página muestra arriba una vista previa en vivo con todo junto y un botón "Restablecer a Bullmilton".
+
+| Opción          | Atributo       | Valores                                                                           | Qué cambia                                                                                                                             |
+| --------------- | -------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Tema            | `data-theme`   | bullmilton, grafito, oceano, vino, papel, salvia                                  | Todos los colores base; cada tema tiene variante oscura y clara                                                                        |
+| Modo            | `data-mode`    | dark, light (automático se resuelve con `prefers-color-scheme` y escucha cambios) | Variante del tema, muestras de persona y categoría                                                                                     |
+| Acento          | `data-accent`  | amarillo, naranja, coral, violeta, azul, menta, rosa (sin atributo = el del tema) | Solo `primary`, `primary-soft`, `on-primary`                                                                                           |
+| Tipografía      | `data-font`    | system, geist, manrope, plex, atkinson                                            | `--font-sans`                                                                                                                          |
+| Densidad        | `data-density` | comoda, compacta                                                                  | `--row-y` (filas del libro) y `--card-p` (tarjetas)                                                                                    |
+| Tamaño de texto | `data-text`    | normal, grande (112,5%), muy_grande (125%)                                        | `font-size` de la raíz; todo está en rem. Las acciones rápidas pasan a icono arriba con una consulta de contenedor por debajo de 20rem |
+| Esquinas        | `data-corners` | redondeadas (8/12/16px), suaves (4/6/8), rectas (0)                               | `--radius-lg/xl/2xl`; los chips siguen completos                                                                                       |
+| Movimiento      | `data-motion`  | sistema, reducido                                                                 | `motion-reduce:` / `motion-safe:` responden a la preferencia del sistema o a este atributo                                             |
+| Modo privado    | `data-private` | presente o no                                                                     | Montos (`tabular`) y líneas con `data-money` borrosos hasta tocarlos (`src/lib/privacy.ts`)                                            |
+
+**Color por persona** (`profiles.person_color`): azul, ámbar, rosa, cian, tokens `--color-person-*`. Calculados para separarse entre sí (ΔE OKLab ≥ 15) y del verde y el rojo del dinero (≥ 10). Lo ven los dos; la base de datos impide que dos miembros activos tengan el mismo y, sin elección, `lib/people.ts` reparte el primero libre. Se usa en las barras de aportes, el gráfico mensual apilado por quién pagó (con leyenda de nombres) y el avatar con la inicial (`on-swatch` encima, 4,5:1). El color nunca va solo: siempre al lado del nombre.
+
+**Color e icono por categoría** (`categories.color`, `categories.icon`): ocho muestras `--color-swatch-*` y 34 iconos Phosphor. El círculo es la muestra al 18% sobre el panel con el icono en la muestra (≥ 3:1); sin color, el círculo neutro de siempre.
 
 ### Motion
 
 - Duraciones 150 a 250ms con `ease-out-expo` (`cubic-bezier(0.16, 1, 0.3, 1)`), solo para cambios de estado (hover, foco, presión, barra compacta, entrada de toasts).
-- **Movimiento reducido:** se eliminan desplazamientos, escalas y pulsos (skeletons); se mantienen los cambios de opacidad y color, y el spinner de carga sigue girando porque es feedback.
+- **Movimiento reducido** (del sistema o elegido en Apariencia): `motion-reduce:` anula desplazamientos y escalas en cada componente y se quitan los pulsos (skeletons) y las animaciones de entrada (`motion-safe:`); se mantienen los cambios de opacidad y color, y el spinner sigue girando porque es feedback. Las transiciones nombran `translate` / `scale`, que son las propiedades que usa Tailwind v4.
 
 ## Do's and Don'ts
 

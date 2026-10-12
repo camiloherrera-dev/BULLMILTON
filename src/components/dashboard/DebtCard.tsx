@@ -66,7 +66,7 @@ export function DebtCard({ debts, breakdown, bridge }: DebtCardProps) {
   ]
 
   return (
-    <section aria-labelledby="entre-ustedes" className="rounded-2xl bg-surface p-5">
+    <section aria-labelledby="entre-ustedes" className="rounded-2xl bg-surface p-(--card-p)">
       <h2 id="entre-ustedes" className="text-base font-semibold">
         Cuentas entre ustedes
       </h2>

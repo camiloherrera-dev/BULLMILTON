@@ -15,7 +15,11 @@ export function QuickActions({ layout }: { layout: 'row' | 'stack' }) {
     <nav
       aria-label="Registrar"
       className={
-        layout === 'row' ? 'grid grid-cols-[1.15fr_1fr_1.3fr] gap-2' : 'flex flex-col gap-2'
+        // Con texto grande la fila no cabe: por debajo de 20rem el icono pasa arriba de la
+        // etiqueta (consulta de contenedor en rem, así sigue al tamaño de texto elegido).
+        layout === 'row'
+          ? '@container grid grid-cols-[1.15fr_1fr_1.3fr] gap-2'
+          : 'flex flex-col gap-2'
       }
     >
       {actions.map((action) => (
@@ -23,7 +27,9 @@ export function QuickActions({ layout }: { layout: 'row' | 'stack' }) {
           key={action.to}
           to={action.to}
           className={`flex h-12 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-[background-color,scale] duration-150 active:scale-[0.98] motion-reduce:active:scale-100 ${
-            layout === 'row' ? 'justify-center' : 'justify-start px-4'
+            layout === 'row'
+              ? 'justify-center @max-[20rem]:h-14 @max-[20rem]:flex-col @max-[20rem]:gap-0.5 @max-[20rem]:px-1 @max-[20rem]:text-xs'
+              : 'justify-start px-4'
           } ${
             action.primary
               ? 'bg-primary text-on-primary hover:bg-primary-soft'

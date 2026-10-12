@@ -11,6 +11,7 @@ export type Database = {
       categories: {
         Row: {
           archived_at: string | null
+          color: string | null
           created_at: string
           created_by: string | null
           household_id: string
@@ -23,6 +24,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          color?: string | null
           created_at?: string
           created_by?: string | null
           household_id: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          color?: string | null
           created_at?: string
           created_by?: string | null
           household_id?: string
@@ -516,26 +519,50 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent: string
+          corners: string
           created_at: string
+          density: string
           display_name: string
           font: string
           id: string
+          mode: string
+          motion: string
+          person_color: string | null
+          private_mode: boolean
+          text_size: string
           theme: string
           updated_at: string
         }
         Insert: {
+          accent?: string
+          corners?: string
           created_at?: string
+          density?: string
           display_name: string
           font?: string
           id: string
+          mode?: string
+          motion?: string
+          person_color?: string | null
+          private_mode?: boolean
+          text_size?: string
           theme?: string
           updated_at?: string
         }
         Update: {
+          accent?: string
+          corners?: string
           created_at?: string
+          density?: string
           display_name?: string
           font?: string
           id?: string
+          mode?: string
+          motion?: string
+          person_color?: string | null
+          private_mode?: boolean
+          text_size?: string
           theme?: string
           updated_at?: string
         }

@@ -55,18 +55,18 @@ El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componente
 
 ## Tablas
 
-| Tabla                              | Para qué                                                     | Escritura desde el cliente                                               |
-| ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `profiles`                         | Nombre visible de cada cuenta (se crea sola al registrarse)  | `update (display_name)` del propio perfil                                |
-| `households`                       | Espacio compartido                                           | `update (name)`; crear solo con `create_household()`                     |
-| `household_members`                | Pertenencia; `left_at` en lugar de borrar                    | Solo vía RPC                                                             |
-| `invitations`                      | Códigos de un solo uso, 7 días                               | Crear vía RPC; revocar (`delete`) las no usadas                          |
-| `categories`                       | Categorías por household, `kind` = `expense` / `income`      | CRUD; borrar falla si está en uso (se archiva)                           |
-| `expenses`                         | Gastos                                                       | Vía RPC (insert directo exige splits en la misma transacción)            |
-| `expense_splits`                   | Parte de cada persona en un gasto                            | Vía RPC                                                                  |
-| `incomes` (+ `income_splits`)      | Ingresos; `user_id` = quién lo recibió, splits = de quién es | Vía RPC `create_income`/`update_income`/`void_income`, cualquier miembro |
-| `transfers`                        | Dinero entre miembros (`from_user ≠ to_user`)                | Insert/update por cualquier miembro                                      |
-| `recurring_expenses` (+ `_splits`) | Plantillas de gastos periódicos (mensual/trimestral)         | RPC en FASE 9                                                            |
+| Tabla                              | Para qué                                                                                                                                                                                                                                                  | Escritura desde el cliente                                               |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `profiles`                         | Nombre visible y apariencia de cada cuenta (tema, modo, acento, fuente, densidad, texto, esquinas, movimiento, modo privado) y su color de persona, único entre los miembros activos del hogar (trigger `guard_person_color`, error `person_color_taken`) | `update` del propio perfil, por columna                                  |
+| `households`                       | Espacio compartido                                                                                                                                                                                                                                        | `update (name)`; crear solo con `create_household()`                     |
+| `household_members`                | Pertenencia; `left_at` en lugar de borrar                                                                                                                                                                                                                 | Solo vía RPC                                                             |
+| `invitations`                      | Códigos de un solo uso, 7 días                                                                                                                                                                                                                            | Crear vía RPC; revocar (`delete`) las no usadas                          |
+| `categories`                       | Categorías por household, `kind` = `expense` / `income`                                                                                                                                                                                                   | CRUD; borrar falla si está en uso (se archiva)                           |
+| `expenses`                         | Gastos                                                                                                                                                                                                                                                    | Vía RPC (insert directo exige splits en la misma transacción)            |
+| `expense_splits`                   | Parte de cada persona en un gasto                                                                                                                                                                                                                         | Vía RPC                                                                  |
+| `incomes` (+ `income_splits`)      | Ingresos; `user_id` = quién lo recibió, splits = de quién es                                                                                                                                                                                              | Vía RPC `create_income`/`update_income`/`void_income`, cualquier miembro |
+| `transfers`                        | Dinero entre miembros (`from_user ≠ to_user`)                                                                                                                                                                                                             | Insert/update por cualquier miembro                                      |
+| `recurring_expenses` (+ `_splits`) | Plantillas de gastos periódicos (mensual/trimestral)                                                                                                                                                                                                      | RPC en FASE 9                                                            |
 
 ## Gastos recurrentes (migración 04)
 
@@ -110,6 +110,7 @@ El cálculo vive en `src/lib/calculations/` (FASE 7), no en SQL ni en componente
 | `record_voided`                            | P0001    | Este movimiento fue anulado y ya no se puede modificar.     |
 | `household_immutable`                      | 42501    | No se puede mover un movimiento a otro hogar.               |
 | `not_found`                                | P0002    | No encontramos ese movimiento.                              |
+| `person_color_taken`                       | 23505    | Ese color ya lo usa alguien del hogar. Elige otro.          |
 | (RLS / permisos)                           | 42501    | No pudimos guardar el cambio. Inténtalo nuevamente.         |
 
 ## Decisiones respecto a la spec (Regla 2)

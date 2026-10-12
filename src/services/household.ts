@@ -1,6 +1,13 @@
 import { supabase } from '../lib/supabase/client'
 import { assertOk, unwrap, unwrapMaybe } from '../lib/errors'
-import { toAppearance, type Appearance } from '../lib/appearance'
+import {
+  isCategoryColor,
+  isPersonColor,
+  toAppearance,
+  type Appearance,
+  type CategoryColorId,
+  type PersonColorId,
+} from '../lib/appearance'
 import type { Category, CategoryKind, Household, Member, Role } from '../types/domain'
 
 export interface HouseholdContextData {
@@ -31,7 +38,7 @@ export async function fetchMyHousehold(userId: string): Promise<HouseholdContext
   const rows = unwrap(
     await supabase
       .from('household_members')
-      .select('user_id, role, joined_at, left_at, profiles(display_name)')
+      .select('user_id, role, joined_at, left_at, profiles(display_name, person_color)')
       .eq('household_id', household.id)
       .order('joined_at'),
   )
@@ -42,6 +49,7 @@ export async function fetchMyHousehold(userId: string): Promise<HouseholdContext
     role: row.role as Role,
     joinedAt: row.joined_at,
     active: row.left_at === null,
+    personColor: isPersonColor(row.profiles?.person_color) ? row.profiles.person_color : null,
   }))
 
   return { household, members }
@@ -119,7 +127,7 @@ export async function fetchCategories(householdId: string): Promise<Category[]> 
   const rows = unwrap(
     await supabase
       .from('categories')
-      .select('id, kind, name, icon, archived_at')
+      .select('id, kind, name, icon, color, archived_at')
       .eq('household_id', householdId)
       .order('name'),
   )
@@ -128,6 +136,7 @@ export async function fetchCategories(householdId: string): Promise<Category[]> 
     kind: row.kind as CategoryKind,
     name: row.name,
     icon: row.icon,
+    color: isCategoryColor(row.color) ? row.color : null,
     archivedAt: row.archived_at,
   }))
 }
@@ -137,17 +146,23 @@ export async function createCategory(
   kind: CategoryKind,
   name: string,
   icon: string | null,
+  color: CategoryColorId | null = null,
 ): Promise<void> {
   assertOk(
     await supabase
       .from('categories')
-      .insert({ household_id: householdId, kind, name: name.trim(), icon }),
+      .insert({ household_id: householdId, kind, name: name.trim(), icon, color }),
   )
 }
 
 export async function updateCategory(
   categoryId: string,
-  changes: { name?: string; icon?: string | null; archived?: boolean },
+  changes: {
+    name?: string
+    icon?: string | null
+    color?: CategoryColorId | null
+    archived?: boolean
+  },
 ): Promise<void> {
   assertOk(
     await supabase
@@ -155,6 +170,7 @@ export async function updateCategory(
       .update({
         ...(changes.name !== undefined && { name: changes.name.trim() }),
         ...(changes.icon !== undefined && { icon: changes.icon }),
+        ...(changes.color !== undefined && { color: changes.color }),
         ...(changes.archived !== undefined && {
           archived_at: changes.archived ? new Date().toISOString() : null,
         }),
@@ -167,13 +183,49 @@ export async function deleteCategory(categoryId: string): Promise<void> {
   assertOk(await supabase.from('categories').delete().eq('id', categoryId))
 }
 
+const APPEARANCE_COLUMNS =
+  'theme, mode, accent, font, density, text_size, corners, motion, private_mode' as const
+
 export async function fetchAppearance(userId: string): Promise<Appearance> {
-  const profile = unwrap(
-    await supabase.from('profiles').select('theme, font').eq('id', userId).single(),
+  const row = unwrap(
+    await supabase.from('profiles').select(APPEARANCE_COLUMNS).eq('id', userId).single(),
   )
-  return toAppearance(profile)
+  return toAppearance({
+    theme: row.theme,
+    mode: row.mode,
+    accent: row.accent,
+    font: row.font,
+    density: row.density,
+    textSize: row.text_size,
+    corners: row.corners,
+    motion: row.motion,
+    privateMode: row.private_mode,
+  })
 }
 
 export async function updateAppearance(userId: string, appearance: Appearance): Promise<void> {
-  assertOk(await supabase.from('profiles').update(appearance).eq('id', userId))
+  assertOk(
+    await supabase
+      .from('profiles')
+      .update({
+        theme: appearance.theme,
+        mode: appearance.mode,
+        accent: appearance.accent,
+        font: appearance.font,
+        density: appearance.density,
+        text_size: appearance.textSize,
+        corners: appearance.corners,
+        motion: appearance.motion,
+        private_mode: appearance.privateMode,
+      })
+      .eq('id', userId),
+  )
+}
+
+/** Color de persona; la base de datos rechaza uno que ya use otro miembro del hogar. */
+export async function updatePersonColor(
+  userId: string,
+  color: PersonColorId | null,
+): Promise<void> {
+  assertOk(await supabase.from('profiles').update({ person_color: color }).eq('id', userId))
 }

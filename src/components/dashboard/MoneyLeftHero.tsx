@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { CaretRightIcon, QuestionIcon, WarningCircleIcon } from '@phosphor-icons/react'
-import { memberName, useHousehold } from '../../app/household-context'
+import { memberName, personColor, useHousehold } from '../../app/household-context'
 import { formatMonthName } from '../../lib/dates'
 import { formatMoney } from '../../lib/money'
 import type { PersonSummary } from '../../lib/calculations/reports'
+import { PersonAvatar } from '../people/PersonColor'
 import { ButtonLink } from '../ui/Button'
 import { buttonClasses } from '../ui/buttonClasses'
 import { Sheet } from '../ui/Sheet'
@@ -155,7 +156,8 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                     className="flex flex-col gap-2 rounded-2xl bg-surface px-4 py-3 transition-colors hover:bg-surface-2/50"
                   >
                     <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-medium">
+                      <span className="inline-flex items-center gap-2 font-medium">
+                        <PersonAvatar name={name} color={personColor(data, person.userId)} />
                         {waitingIncome(person)
                           ? `${name} lleva en gastos`
                           : person.left < 0
@@ -175,8 +177,13 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                     </span>
                     <LeftBar person={person} />
                     <span className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
-                      <span>Le entraron {formatMoney(person.incomes)}</span>
-                      <span>Su parte de los gastos {formatMoney(person.share)}</span>
+                      <span>
+                        Le entraron <span className="tabular">{formatMoney(person.incomes)}</span>
+                      </span>
+                      <span>
+                        Su parte de los gastos{' '}
+                        <span className="tabular">{formatMoney(person.share)}</span>
+                      </span>
                     </span>
                   </Link>
                 </li>

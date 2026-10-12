@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { useHousehold } from '../../app/household-context'
 import { formatMoney } from '../../lib/money'
 import type { AnnotatedEntry } from '../../lib/calculations/ledger'
-import { CategoryIcon, TransferIcon } from './CategoryIcon'
+import { CategoryBadge, CategoryIcon, TransferIcon } from './CategoryIcon'
 import {
   effectText,
   movementDetail,
@@ -50,20 +50,28 @@ export function MovementRow({ entry }: MovementRowProps) {
     <li>
       <Link
         to={movementPath(movement)}
-        className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/50"
+        className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-(--row-y) transition-colors duration-150 hover:bg-surface-2/50"
       >
-        <span
-          className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-full ${
-            movement.kind === 'income' ? 'bg-positive-bg text-positive' : 'bg-surface-2 text-fg'
-          }`}
-        >
-          {movement.kind === 'transfer' ? <TransferIcon /> : <CategoryIcon icon={category?.icon} />}
-        </span>
+        {movement.kind === 'expense' ? (
+          <CategoryBadge icon={category?.icon} color={category?.color} className="mt-0.5 size-10" />
+        ) : (
+          <span
+            className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-full ${
+              movement.kind === 'income' ? 'bg-positive-bg text-positive' : 'bg-surface-2 text-fg'
+            }`}
+          >
+            {movement.kind === 'transfer' ? (
+              <TransferIcon />
+            ) : (
+              <CategoryIcon icon={category?.icon} />
+            )}
+          </span>
+        )}
 
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="flex items-baseline justify-between gap-3">
             <span
-              className={`truncate font-medium ${voided ? 'text-fg-muted line-through' : 'text-fg'}`}
+              className={`line-clamp-2 min-w-0 font-medium break-words ${voided ? 'text-fg-muted line-through' : 'text-fg'}`}
             >
               <span className="sr-only">{kindLabel[movement.kind]}: </span>
               {title}
@@ -74,12 +82,13 @@ export function MovementRow({ entry }: MovementRowProps) {
               {formatMoney(movement.amount)}
             </span>
           </span>
-          <span className="text-sm text-fg-muted">
+          {/* data-money: en modo privado la línea se oculta, porque lleva montos dentro. */}
+          <span data-money className="text-sm text-fg-muted">
             {detail}
             {category && movement.kind === 'income' ? `, ${category.name}` : ''}
           </span>
           {effectLine && (
-            <span className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>
+            <span data-money className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>
               {effectLine.text}
             </span>
           )}

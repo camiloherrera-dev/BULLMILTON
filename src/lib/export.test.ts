@@ -27,8 +27,22 @@ describe('toCsv', () => {
 
 describe('buildExport', () => {
   const members: Member[] = [
-    { userId: 'a', displayName: 'Ana', role: 'owner', joinedAt: '', active: true },
-    { userId: 'b', displayName: 'Beto', role: 'member', joinedAt: '', active: true },
+    {
+      userId: 'a',
+      displayName: 'Ana',
+      role: 'owner',
+      joinedAt: '',
+      active: true,
+      personColor: null,
+    },
+    {
+      userId: 'b',
+      displayName: 'Beto',
+      role: 'member',
+      joinedAt: '',
+      active: true,
+      personColor: null,
+    },
   ]
   const expense: Expense = {
     kind: 'expense',
@@ -56,7 +70,9 @@ describe('buildExport', () => {
   const result = buildExport({
     householdName: 'Casa',
     members,
-    categories: [{ id: 'c1', kind: 'expense', name: 'Vivienda', icon: 'home', archivedAt: null }],
+    categories: [
+      { id: 'c1', kind: 'expense', name: 'Vivienda', icon: 'home', color: null, archivedAt: null },
+    ],
     movements: [expense],
     recurring: [],
     exportedAt: '2026-10-12T00:00:00Z',

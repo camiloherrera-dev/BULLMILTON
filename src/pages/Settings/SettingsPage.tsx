@@ -20,7 +20,7 @@ import { useSignedInUser } from '../../app/auth-context'
 import { invalidateData, useResource } from '../../hooks/useResource'
 import { formatDay, toBogotaDay } from '../../lib/dates'
 import { toUserMessage } from '../../lib/errors'
-import { currentAppearance, fonts, themes } from '../../lib/appearance'
+import { currentAppearance, fonts, modes, themes } from '../../lib/appearance'
 import { buildExport, downloadFile } from '../../lib/export'
 import { newPasswordSchema, type NewPasswordValues } from '../../lib/validation/password'
 import { supabase } from '../../lib/supabase/client'
@@ -442,8 +442,8 @@ export function SettingsPage() {
         <LinkRow
           to="/ajustes/apariencia"
           icon={<PaletteIcon />}
-          title="Colores y tipografía"
-          detail={`${themes.find((theme) => theme.id === appearance.theme)?.name} · ${fonts.find((font) => font.id === appearance.font)?.name}`}
+          title="Colores, letra y tamaño"
+          detail={`${themes.find((theme) => theme.id === appearance.theme)?.name} ${modes.find((mode) => mode.id === appearance.mode)?.name.toLowerCase()} · ${fonts.find((font) => font.id === appearance.font)?.name}`}
         />
       </Section>
 

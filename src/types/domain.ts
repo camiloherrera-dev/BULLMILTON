@@ -1,3 +1,5 @@
+import type { CategoryColorId, PersonColorId } from '../lib/appearance'
+
 // Modelo de dominio del frontend. Los montos son enteros en la unidad mínima (COP).
 
 export type Role = 'owner' | 'member'
@@ -12,6 +14,8 @@ export interface Member {
   role: Role
   joinedAt: string
   active: boolean
+  /** Color que eligió (null = automático según el orden de llegada; ver lib/people.ts). */
+  personColor: PersonColorId | null
 }
 
 export interface Household {
@@ -25,6 +29,8 @@ export interface Category {
   kind: CategoryKind
   name: string
   icon: string | null
+  /** Color de la paleta curada; null = neutro. */
+  color: CategoryColorId | null
   archivedAt: string | null
 }
 

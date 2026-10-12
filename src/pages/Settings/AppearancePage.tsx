@@ -1,16 +1,33 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
-import { CheckCircleIcon } from '@phosphor-icons/react'
+import { ArrowCounterClockwiseIcon, CheckCircleIcon, CheckIcon } from '@phosphor-icons/react'
 import { useSignedInUser } from '../../app/auth-context'
+import { memberName, personColor, useHousehold } from '../../app/household-context'
 import {
+  accents,
+  appearanceAttributes,
   applyAppearance,
+  cornerStyles,
   currentAppearance,
+  defaultAppearance,
+  densities,
   fonts,
+  modes,
+  motions,
+  personColors,
+  resolveMode,
+  textSizes,
   themes,
   type Appearance,
+  type PersonColorId,
 } from '../../lib/appearance'
 import { toUserMessage } from '../../lib/errors'
-import { updateAppearance } from '../../services/household'
+import { invalidateData } from '../../hooks/useResource'
+import { updateAppearance, updatePersonColor } from '../../services/household'
+import { PersonAvatar } from '../../components/people/PersonColor'
+import { personBg } from '../../components/people/personClasses'
+import { Button } from '../../components/ui/Button'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
+import { Segmented } from '../../components/ui/Segmented'
 import { useToast } from '../../components/ui/toast-context'
 
 /** Opción de radio en forma de tarjeta; la marca de seleccionado no depende solo del color. */
@@ -50,21 +67,26 @@ function OptionCard({
   )
 }
 
-/** Miniatura del tema: se pinta con sus propios tokens gracias a data-theme. */
-function ThemePreview({ id }: { id: string }) {
+/** Miniatura de un tema en el modo elegido: se pinta con sus propios tokens. */
+function ThemePreview({ id, mode }: { id: string; mode: 'dark' | 'light' }) {
   return (
-    <span data-theme={id} aria-hidden="true" className="flex flex-col gap-2 bg-canvas p-3.5">
-      <span className="text-xs text-fg-muted">Te deben</span>
-      <span className="tabular text-xl leading-none font-semibold text-fg">$ 266.050</span>
+    <span
+      data-theme={id}
+      data-mode={mode}
+      aria-hidden="true"
+      className="flex flex-col gap-2 bg-canvas p-3.5 text-fg"
+    >
+      <span className="text-xs text-fg-muted">Te queda en octubre</span>
+      <span className="tabular text-xl leading-none font-semibold">$ 2.450.570</span>
       <span className="flex items-center gap-1.5">
         <span className="inline-flex h-7 items-center rounded-lg bg-primary px-2.5 text-xs font-semibold text-on-primary">
           + Gasto
         </span>
-        <span className="inline-flex h-7 items-center rounded-lg bg-surface px-2 tabular text-xs font-semibold text-positive">
-          +20.000
+        <span className="inline-flex h-7 items-center rounded-lg bg-surface px-2 text-xs font-semibold text-positive">
+          + más
         </span>
-        <span className="inline-flex h-7 items-center rounded-lg bg-surface px-2 tabular text-xs font-semibold text-negative">
-          −8.500
+        <span className="inline-flex h-7 items-center rounded-lg bg-surface px-2 text-xs font-semibold text-negative">
+          − más
         </span>
       </span>
     </span>
@@ -84,25 +106,155 @@ function FontPreview({ id }: { id: string }) {
   )
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+/** La app en pequeño con todo lo elegido junto (tema, modo, acento, fuente, densidad…). */
+function LivePreview({ appearance }: { appearance: Appearance }) {
+  const data = useHousehold()
+  const others = data.members.filter((member) => member.userId !== data.userId && member.active)
+  const attributes = appearanceAttributes(appearance)
+  return (
+    <figure className="flex flex-col gap-2">
+      <figcaption className="text-sm font-medium text-fg-muted">Vista previa</figcaption>
+      <div
+        {...attributes}
+        aria-hidden="true"
+        className="flex flex-col gap-4 rounded-2xl border border-line-strong bg-canvas p-(--card-p) font-sans text-fg"
+      >
+        <div>
+          <p className="text-sm text-fg-muted">Te queda en octubre</p>
+          <p className="tabular text-3xl font-semibold tracking-tight">$2.450.570</p>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
+            <div className="h-full w-2/3 rounded-full bg-positive" />
+          </div>
+        </div>
+        <div className="flex flex-col rounded-2xl bg-surface px-4">
+          <div className="flex items-start gap-3 py-(--row-y)">
+            <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-surface-2 text-sm">
+              $
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex justify-between gap-3">
+                <span className="truncate font-medium">Mercado D1</span>
+                <span className="tabular font-semibold">$87.350</span>
+              </span>
+              <span className="text-sm text-fg-muted">Pagaste · 50/50 · tu parte $43.675</span>
+              <span className="text-sm font-medium text-positive">
+                {others[0] ? `${others[0].displayName} te debe` : 'Te deben'} $43.675 más
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex h-10 items-center rounded-xl bg-primary px-3.5 text-sm font-semibold text-on-primary">
+            + Gasto
+          </span>
+          {data.members
+            .filter((member) => member.active)
+            .map((member) => (
+              <span key={member.userId} className="inline-flex items-center gap-1.5 text-sm">
+                <PersonAvatar
+                  name={member.displayName}
+                  color={personColor(data, member.userId)}
+                  size="sm"
+                />
+                {member.userId === data.userId ? 'Tú' : member.displayName}
+              </span>
+            ))}
+        </div>
+      </div>
+    </figure>
+  )
+}
+
+function Group({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: ReactNode
+}) {
   const id = useId()
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
-      <h2 id={id} className="text-lg font-semibold">
-        {title}
-      </h2>
+      <div>
+        <h2 id={id} className="text-lg font-semibold">
+          {title}
+        </h2>
+        {description && <p className="text-sm text-fg-muted">{description}</p>}
+      </div>
       {children}
     </section>
   )
 }
 
+/** Fila de muestras redondas (acento, color de persona). */
+function Swatches<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  render,
+}: {
+  label: string
+  value: T
+  options: ReadonlyArray<{ id: T; name: string; disabledReason?: string }>
+  onChange: (value: T) => void
+  render: (id: T) => ReactNode
+}) {
+  const name = useId()
+  return (
+    <fieldset>
+      <legend className="sr-only">{label}</legend>
+      <div className="flex flex-wrap gap-x-3 gap-y-4">
+        {options.map((option) => {
+          const checked = option.id === value
+          const disabled = Boolean(option.disabledReason)
+          return (
+            <label
+              key={option.id}
+              className={`flex w-16 flex-col items-center gap-1.5 text-center text-xs ${
+                disabled ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'
+              } has-[:focus-visible]:[&>span:first-of-type]:outline-2 has-[:focus-visible]:[&>span:first-of-type]:outline-offset-2 has-[:focus-visible]:[&>span:first-of-type]:outline-primary`}
+            >
+              <input
+                type="radio"
+                name={name}
+                checked={checked}
+                disabled={disabled}
+                onChange={() => onChange(option.id)}
+                className="sr-only"
+              />
+              <span
+                className={`grid size-11 place-items-center rounded-full border-2 ${
+                  checked ? 'border-fg' : 'border-transparent'
+                }`}
+              >
+                {render(option.id)}
+              </span>
+              <span className={checked ? 'font-semibold text-fg' : 'text-fg-muted'}>
+                {option.name}
+              </span>
+              {option.disabledReason && (
+                <span className="text-fg-muted">{option.disabledReason}</span>
+              )}
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
+  )
+}
+
 export function AppearancePage() {
   const { userId } = useSignedInUser()
+  const data = useHousehold()
   const toast = useToast()
   const [appearance, setAppearance] = useState<Appearance>(currentAppearance)
   // Último valor confirmado por la base de datos, para volver a él si falla el guardado.
   const saved = useRef(appearance)
   const name = useId()
+  const mode = resolveMode(appearance.mode)
 
   const choose = async (next: Appearance) => {
     // Se aplica al instante; se guarda en la cuenta para el resto de dispositivos.
@@ -120,6 +272,26 @@ export function AppearancePage() {
       )
     }
   }
+  const set = <K extends keyof Appearance>(key: K, value: Appearance[K]) =>
+    choose({ ...appearance, [key]: value })
+
+  const myColor = data.me.personColor
+  const takenBy = (color: PersonColorId) =>
+    data.members.find(
+      (member) => member.active && member.userId !== userId && member.personColor === color,
+    )
+  const chooseColor = async (color: PersonColorId | 'auto') => {
+    try {
+      await updatePersonColor(userId, color === 'auto' ? null : color)
+      invalidateData()
+    } catch (error) {
+      toast.show(toUserMessage(error, 'No pudimos guardar tu color. Inténtalo de nuevo.'), 'error')
+    }
+  }
+
+  const isDefault = (Object.keys(defaultAppearance) as Array<keyof Appearance>).every(
+    (key) => appearance[key] === defaultAppearance[key],
+  )
 
   return (
     <Page>
@@ -129,7 +301,24 @@ export function AppearancePage() {
         description="Se guarda en tu cuenta: la verás igual en el celular y en el computador."
       />
       <div className="flex flex-col gap-8">
-        <Group title="Tema">
+        <LivePreview appearance={appearance} />
+
+        <Group title="Modo">
+          <Segmented
+            label="Modo"
+            hideLabel
+            value={appearance.mode}
+            onChange={(value) => set('mode', value)}
+            options={modes.map((option) => ({ value: option.id, label: option.name }))}
+          />
+          {appearance.mode === 'system' && (
+            <p className="text-sm text-fg-muted">
+              Sigue a tu teléfono o computador: ahora mismo, {mode === 'dark' ? 'oscuro' : 'claro'}.
+            </p>
+          )}
+        </Group>
+
+        <Group title="Tema" description="Cada tema tiene versión oscura y clara.">
           <fieldset>
             <legend className="sr-only">Tema</legend>
             <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3">
@@ -138,14 +327,73 @@ export function AppearancePage() {
                   key={theme.id}
                   name={`${name}-theme`}
                   checked={appearance.theme === theme.id}
-                  onSelect={() => choose({ ...appearance, theme: theme.id })}
-                  preview={<ThemePreview id={theme.id} />}
+                  onSelect={() => set('theme', theme.id)}
+                  preview={<ThemePreview id={theme.id} mode={mode} />}
                   title={theme.name}
-                  detail={`${theme.mode === 'dark' ? 'Oscuro' : 'Claro'}. ${theme.detail}`}
+                  detail={theme.detail}
                 />
               ))}
             </div>
           </fieldset>
+        </Group>
+
+        <Group
+          title="Color de acento"
+          description="Botones, el día de hoy y lo que pide atención. El verde y el rojo del dinero no cambian."
+        >
+          <Swatches
+            label="Color de acento"
+            value={appearance.accent}
+            onChange={(value) => set('accent', value)}
+            options={accents}
+            render={(id) => (
+              <span
+                data-theme={appearance.theme}
+                data-mode={mode}
+                data-accent={id === 'theme' ? undefined : id}
+                className="grid size-8 place-items-center rounded-full bg-primary text-on-primary"
+              >
+                {appearance.accent === id && (
+                  <CheckIcon aria-hidden="true" className="size-4" weight="bold" />
+                )}
+              </span>
+            )}
+          />
+        </Group>
+
+        <Group
+          title="Tu color"
+          description="Te identifica en las barras, los reportes y tu avatar. Lo ven los dos."
+        >
+          <Swatches
+            label="Tu color"
+            value={(myColor ?? 'auto') as PersonColorId | 'auto'}
+            onChange={chooseColor}
+            options={[
+              { id: 'auto' as const, name: 'Automático' },
+              ...personColors.map((color) => {
+                const other = takenBy(color.id)
+                return {
+                  id: color.id,
+                  name: color.name,
+                  disabledReason: other ? `Lo usa ${memberName(data, other.userId)}` : undefined,
+                }
+              }),
+            ]}
+            render={(id) =>
+              id === 'auto' ? (
+                <PersonAvatar name={data.me.displayName} color={personColor(data, userId)} />
+              ) : (
+                <span
+                  className={`grid size-8 place-items-center rounded-full text-on-swatch ${personBg[id]}`}
+                >
+                  {myColor === id && (
+                    <CheckIcon aria-hidden="true" className="size-4" weight="bold" />
+                  )}
+                </span>
+              )
+            }
+          />
         </Group>
 
         <Group title="Tipografía">
@@ -157,7 +405,7 @@ export function AppearancePage() {
                   key={font.id}
                   name={`${name}-font`}
                   checked={appearance.font === font.id}
-                  onSelect={() => choose({ ...appearance, font: font.id })}
+                  onSelect={() => set('font', font.id)}
                   preview={<FontPreview id={font.id} />}
                   title={font.name}
                   detail={font.detail}
@@ -166,6 +414,88 @@ export function AppearancePage() {
             </div>
           </fieldset>
         </Group>
+
+        <Group title="Tamaño de texto" description="Todo crece junto: texto, botones y espacios.">
+          <Segmented
+            label="Tamaño de texto"
+            hideLabel
+            value={appearance.textSize}
+            onChange={(value) => set('textSize', value)}
+            options={textSizes.map((option) => ({ value: option.id, label: option.name }))}
+          />
+        </Group>
+
+        <Group
+          title="Densidad"
+          description="Cuánto espacio hay entre filas y dentro de las tarjetas."
+        >
+          <Segmented
+            label="Densidad"
+            hideLabel
+            value={appearance.density}
+            onChange={(value) => set('density', value)}
+            options={densities.map((option) => ({ value: option.id, label: option.name }))}
+          />
+        </Group>
+
+        <Group title="Esquinas">
+          <Segmented
+            label="Esquinas"
+            hideLabel
+            value={appearance.corners}
+            onChange={(value) => set('corners', value)}
+            options={cornerStyles.map((option) => ({ value: option.id, label: option.name }))}
+          />
+        </Group>
+
+        <Group
+          title="Movimiento"
+          description="Reducido quita deslizamientos y animaciones de entrada; los cambios siguen viéndose."
+        >
+          <Segmented
+            label="Movimiento"
+            hideLabel
+            value={appearance.motion}
+            onChange={(value) => set('motion', value)}
+            options={motions.map((option) => ({ value: option.id, label: option.name }))}
+          />
+        </Group>
+
+        <Group title="Modo privado">
+          <label className="flex cursor-pointer items-start gap-4 rounded-2xl bg-surface p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary">
+            <span className="flex flex-1 flex-col">
+              <span className="font-medium">Ocultar los montos</span>
+              <span className="text-sm text-fg-muted">
+                Para abrir la app en público: los montos se ven borrosos hasta que los tocas.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={appearance.privateMode}
+              onChange={(event) => set('privateMode', event.target.checked)}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className="relative mt-1 h-7 w-12 shrink-0 rounded-full bg-surface-2 transition-colors peer-checked:bg-primary after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-fg after:transition-[translate] peer-checked:after:translate-x-5 peer-checked:after:bg-on-primary motion-reduce:after:transition-none"
+            />
+          </label>
+        </Group>
+
+        <div className="border-t border-line pt-6">
+          <Button
+            variant="secondary"
+            disabled={isDefault}
+            onClick={() => choose(defaultAppearance)}
+            icon={<ArrowCounterClockwiseIcon aria-hidden="true" className="size-4" weight="bold" />}
+          >
+            Restablecer a Bullmilton
+          </Button>
+          <p className="mt-2 text-sm text-fg-muted">
+            Vuelve al tema original: oscuro, amarillo, letra del sistema. Tu color no cambia.
+          </p>
+        </div>
       </div>
     </Page>
   )

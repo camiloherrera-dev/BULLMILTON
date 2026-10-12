@@ -1,4 +1,6 @@
 import { createContext, useContext } from 'react'
+import type { PersonColorId } from '../lib/appearance'
+import { resolvePersonColors } from '../lib/people'
 import type { Category, Household, Member, Movement } from '../types/domain'
 
 export interface HouseholdData {
@@ -31,4 +33,9 @@ export function nameInSentence(data: HouseholdData, userId: string) {
 export function memberName(data: HouseholdData, userId: string, options?: { you?: boolean }) {
   if (options?.you && userId === data.userId) return 'Tú'
   return data.members.find((member) => member.userId === userId)?.displayName ?? 'Alguien'
+}
+
+/** Color efectivo de un miembro (el elegido o el automático; ver lib/people.ts). */
+export function personColor(data: HouseholdData, userId: string): PersonColorId {
+  return resolvePersonColors(data.members)[userId] ?? 'azul'
 }
