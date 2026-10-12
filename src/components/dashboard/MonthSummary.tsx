@@ -26,7 +26,10 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
         <h2 id="mes" className="text-base font-semibold">
           Gastos de {monthName}
         </h2>
-        <Link to="/reportes" className="text-sm font-medium text-fg-muted hover:text-fg">
+        <Link
+          to="/reportes"
+          className="-my-2 inline-flex min-h-11 items-center text-sm font-medium text-fg-muted hover:text-fg"
+        >
           Ver reportes
         </Link>
       </div>
@@ -37,27 +40,29 @@ export function MonthSummary({ summary, month }: MonthSummaryProps) {
         {formatMoney(summary.totalExpenses)}
       </p>
 
-      <dl className="mt-5 flex flex-col gap-4">
+      <ul className="mt-5 flex flex-col gap-4">
         {people.map((person) => (
-          <div key={person.userId} className="flex flex-col gap-1.5">
-            <div className="flex items-baseline justify-between gap-3 text-sm">
-              <dt className="font-medium">{memberName(data, person.userId, { you: true })}</dt>
-              <dd className="tabular">
+          <li key={person.userId} className="flex flex-col gap-1.5">
+            <p className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="font-medium">{memberName(data, person.userId, { you: true })}</span>
+              <span className="tabular">
                 {person.userId === data.userId ? 'pagaste' : 'pagó'}{' '}
                 <span className="font-semibold">{formatMoney(person.paid)}</span>
-              </dd>
-            </div>
-            <div
-              aria-hidden="true"
-              className="h-1.5 rounded-full bg-primary"
-              style={{ width: `${Math.max(2, (person.paid / maxPaid) * 100)}%` }}
-            />
-            <dd className="tabular text-xs text-fg-muted">
+              </span>
+            </p>
+            {person.paid > 0 && (
+              <div
+                aria-hidden="true"
+                className="h-1.5 rounded-full bg-primary"
+                style={{ width: `${(person.paid / maxPaid) * 100}%` }}
+              />
+            )}
+            <p className="tabular text-xs text-fg-muted">
               {person.userId === data.userId ? 'tu parte' : 'su parte'} {formatMoney(person.share)}
-            </dd>
-          </div>
+            </p>
+          </li>
         ))}
-      </dl>
+      </ul>
     </section>
   )
 }

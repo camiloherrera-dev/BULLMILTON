@@ -56,15 +56,22 @@ export function movementDetail(movement: Movement, data: HouseholdData): string 
     case 'expense': {
       const payer =
         movement.paidBy === data.userId ? 'Pagaste' : `Pagó ${memberName(data, movement.paidBy)}`
-      return `${payer} · ${splitLabel(movement, data)}`
+      const split = splitLabel(movement, data)
+      const mine = movement.splits.find((item) => item.userId === data.userId)?.amount ?? 0
+      // Tu parte es lo que descuenta de lo que te queda este mes.
+      if (split === 'todo tuyo' || mine === 0) return `${payer} · ${split}`
+      return `${payer} · ${split} · tu parte ${formatMoney(mine)}`
     }
     case 'income': {
       const receiver =
         movement.userId === data.userId
           ? 'Recibiste'
           : `Recibió ${nameInSentence(data, movement.userId)}`
-      if (movement.splits.length > 1)
-        return `${receiver} · compartido ${splitLabel(movement, data)}`
+      if (movement.splits.length > 1) {
+        const mine = movement.splits.find((item) => item.userId === data.userId)?.amount ?? 0
+        const part = mine > 0 ? ` · para ti ${formatMoney(mine)}` : ''
+        return `${receiver} · compartido ${splitLabel(movement, data)}${part}`
+      }
       const owner = movement.splits[0]?.userId ?? movement.userId
       if (owner === movement.userId)
         return owner === data.userId ? 'Tu ingreso' : `Ingreso de ${memberName(data, owner)}`
@@ -160,7 +167,10 @@ export function effectText(
     const settled = effect < 0 ? 'Saldó' : 'Saldaste' // effect < 0: quien mira recibió el dinero
     if (evenNow) return { text: `${settled} la deuda: quedaron a mano`, tone: 'neutral' }
     if (towardZero) return { text: `${settled} parte de la deuda: ${rest()}`, tone: 'neutral' }
-    if (crossed) return { text: `${settled} la deuda y ahora ${rest()}`, tone: restTone }
+    if (crossed)
+      return effect < 0
+        ? { text: `Te pagó de más: ahora ${rest()}`, tone: restTone }
+        : { text: `Le pagaste de más: ahora ${rest()}`, tone: restTone }
     // Se aleja de cero: es un préstamo, no un abono.
     return effect < 0
       ? { text: `Ahora ${lowerFirst(youOwe(data))} ${amount} más`, tone: 'negative' }

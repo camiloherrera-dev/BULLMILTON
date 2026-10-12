@@ -22,7 +22,7 @@ export function QuickActions({ layout }: { layout: 'row' | 'stack' }) {
         <Link
           key={action.to}
           to={action.to}
-          className={`flex h-12 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-[background-color,transform] duration-150 active:scale-[0.98] ${
+          className={`flex h-12 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-[background-color,scale] duration-150 active:scale-[0.98] motion-reduce:active:scale-100 ${
             layout === 'row' ? 'justify-center' : 'justify-start px-4'
           } ${
             action.primary

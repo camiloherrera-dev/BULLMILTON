@@ -10,12 +10,14 @@ import { formatMoney } from '../../lib/money'
 import { generateRecurring, skipRecurring } from '../../services/recurring'
 import type { RecurringExpense } from '../../types/domain'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { useToast } from '../ui/toast-context'
 
 function PendingItem({ item }: { item: RecurringExpense }) {
   const data = useHousehold()
   const toast = useToast()
   const [busy, setBusy] = useState<'confirm' | 'skip' | null>(null)
+  const [confirmSkip, setConfirmSkip] = useState(false)
 
   const run = async (action: 'confirm' | 'skip') => {
     setBusy(action)
@@ -32,6 +34,7 @@ function PendingItem({ item }: { item: RecurringExpense }) {
       toast.show(toUserMessage(error), 'error')
     } finally {
       setBusy(null)
+      setConfirmSkip(false)
     }
   }
 
@@ -50,8 +53,7 @@ function PendingItem({ item }: { item: RecurringExpense }) {
         <Button
           size="sm"
           variant="ghost"
-          onClick={() => run('skip')}
-          loading={busy === 'skip'}
+          onClick={() => setConfirmSkip(true)}
           disabled={busy !== null}
         >
           Saltar
@@ -71,6 +73,18 @@ function PendingItem({ item }: { item: RecurringExpense }) {
           Registrar
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirmSkip}
+        title={`¿Saltar ${item.name} esta vez?`}
+        confirmLabel="Sí, saltar"
+        tone="primary"
+        loading={busy === 'skip'}
+        onCancel={() => setConfirmSkip(false)}
+        onConfirm={() => run('skip')}
+      >
+        No se registra el gasto de este periodo y el recordatorio pasa al siguiente. Úsalo si este
+        mes no se pagó.
+      </ConfirmDialog>
     </li>
   )
 }

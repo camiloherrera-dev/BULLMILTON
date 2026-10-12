@@ -50,7 +50,7 @@ export function MovementRow({ entry }: MovementRowProps) {
     <li>
       <Link
         to={movementPath(movement)}
-        className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/70"
+        className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 transition-colors duration-150 hover:bg-surface-2/50"
       >
         <span
           className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-full ${
@@ -74,7 +74,7 @@ export function MovementRow({ entry }: MovementRowProps) {
               {formatMoney(movement.amount)}
             </span>
           </span>
-          <span className="truncate text-sm text-fg-muted">
+          <span className="text-sm text-fg-muted">
             {detail}
             {category && movement.kind === 'income' ? `, ${category.name}` : ''}
           </span>

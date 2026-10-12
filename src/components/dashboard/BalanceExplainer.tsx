@@ -20,7 +20,7 @@ export function BalanceExplainer({ open, onClose, breakdown, bridge }: BalanceEx
   const result = balancePhrase(breakdown.balance, data)
   const start = balancePhrase(bridge.before, data, 'past')
 
-  const rows = [
+  const allRows = [
     {
       label: 'Pagaste en gastos',
       hint: 'Todo lo que salió de tu bolsillo.',
@@ -42,6 +42,8 @@ export function BalanceExplainer({ open, onClose, breakdown, bridge }: BalanceEx
       value: -breakdown.received,
     },
   ]
+  // Las transferencias en cero sobran; los gastos se dejan siempre para que la cuenta se lea.
+  const rows = allRows.filter((row, index) => index < 2 || row.value !== 0)
 
   return (
     <Sheet open={open} onClose={onClose} title="¿Cómo se calcula?">

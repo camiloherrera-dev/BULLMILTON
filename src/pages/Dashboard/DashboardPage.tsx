@@ -48,12 +48,12 @@ export function DashboardPage() {
     <div className="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 lg:px-10">
       <MoneyLeftHero people={summary.people} month={today} />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
-        <div className="flex min-w-0 flex-col gap-6">
-          <div className="flex flex-col gap-6 xl:hidden">
-            <PendingRecurring />
-            <DebtCard debts={balance.debts} breakdown={breakdown} bridge={bridge} />
-          </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-8">
+        <div className="flex flex-col gap-6 xl:col-start-2 xl:row-start-1">
+          <PendingRecurring />
+          <DebtCard debts={balance.debts} breakdown={breakdown} bridge={bridge} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-6 xl:col-start-1 xl:row-span-2 xl:row-start-1">
           {ledger.length === 0 ? (
             <EmptyState
               icon={<NotebookIcon />}
@@ -65,7 +65,7 @@ export function DashboardPage() {
             </EmptyState>
           ) : (
             <>
-              <Ledger days={ledger} heading="Últimos movimientos" />
+              <Ledger days={ledger} heading="Últimos movimientos" dayLevel="h3" />
               <ButtonLink
                 to="/movimientos"
                 variant="secondary"
@@ -78,14 +78,9 @@ export function DashboardPage() {
             </>
           )}
         </div>
-
-        <aside className="flex flex-col gap-6 xl:sticky xl:top-8">
-          <div className="hidden flex-col gap-6 xl:flex">
-            <PendingRecurring />
-            <DebtCard debts={balance.debts} breakdown={breakdown} bridge={bridge} />
-          </div>
+        <div className="xl:col-start-2 xl:row-start-2">
           <MonthSummary summary={summary} month={today} />
-        </aside>
+        </div>
       </div>
     </div>
   )

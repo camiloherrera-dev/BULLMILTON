@@ -151,28 +151,28 @@ export function ReportsPage() {
                 {summary.expenseCount} {summary.expenseCount === 1 ? 'gasto' : 'gastos'}
               </p>
             </div>
-            <dl className="flex flex-col gap-4">
+            <ul className="flex flex-col gap-4">
               {people.map((person) => (
-                <div key={person.userId} className="flex flex-col gap-1.5">
+                <li key={person.userId} className="flex flex-col gap-1.5">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
-                    <dt className="font-medium">{names[person.userId]}</dt>
-                    <dd className="tabular">
+                    <span className="font-medium">{names[person.userId]}</span>
+                    <span className="tabular">
                       {person.userId === data.userId ? 'aportaste' : 'aportó'}{' '}
                       <span className="font-semibold">{formatMoney(person.paid)}</span>
-                    </dd>
+                    </span>
                   </div>
                   <div
                     aria-hidden="true"
                     className="h-1.5 rounded-full bg-primary"
-                    style={{ width: `${Math.max(2, (person.paid / maxPaid) * 100)}%` }}
+                    style={{ width: `${(person.paid / maxPaid) * 100}%` }}
                   />
-                  <dd className="tabular text-xs text-fg-muted">
+                  <span className="tabular text-xs text-fg-muted">
                     {person.userId === data.userId ? 'te correspondía' : 'le correspondía'}{' '}
                     {formatMoney(person.share)}
-                  </dd>
-                </div>
+                  </span>
+                </li>
               ))}
-            </dl>
+            </ul>
             <p className="text-xs text-fg-muted">
               Lo aportado es lo que cada uno pagó de su bolsillo; lo que correspondía es su parte
               según la división de cada gasto.
@@ -186,30 +186,30 @@ export function ReportsPage() {
                 {formatMoney(summary.totalIncomes)}
               </p>
             </div>
-            <dl className="flex flex-col divide-y divide-line">
+            <ul className="flex flex-col divide-y divide-line">
               {people.map((person) => (
-                <div key={person.userId} className="flex flex-col gap-1 py-3 text-sm">
+                <li key={person.userId} className="flex flex-col gap-1 py-3 text-sm">
                   <div className="flex items-baseline justify-between gap-3">
-                    <dt className="font-medium">{names[person.userId]}</dt>
-                    <dd
+                    <span className="font-medium">{names[person.userId]}</span>
+                    <span
                       className={`tabular font-semibold ${person.left < 0 ? 'text-negative' : ''}`}
                     >
                       {person.left < 0
                         ? `se pasó por ${formatMoney(-person.left)}`
                         : `le queda ${formatMoney(person.left)}`}
-                    </dd>
+                    </span>
                   </div>
-                  <dd className="flex flex-wrap justify-between gap-x-3 tabular text-xs text-fg-muted">
+                  <span className="flex flex-wrap justify-between gap-x-3 tabular text-xs text-fg-muted">
                     <span>le entró {formatMoney(person.incomes)}</span>
                     <span>gastó {formatMoney(person.share)}</span>
-                  </dd>
-                </div>
+                  </span>
+                </li>
               ))}
-              <div className="flex items-baseline justify-between gap-3 py-2.5 text-sm text-fg-muted">
-                <dt>Transferencias entre ustedes</dt>
-                <dd className="tabular">{formatMoney(summary.totalTransfers)}</dd>
-              </div>
-            </dl>
+              <li className="flex items-baseline justify-between gap-3 py-2.5 text-sm text-fg-muted">
+                <span>Transferencias entre ustedes</span>
+                <span className="tabular">{formatMoney(summary.totalTransfers)}</span>
+              </li>
+            </ul>
             <p className="text-xs text-fg-muted">
               Le queda = su parte de los ingresos menos su parte de los gastos. Las transferencias
               solo saldan cuentas entre ustedes, no cambian lo que le queda a nadie.

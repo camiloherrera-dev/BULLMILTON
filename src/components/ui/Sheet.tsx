@@ -15,6 +15,7 @@ interface SheetProps {
 export function Sheet({ open, title, children, onClose }: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
+  const pressedBackdrop = useRef(false)
 
   useEffect(() => {
     const dialog = ref.current
@@ -28,9 +29,12 @@ export function Sheet({ open, title, children, onClose }: SheetProps) {
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
+      onPointerDown={(event) => {
+        pressedBackdrop.current = event.target === event.currentTarget
+      }}
       onClick={(event) => {
-        // Tocar el fondo (fuera del contenido) cierra.
-        if (event.target === event.currentTarget) onClose()
+        // Tocar el fondo (fuera del contenido) cierra; arrastrar desde dentro no.
+        if (pressedBackdrop.current && event.target === event.currentTarget) onClose()
       }}
       className="mx-auto mt-auto mb-0 max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-b-0 border-line-strong bg-surface p-0 text-fg backdrop:bg-scrim motion-safe:open:animate-[sheet-in_260ms_var(--ease-out-expo)] sm:my-auto sm:w-[min(32rem,calc(100vw-2rem))] sm:rounded-2xl sm:border-b"
     >
