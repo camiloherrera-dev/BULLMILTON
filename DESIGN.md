@@ -186,7 +186,7 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 **The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("a tu favor", "en tu contra").
 
-**The Dark Only Rule.** Solo existe el tema oscuro (`color-scheme: dark`). No hay tema claro ni conmutador.
+**The Theme Rule.** El tema por defecto es Bullmilton (oscuro, paleta de la spec). Desde el 2026-10-12, por decisión del usuario, cada cuenta elige en Ajustes → Apariencia entre seis temas (cuatro oscuros, dos claros) definidos solo en `src/styles/tokens.css` con `[data-theme]`. Todo tema nuevo redefine los mismos tokens, declara `on-primary` y pasa AA en texto (4,5:1). En temas claros `primary` es un tono oscuro y `primary-soft` su hover más oscuro.
 
 ## Typography
 
@@ -196,7 +196,7 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 **Character:** una voz única, neutra y nativa del dispositivo; la jerarquía sale del peso (400, 500, 600) y del tamaño, y las cifras se alinean por figuras tabulares.
 
-**Decisión abierta.** La pila del sistema para todo es el estado actual, no una decisión cerrada. La revisión de acabado recomendó una tipografía de display autoalojada con figuras tabulares para la cifra del saldo, la columna de dinero y el wordmark; el usuario aún no ha decidido. Hasta entonces, no introducir fuentes nuevas ni tratar la pila del sistema como regla definitiva.
+**Decisión del usuario (2026-10-12).** En lugar de imponer una fuente, cada cuenta elige en Ajustes → Apariencia: del sistema (por defecto), Geist, Manrope, IBM Plex Sans o Atkinson Hyperlegible Next, autoalojadas con `@fontsource-variable` (solo se descarga la elegida). Todas se aplican vía `--font-sans` con `[data-font]`.
 
 ### Hierarchy
 

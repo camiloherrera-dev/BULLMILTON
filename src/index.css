@@ -35,9 +35,9 @@
     text-underline-offset: 3px;
   }
 
-  /* Selector de fecha nativo legible sobre fondo oscuro. */
+  /* Selector de fecha nativo legible en temas oscuros y claros. */
   input[type='date']::-webkit-calendar-picker-indicator {
-    filter: invert(0.75);
+    filter: var(--picker-filter);
     cursor: pointer;
   }
 

@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { applyAppearance } from '../lib/appearance'
 import { supabase } from '../lib/supabase/client'
+import { fetchAppearance } from '../services/household'
 import { AuthContext, type AuthState } from './auth-context'
 
 function toState(session: Session | null): AuthState {
@@ -35,6 +37,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data.subscription.unsubscribe()
     }
   }, [])
+
+  // La apariencia es de la cuenta: se trae al iniciar sesión (sirve entre celular y computador).
+  const userId = state.status === 'signedIn' ? state.userId : null
+  useEffect(() => {
+    if (!userId) return
+    let active = true
+    fetchAppearance(userId)
+      .then((appearance) => {
+        if (active) applyAppearance(appearance)
+      })
+      .catch(() => {
+        // Sin conexión: se queda la apariencia guardada en este navegador.
+      })
+    return () => {
+      active = false
+    }
+  }, [userId])
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>
 }

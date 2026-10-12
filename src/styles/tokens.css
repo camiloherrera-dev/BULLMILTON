@@ -1,8 +1,13 @@
 /*
- * BULLMILTON: tokens de diseño (spec §40.1).
+ * BULLMILTON: tokens de diseño (spec §40.1) y temas de apariencia.
  * ÚNICO lugar donde viven los valores de color. Los componentes usan las utilidades
  * que Tailwind genera desde aquí (bg-canvas, bg-surface, text-fg, bg-primary, ...)
  * o las variables CSS (var(--color-primary)). Nunca HEX sueltos.
+ *
+ * El tema por defecto ("Bullmilton") es la paleta de la spec. Los demás temas y fuentes son
+ * opciones de Ajustes → Apariencia (pedido del usuario, 2026-10-12): redefinen las mismas
+ * variables en :root[data-theme] / :root[data-font]. Contraste AA verificado para cada tema.
+ * Los ids deben coincidir con src/lib/appearance.ts y con el check de profiles.theme/font.
  */
 
 @theme {
@@ -32,7 +37,8 @@
   --color-line: color-mix(in oklab, var(--color-fg) 9%, transparent); /* reglas finas */
   --color-line-strong: color-mix(in oklab, var(--color-fg) 16%, transparent);
   --color-primary-wash: color-mix(in oklab, var(--color-primary) 14%, transparent);
-  --color-negative-bg: color-mix(in oklab, var(--color-negative) 16%, var(--color-surface));
+  /* Sobre canvas y al 12 %: el texto negativo encima conserva 4,5:1 en todos los temas. */
+  --color-negative-bg: color-mix(in oklab, var(--color-negative) 12%, var(--color-canvas));
   --color-scrim: color-mix(in oklab, var(--color-canvas) 72%, transparent);
 
   /* Tipografía: pila del sistema (superficie de trabajo; ver DESIGN.md). */
@@ -44,4 +50,146 @@
    */
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Valores que no son colores de la paleta, por tema. */
+:root {
+  /* Sombra de toasts y tooltips: en oscuro se funde con el fondo, en claro es tinta suave. */
+  --shadow-tint: var(--color-canvas);
+  /* Icono del selector de fecha nativo (Chrome lo pinta negro). */
+  --picker-filter: invert(0.75);
+}
+
+/* ---------------------------------------------------------------------------
+ * Temas oscuros
+ * ------------------------------------------------------------------------- */
+
+/*
+ * Cada tema declara sus colores base completos (incluido on-primary) para poder previsualizarse
+ * dentro de otro (tarjetas de Ajustes → Apariencia). Por eso Bullmilton repite aquí los valores
+ * de la spec que ya están en @theme.
+ */
+[data-theme='bullmilton'] {
+  color-scheme: dark;
+  --color-canvas: #0b0f14;
+  --color-surface: #151b22;
+  --color-surface-2: #202832;
+  --color-fg: #f3f4f6;
+  --color-fg-muted: #9ca3af;
+  --color-primary: #f4c542;
+  --color-primary-soft: #ffe58a;
+  --color-on-primary: var(--color-canvas);
+  --color-positive: #35c978;
+  --color-positive-bg: #123d2a;
+  --color-negative: #f05252;
+}
+
+/* Grafito: gris neutro con acento naranja. */
+[data-theme='grafito'] {
+  color-scheme: dark;
+  --color-canvas: #111111;
+  --color-surface: #1b1b1b;
+  --color-surface-2: #272727;
+  --color-fg: #f4f4f3;
+  --color-fg-muted: #a3a3a0;
+  --color-primary: #ff9a4d;
+  --color-primary-soft: #ffc49a;
+  --color-on-primary: var(--color-canvas);
+  --color-positive: #4fd18b;
+  --color-positive-bg: #12301f;
+  --color-negative: #ff6b6b;
+}
+
+/* Océano: azul profundo con acento celeste. */
+[data-theme='oceano'] {
+  color-scheme: dark;
+  --color-canvas: #07131c;
+  --color-surface: #0e1f2b;
+  --color-surface-2: #183040;
+  --color-fg: #eef6fa;
+  --color-fg-muted: #94adbd;
+  --color-primary: #4cc3f5;
+  --color-primary-soft: #a9e3fb;
+  --color-on-primary: var(--color-canvas);
+  --color-positive: #3ad69a;
+  --color-positive-bg: #0e3a2c;
+  --color-negative: #ff7088;
+}
+
+/* Vino: borgoña con acento durazno. */
+[data-theme='vino'] {
+  color-scheme: dark;
+  --color-canvas: #170b10;
+  --color-surface: #24121a;
+  --color-surface-2: #351c26;
+  --color-fg: #fbf0f2;
+  --color-fg-muted: #c39ead;
+  --color-primary: #f2b880;
+  --color-primary-soft: #f9dcc0;
+  --color-on-primary: var(--color-canvas);
+  --color-positive: #5fd39a;
+  --color-positive-bg: #143326;
+  --color-negative: #ff6b81;
+}
+
+/* ---------------------------------------------------------------------------
+ * Temas claros. primary es un tono oscuro (legible como texto sobre el fondo claro) y
+ * primary-soft es su hover, un poco más oscuro, porque el texto encima es claro.
+ * ------------------------------------------------------------------------- */
+
+/* Papel: crema cálido con acento ámbar. */
+[data-theme='papel'] {
+  color-scheme: light;
+  --color-canvas: #f5f1e8;
+  --color-surface: #fffcf5;
+  --color-surface-2: #ebe5d8;
+  --color-fg: #1f1b14;
+  --color-fg-muted: #5f5748;
+  --color-primary: #8a5300;
+  --color-primary-soft: #6e4200;
+  --color-on-primary: var(--color-surface);
+  --color-positive: #17703f;
+  --color-positive-bg: #dcefe2;
+  --color-negative: #b3261e;
+  --shadow-tint: color-mix(in oklab, var(--color-fg) 22%, transparent);
+  --picker-filter: none;
+}
+
+/* Salvia: verde grisáceo claro con acento azul. */
+[data-theme='salvia'] {
+  color-scheme: light;
+  --color-canvas: #edf1ed;
+  --color-surface: #fbfcfa;
+  --color-surface-2: #dfe7e0;
+  --color-fg: #18211b;
+  --color-fg-muted: #536058;
+  --color-primary: #245a87;
+  --color-primary-soft: #1b4769;
+  --color-on-primary: var(--color-surface);
+  --color-positive: #1b6e44;
+  --color-positive-bg: #d8ecdd;
+  --color-negative: #b42318;
+  --shadow-tint: color-mix(in oklab, var(--color-fg) 22%, transparent);
+  --picker-filter: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Tipografías (Ajustes → Apariencia). Autoalojadas con @fontsource-variable: el archivo solo
+ * se descarga si la fuente está elegida. Todas con cifras tabulares para los montos.
+ * ------------------------------------------------------------------------- */
+[data-font='system'] {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+[data-font='geist'] {
+  --font-sans: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+[data-font='manrope'] {
+  --font-sans: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+[data-font='plex'] {
+  --font-sans: 'IBM Plex Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+[data-font='atkinson'] {
+  --font-sans:
+    'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }

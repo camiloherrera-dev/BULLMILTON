@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase/client'
 import { assertOk, unwrap, unwrapMaybe } from '../lib/errors'
+import { toAppearance, type Appearance } from '../lib/appearance'
 import type { Category, CategoryKind, Household, Member, Role } from '../types/domain'
 
 export interface HouseholdContextData {
@@ -164,4 +165,15 @@ export async function updateCategory(
 
 export async function deleteCategory(categoryId: string): Promise<void> {
   assertOk(await supabase.from('categories').delete().eq('id', categoryId))
+}
+
+export async function fetchAppearance(userId: string): Promise<Appearance> {
+  const profile = unwrap(
+    await supabase.from('profiles').select('theme, font').eq('id', userId).single(),
+  )
+  return toAppearance(profile)
+}
+
+export async function updateAppearance(userId: string, appearance: Appearance): Promise<void> {
+  assertOk(await supabase.from('profiles').update(appearance).eq('id', userId))
 }

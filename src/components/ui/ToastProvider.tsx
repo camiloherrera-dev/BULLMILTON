@@ -36,7 +36,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.tone === 'error' ? 'alert' : 'status'}
-            className="pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-medium text-fg shadow-[0_8px_24px_-8px_var(--color-canvas)] motion-safe:animate-[toast-in_220ms_var(--ease-out-expo)]"
+            className="pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-medium text-fg shadow-[0_8px_24px_-8px_var(--shadow-tint)] motion-safe:animate-[toast-in_220ms_var(--ease-out-expo)]"
           >
             {toast.tone === 'success' ? (
               <CheckCircleIcon aria-hidden="true" className="size-5 text-positive" weight="fill" />

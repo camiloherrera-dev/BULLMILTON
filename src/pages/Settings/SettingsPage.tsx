@@ -7,6 +7,7 @@ import {
   CaretRightIcon,
   CopyIcon,
   DownloadSimpleIcon,
+  PaletteIcon,
   RepeatIcon,
   SignOutIcon,
   TagIcon,
@@ -17,6 +18,7 @@ import { useSignedInUser } from '../../app/auth-context'
 import { invalidateData, useResource } from '../../hooks/useResource'
 import { formatDay, toBogotaDay } from '../../lib/dates'
 import { toUserMessage } from '../../lib/errors'
+import { currentAppearance, fonts, themes } from '../../lib/appearance'
 import { buildExport, downloadFile } from '../../lib/export'
 import { supabase } from '../../lib/supabase/client'
 import {
@@ -358,6 +360,7 @@ export function SettingsPage() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const activeMembers = data.members.filter((member) => member.active)
+  const appearance = currentAppearance()
 
   return (
     <Page>
@@ -412,6 +415,15 @@ export function SettingsPage() {
         }
       >
         <Invitations />
+      </Section>
+
+      <Section title="Apariencia">
+        <LinkRow
+          to="/ajustes/apariencia"
+          icon={<PaletteIcon />}
+          title="Colores y tipografía"
+          detail={`${themes.find((theme) => theme.id === appearance.theme)?.name} · ${fonts.find((font) => font.id === appearance.font)?.name}`}
+        />
       </Section>
 
       <Section title="Organizar">

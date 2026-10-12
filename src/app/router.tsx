@@ -13,6 +13,7 @@ import { RecurringFormPage } from '../pages/Recurring/RecurringFormPage'
 import { ConfirmRecurringPage } from '../pages/Recurring/ConfirmRecurringPage'
 import { SettingsPage } from '../pages/Settings/SettingsPage'
 import { CategoriesPage } from '../pages/Settings/CategoriesPage'
+import { AppearancePage } from '../pages/Settings/AppearancePage'
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
               { path: 'reportes', element: <ReportsRoute /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/categorias', element: <CategoriesPage /> },
+              { path: 'ajustes/apariencia', element: <AppearancePage /> },
             ],
           },
         ],

@@ -57,7 +57,9 @@
 
 ## Diseño (la especificación manda sobre las skills)
 
-- La paleta de la sección 40.1 es obligatoria. Vive como tokens en **un solo lugar**:
+- La paleta de la sección 40.1 es el tema por defecto ("Bullmilton"). El usuario añadió
+  (2026-10-12) temas y tipografías elegibles en Ajustes → Apariencia; todos viven en el mismo
+  archivo de tokens con `[data-theme]` / `[data-font]` y deben pasar WCAG AA. Tokens en **un solo lugar**:
   `src/styles/tokens.css` (variables CSS + `@theme` de Tailwind v4). **Nunca HEX sueltos** en
   componentes; usar las utilidades generadas (`bg-surface`, `text-primary`, ...).
 - Si Impeccable o design-taste-frontend sugieren otra paleta, fuente o estilo que contradiga la
@@ -77,7 +79,9 @@
   de base: react, react-dom, react-router, tailwindcss, @supabase/supabase-js, recharts, zod,
   react-hook-form. Añadidas con justificación: @hookform/resolvers (puente Zod ↔ RHF),
   @phosphor-icons/react (iconos: la spec pide icono por tipo/categoría y las skills prohíben
-  emoji o SVG a mano), vitest (tests del motor financiero), PGlite + pgtap (tests de BD sin Docker).
+  emoji o SVG a mano), vitest (tests del motor financiero), PGlite + pgtap (tests de BD sin Docker),
+  @fontsource-variable/{geist,manrope,ibm-plex-sans,atkinson-hyperlegible-next} (tipografías
+  elegibles en Apariencia, autoalojadas porque la CSP solo permite fuentes propias).
 - Estructura del Inicio: "Libro diario" (ver `.impeccable/surfaces/`). Producto: `PRODUCT.md`.
   Sistema visual: `DESIGN.md`.
 

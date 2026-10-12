@@ -26,7 +26,7 @@ function ChartTooltip({ active, payload, names }: TooltipProps) {
   if (!active || !payload?.length) return null
   const month = payload[0].payload
   return (
-    <div className="rounded-xl border border-line-strong bg-surface px-3 py-2.5 text-sm shadow-[0_8px_24px_-8px_var(--color-canvas)]">
+    <div className="rounded-xl border border-line-strong bg-surface px-3 py-2.5 text-sm shadow-[0_8px_24px_-8px_var(--shadow-tint)]">
       <p className="font-semibold first-letter:uppercase">{formatMonthName(month.month)}</p>
       <p className="tabular">{formatMoney(month.total)}</p>
       <dl className="mt-1.5 flex flex-col gap-0.5 text-fg-muted">
