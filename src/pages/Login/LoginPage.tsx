@@ -8,6 +8,7 @@ import { toUserMessage } from '../../lib/errors'
 import { Button } from '../../components/ui/Button'
 import { Field, TextInput } from '../../components/ui/Field'
 import { ErrorState } from '../../components/ui/States'
+import { Brand } from '../../components/Brand'
 
 const schema = z.object({
   email: z.email('Escribe un email válido.'),
@@ -39,7 +40,7 @@ export function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-8 px-4 py-12">
       <header className="flex flex-col gap-2">
-        <p className="text-lg font-bold tracking-tight">BULLMILTON</p>
+        <Brand size="lg" />
         <h1 className="text-2xl font-semibold tracking-tight text-balance">
           Entra para ver cómo van las cuentas de la casa
         </h1>

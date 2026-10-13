@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button'
 import { Field, TextInput } from '../../components/ui/Field'
 import { ErrorState, FullScreenLoader } from '../../components/ui/States'
 import { useToast } from '../../components/ui/toast-context'
+import { Brand } from '../../components/Brand'
 
 type Status = 'checking' | 'ready' | 'invalid'
 
@@ -94,7 +95,7 @@ export function ResetPasswordPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-8 px-4 py-12">
       <header className="flex flex-col gap-2">
-        <p className="text-lg font-bold tracking-tight">BULLMILTON</p>
+        <Brand size="lg" />
         <h1 className="text-2xl font-semibold tracking-tight text-balance">
           {status === 'ready' ? 'Elige una contraseña nueva' : 'El enlace ya no sirve'}
         </h1>

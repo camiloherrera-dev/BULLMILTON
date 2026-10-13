@@ -10,6 +10,7 @@ import {
 } from '@phosphor-icons/react'
 import { QuickActions } from '../components/QuickActions'
 import { useHousehold } from './household-context'
+import { Brand } from '../components/Brand'
 
 interface NavItem {
   to: string
@@ -93,8 +94,8 @@ export function AppShell() {
       </a>
       <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex">
         <div className="px-2">
-          <p className="text-lg font-bold tracking-tight">BULLMILTON</p>
-          <p className="truncate text-sm text-fg-muted">{household.name}</p>
+          <Brand />
+          <p className="mt-1 truncate text-sm text-fg-muted">{household.name}</p>
         </div>
         <QuickActions layout="stack" />
         <nav aria-label="Principal" className="flex flex-col gap-1">

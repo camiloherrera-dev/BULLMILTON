@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { WarningCircleIcon } from '@phosphor-icons/react'
 import { Button } from './Button'
+import { Brand } from '../Brand'
 
 export function Skeleton({ className = '' }: { className?: string }) {
   return <div aria-hidden="true" className={`animate-pulse rounded-lg bg-surface-2 ${className}`} />
@@ -77,7 +78,9 @@ export function FullScreenLoader({ label = 'Cargando' }: { label?: string }) {
   return (
     <div role="status" className="grid min-h-dvh place-items-center bg-canvas">
       <div className="flex flex-col items-center gap-3 text-fg-muted">
-        <span className="text-lg font-bold tracking-tight text-fg">BULLMILTON</span>
+        <span className="text-fg">
+          <Brand size="lg" />
+        </span>
         <span className="text-sm">{label}…</span>
       </div>
     </div>

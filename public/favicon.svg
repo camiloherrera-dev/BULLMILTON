@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Colores de la spec §40.1: Deep Navy y Finance Yellow (archivo estático, fuera de src/). -->
-  <rect width="64" height="64" rx="14" fill="#0b0f14"/>
-  <path d="M20 14h15c8 0 13 4 13 10.5 0 4.2-2.3 7.2-6 8.5 4.6 1.2 7.5 4.5 7.5 9.3C49.5 49.5 44 54 35.5 54H20Zm9 7.5v9h5.4c3.4 0 5.3-1.6 5.3-4.5s-1.9-4.5-5.3-4.5Zm0 15.5v9.5h6c3.6 0 5.6-1.7 5.6-4.8S38.6 37 35 37Z" fill="#f4c542"/>
-</svg>

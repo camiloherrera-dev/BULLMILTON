@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/Button'
 import { Field, TextInput } from '../../components/ui/Field'
 import { ErrorState, FullScreenLoader } from '../../components/ui/States'
 import { Segmented } from '../../components/ui/Segmented'
+import { Brand } from '../../components/Brand'
 
 const createSchema = z.object({
   name: z.string().trim().min(1, 'Ponle un nombre.').max(60, 'Máximo 60 caracteres.'),
@@ -148,7 +149,7 @@ export function WelcomePage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-8 px-4 py-12">
       <header className="flex flex-col gap-2">
-        <p className="text-lg font-bold tracking-tight">BULLMILTON</p>
+        <Brand size="lg" />
         <h1 className="text-2xl font-semibold tracking-tight">Arma tu hogar</h1>
         <p className="text-fg-muted">
           Uno de los dos crea el hogar; el otro se une con el código de invitación.
