@@ -16,15 +16,15 @@ celular (registrar un gasto justo al pagar) como en el computador (revisar histo
 ## Product Purpose
 
 BULLMILTON es una libreta financiera compartida: registra gastos, ingresos y transferencias, y
-responde al instante cuánto del dinero del mes le queda a cada uno y, en segundo plano, quién le
-debe cuánto a quién. El éxito es que ninguno de los dos tenga que hacer cuentas a mano: abrir la
+responde al instante el saldo disponible de cada uno: a cada persona se le suma su parte de los
+ingresos y se le resta su parte de los gastos, sin deudas entre ellos. El éxito es que ninguno de los dos tenga que hacer cuentas a mano: abrir la
 app, ver cuánto le queda, registrar en pocos toques.
 
 ## Positioning
 
 No es una app bancaria ni de contabilidad: es una herramienta privada para un hogar de dos
 personas. Las preguntas que debe contestar de inmediato son: ¿cuánto me queda este mes?, ¿cuánto le
-queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿nos debemos algo?
+queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿a alguien se le acabó el saldo?
 
 ## Operating Context
 
@@ -50,7 +50,7 @@ queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿nos debemos algo?
 - Nombre: **BULLMILTON**.
 - Paleta obligatoria de la spec §40.1 (fondo oscuro, amarillo como acción, verde como positivo,
   rojo con moderación), implementada como tokens en `src/styles/tokens.css`.
-- Voz: cercana, en tuteo, frases cortas y directas ("Te debe $200.000", "Todo saldado").
+- Voz: cercana, en tuteo, frases cortas y directas ("Tu saldo disponible $85.000", "Tu saldo −$15.000").
 
 ## Evidence on Hand
 
@@ -59,9 +59,9 @@ queda a mi hermano?, ¿cuánto gastamos y en qué?, ¿nos debemos algo?
 
 ## Product Principles
 
-1. Lo que le queda a cada uno este mes (su parte de los ingresos menos su parte de los gastos) es
-   la respuesta principal (decisión del usuario, 2026-10-12). El saldo entre los dos sigue a mano,
-   como cuenta secundaria para saldar.
+1. El saldo disponible de cada uno es la respuesta principal (decisión del usuario, 2026-10-12):
+   su parte de los ingresos − su parte de los gastos ± transferencias, acumulado entre meses. Quién
+   pagó no importa y no hay deudas; solo si a alguien se le acaba el saldo, está usando el del otro.
 2. Registrar un movimiento debe tomar segundos; las acciones + Gasto / + Ingreso / + Transferencia
    siempre a mano.
 3. Claridad antes que densidad: números grandes y legibles, nada de tablas enormes en móvil.

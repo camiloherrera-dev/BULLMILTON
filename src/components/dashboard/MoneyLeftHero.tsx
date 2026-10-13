@@ -3,24 +3,29 @@ import { Link } from 'react-router'
 import { CaretRightIcon, QuestionIcon, WarningCircleIcon } from '@phosphor-icons/react'
 import { memberName, personColor, useHousehold } from '../../app/household-context'
 import { formatMonthName } from '../../lib/dates'
-import { formatMoney } from '../../lib/money'
-import type { PersonSummary } from '../../lib/calculations/reports'
+import { formatMoney, formatSigned } from '../../lib/money'
+import { usingFromOthers, type AvailableSummary } from '../../lib/calculations/available'
 import { PersonAvatar } from '../people/PersonColor'
 import { ButtonLink } from '../ui/Button'
 import { buttonClasses } from '../ui/buttonClasses'
 import { Sheet } from '../ui/Sheet'
 
 interface MoneyLeftHeroProps {
-  people: PersonSummary[]
+  people: AvailableSummary[]
   month: string
 }
 
 const personPath = (userId: string) =>
   `/movimientos?${new URLSearchParams({ periodo: 'month', persona: userId })}`
 
-/** Barra de lo que queda sobre lo que le entró: más llena = más dinero (el texto dice lo mismo). */
-function LeftBar({ person }: { person: PersonSummary }) {
-  const ratio = person.incomes > 0 ? Math.max(0, person.left) / person.incomes : 0
+/** Lo que tuvo para gastar en el mes: lo que traía (si era positivo) más lo que le entró. */
+const funds = (person: AvailableSummary) =>
+  Math.max(0, person.carried) + person.incomes + person.received
+
+/** Barra de saldo sobre lo que tuvo para gastar: más llena = más dinero (el texto dice lo mismo). */
+function LeftBar({ person }: { person: AvailableSummary }) {
+  const total = funds(person)
+  const ratio = total > 0 ? Math.min(1, Math.max(0, person.balance) / total) : 0
   return (
     <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-surface-2">
       <div className="h-full rounded-full bg-positive" style={{ width: `${ratio * 100}%` }} />
@@ -28,12 +33,13 @@ function LeftBar({ person }: { person: PersonSummary }) {
   )
 }
 
-/** Sin ingresos registrados aún: no es que se haya pasado, es que falta registrar lo que entró. */
-const waitingIncome = (person: PersonSummary) => person.incomes === 0 && person.share > 0
+const moved = (person: AvailableSummary) =>
+  person.carried !== 0 || person.incomes + person.share + person.received + person.sent > 0
 
 /**
- * Inicio: cuánto le queda a cada uno del dinero del mes (su parte de los ingresos menos su parte
- * de los gastos). Al hacer scroll se compacta en una barra fija.
+ * Inicio: el saldo disponible de cada uno. Cada gasto resta a cada persona su parte, la pagara
+ * quien la pagara; no hay deudas. Solo si a alguien se le acaba el saldo está usando el del otro.
+ * Al hacer scroll se compacta en una barra fija.
  */
 export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
   const data = useHousehold()
@@ -55,20 +61,16 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
   const others = people.filter(
     (person) =>
       person.userId !== data.userId &&
-      (data.members.find((member) => member.userId === person.userId)?.active ||
-        person.incomes + person.share > 0),
+      (data.members.find((member) => member.userId === person.userId)?.active || moved(person)),
   )
+  const otherName = others.length === 1 ? memberName(data, others[0].userId) : null
   const monthName = formatMonthName(month)
-  const left = me?.left ?? 0
-  const empty = !me || (me.incomes === 0 && me.share === 0)
-  const waiting = Boolean(me && waitingIncome(me))
-  const over = left < 0 && !waiting
-  const shown = waiting ? (me?.share ?? 0) : Math.abs(left)
-  const lead = waiting
-    ? 'Llevas en gastos este mes'
-    : over
-      ? 'Te pasaste este mes por'
-      : `Te queda en ${monthName}`
+  const balance = me?.balance ?? 0
+  const empty = !me || !moved(me)
+  const over = balance < 0
+  const using = usingFromOthers(people, data.userId)
+  const lead = over ? 'Se te acabó el saldo: vas en' : 'Tu saldo disponible'
+  const shown = over ? formatSigned(balance) : formatMoney(balance)
 
   return (
     <>
@@ -85,30 +87,19 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
           ) : (
             lead
           )}{' '}
-          <span className="sr-only">{formatMoney(shown)}</span>
+          <span className="sr-only">{shown}</span>
         </h1>
         <p
           aria-hidden="true"
           className={`mt-1 tabular text-[clamp(2.25rem,12vw,3.75rem)] leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] ${over ? 'text-negative' : ''}`}
         >
-          {formatMoney(shown)}
+          {shown}
         </p>
 
-        {waiting ? (
+        {empty ? (
           <div className="mt-3 flex flex-col items-start gap-3">
             <p className="text-fg-muted">
-              Aún no registras lo que te entró este mes. Cuando lo hagas, aquí verás cuánto te
-              queda.
-            </p>
-            <ButtonLink to="/ingresos/nuevo" variant="secondary" size="sm">
-              Registrar un ingreso
-            </ButtonLink>
-          </div>
-        ) : empty ? (
-          <div className="mt-3 flex flex-col items-start gap-3">
-            <p className="text-fg-muted">
-              Aún no tienes ingresos ni gastos este mes. Registra lo que te entró para ver cuánto te
-              queda.
+              Registra lo que te entró y cada gasto se irá descontando de tu saldo según tu parte.
             </p>
             <ButtonLink to="/ingresos/nuevo" variant="secondary" size="sm">
               Registrar un ingreso
@@ -116,10 +107,18 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
           </div>
         ) : (
           <div className="mt-4 flex max-w-xl flex-col gap-2">
+            {over && (
+              <p className="text-fg">
+                {using > 0
+                  ? `Estás usando ${formatMoney(using)} del saldo de ${otherName ?? 'los demás'}.`
+                  : 'Registra lo que te entró para volver a tener saldo.'}
+              </p>
+            )}
             <LeftBar person={me} />
             <p className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
               <span>
-                Te entraron <span className="tabular text-fg">{formatMoney(me.incomes)}</span>
+                En {monthName} te entraron{' '}
+                <span className="tabular text-fg">{formatMoney(me.incomes)}</span>
               </span>
               <span>
                 Tu parte de los gastos{' '}
@@ -149,6 +148,8 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
           <ul className="mt-4 flex max-w-xl flex-col gap-2">
             {others.map((person) => {
               const name = memberName(data, person.userId)
+              const short = person.balance < 0
+              const takes = usingFromOthers(people, person.userId)
               return (
                 <li key={person.userId}>
                   <Link
@@ -158,33 +159,32 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                     <span className="flex items-baseline justify-between gap-3">
                       <span className="inline-flex items-center gap-2 font-medium">
                         <PersonAvatar name={name} color={personColor(data, person.userId)} />
-                        {waitingIncome(person)
-                          ? `${name} lleva en gastos`
-                          : person.left < 0
-                            ? `${name} se pasó por`
-                            : `A ${name} le queda`}
+                        Saldo de {name}
                       </span>
                       <span className="flex items-center gap-1">
-                        <span
-                          className={`tabular font-semibold ${person.left < 0 && !waitingIncome(person) ? 'text-negative' : ''}`}
-                        >
-                          {formatMoney(
-                            waitingIncome(person) ? person.share : Math.abs(person.left),
-                          )}
+                        <span className={`tabular font-semibold ${short ? 'text-negative' : ''}`}>
+                          {short ? formatSigned(person.balance) : formatMoney(person.balance)}
                         </span>
                         <CaretRightIcon aria-hidden="true" className="size-4 text-fg-muted" />
                       </span>
                     </span>
                     <LeftBar person={person} />
-                    <span className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
-                      <span>
-                        Le entraron <span className="tabular">{formatMoney(person.incomes)}</span>
+                    {short && takes > 0 ? (
+                      <span className="text-sm font-medium text-negative">
+                        Se le acabó: está usando {formatMoney(takes)}{' '}
+                        {others.length === 1 ? 'de tu saldo' : 'del saldo de los demás'}
                       </span>
-                      <span>
-                        Su parte de los gastos{' '}
-                        <span className="tabular">{formatMoney(person.share)}</span>
+                    ) : (
+                      <span className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
+                        <span>
+                          Le entraron <span className="tabular">{formatMoney(person.incomes)}</span>
+                        </span>
+                        <span>
+                          Su parte de los gastos{' '}
+                          <span className="tabular">{formatMoney(person.share)}</span>
+                        </span>
                       </span>
-                    </span>
+                    )}
                   </Link>
                 </li>
               )
@@ -195,31 +195,57 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
         {me && (
           <Sheet open={explaining} onClose={() => setExplaining(false)} title="¿Cómo se calcula?">
             <p className="text-sm text-fg-muted">
-              Lo que te queda es lo que te tocó de los ingresos del mes menos tu parte de los gastos
-              del mes. Si {others.length === 1 ? memberName(data, others[0].userId) : 'alguien'}{' '}
-              pagó algo que también era tuyo, tu parte cuenta igual aquí, y lo que le debes queda en
-              «Cuentas entre ustedes». No es el saldo de tu cuenta del banco.
+              Cada gasto se descuenta del saldo de cada uno según su parte, sin importar quién lo
+              pagó: si gastan $30.000 a medias, a cada uno se le restan $15.000. No hay deudas entre
+              ustedes; solo si a alguien se le acaba el saldo, está usando el del otro. Lo que sobra
+              pasa al mes siguiente. No es el saldo de tu cuenta del banco.
             </p>
             <dl className="flex flex-col divide-y divide-line rounded-xl bg-surface-2 px-4">
-              <div className="flex items-start justify-between gap-4 py-3">
-                <dt className="flex flex-col">
-                  <span className="font-medium">Te entraron</span>
-                  <span className="text-sm text-fg-muted">
-                    Tus ingresos y tu parte de los compartidos.
-                  </span>
-                </dt>
-                <dd className="shrink-0 tabular font-semibold">+{formatMoney(me.incomes)}</dd>
-              </div>
-              <div className="flex items-start justify-between gap-4 py-3">
-                <dt className="flex flex-col">
-                  <span className="font-medium">Tu parte de los gastos</span>
-                  <span className="text-sm text-fg-muted">Los pagara quien los pagara.</span>
-                </dt>
-                <dd className="shrink-0 tabular font-semibold">−{formatMoney(me.share)}</dd>
-              </div>
+              {[
+                {
+                  label: 'Venías con',
+                  hint: `Tu saldo al empezar ${monthName}.`,
+                  value: me.carried,
+                  show: true,
+                },
+                {
+                  label: 'Te entraron',
+                  hint: 'Tus ingresos y tu parte de los compartidos.',
+                  value: me.incomes,
+                  show: true,
+                },
+                {
+                  label: 'Tu parte de los gastos',
+                  hint: 'Los pagara quien los pagara.',
+                  value: -me.share,
+                  show: true,
+                },
+                {
+                  label: 'Te pasaron',
+                  hint: 'Transferencias que recibiste.',
+                  value: me.received,
+                  show: me.received > 0,
+                },
+                {
+                  label: 'Pasaste',
+                  hint: 'Transferencias que enviaste.',
+                  value: -me.sent,
+                  show: me.sent > 0,
+                },
+              ]
+                .filter((row) => row.show)
+                .map((row) => (
+                  <div key={row.label} className="flex items-start justify-between gap-4 py-3">
+                    <dt className="flex flex-col">
+                      <span className="font-medium">{row.label}</span>
+                      <span className="text-sm text-fg-muted">{row.hint}</span>
+                    </dt>
+                    <dd className="shrink-0 tabular font-semibold">{formatSigned(row.value)}</dd>
+                  </div>
+                ))}
               <div className="flex items-start justify-between gap-4 border-t-[3px] border-double border-line-strong py-3">
-                <dt className="font-semibold">{left < 0 ? 'Te pasaste por' : 'Te queda'}</dt>
-                <dd className="tabular font-semibold">{formatMoney(Math.abs(left))}</dd>
+                <dt className="font-semibold">Tu saldo disponible</dt>
+                <dd className={`tabular font-semibold ${over ? 'text-negative' : ''}`}>{shown}</dd>
               </div>
             </dl>
           </Sheet>
@@ -235,7 +261,7 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
         <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <span className="truncate text-sm text-fg-muted">{lead}</span>
           <span className={`tabular text-base font-semibold ${over ? 'text-negative' : 'text-fg'}`}>
-            {formatMoney(shown)}
+            {shown}
           </span>
         </div>
       </div>

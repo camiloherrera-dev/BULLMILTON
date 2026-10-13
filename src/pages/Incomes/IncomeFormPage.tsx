@@ -207,7 +207,7 @@ function IncomeForm({ income }: { income?: Income }) {
           {shared && (
             <>
               <p className="text-sm text-fg-muted">
-                Cada uno ve su parte en los reportes. No crea deuda entre ustedes.
+                A cada uno le suma su parte al saldo disponible.
               </p>
               <SplitEditor
                 value={{ splitType, participants, percents }}

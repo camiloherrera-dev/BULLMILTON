@@ -50,6 +50,11 @@
 - Convención de saldo (corrige la spec §11):
   `saldo = pagado − su_parte + transferencias_enviadas − transferencias_recibidas`;
   > 0 le deben, < 0 debe.
+- **Lo que ve el usuario es el saldo disponible, no deudas** (decidido 2026-10-12,
+  `src/lib/calculations/available.ts`): `su parte de ingresos − su parte de gastos + recibidas −
+enviadas`, acumulado entre meses. Quién pagó un gasto no importa. Solo si el saldo de alguien es
+  negativo se dice que está usando el del otro. El motor de deudas (`balance.ts`) sigue con sus
+  tests pero la UI ya no lo muestra.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos
   financieros dentro de JSX.

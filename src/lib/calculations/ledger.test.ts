@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Expense, Income, Movement, Transfer } from '../../types/domain'
 import { buildLedger, calculateBalances, toBalanceInput } from './balance'
-import { annotateLedger, balanceBreakdown, limitEntries, periodBridge } from './ledger'
-import { summarizePeriod } from './reports'
+import {
+  availableEffects,
+  availableSummary,
+  buildAvailableLedger,
+  usingFromOthers,
+} from './available'
+import { annotateLedger, limitEntries } from './ledger'
 
 const A = 'aaaaaaaa-0000-4000-8000-000000000001'
 const B = 'bbbbbbbb-0000-4000-8000-000000000002'
@@ -159,82 +164,81 @@ describe('limitEntries', () => {
   })
 })
 
-describe('balanceBreakdown', () => {
-  it('pagado − su parte + enviado − recibido = saldo del motor', () => {
-    const balances = calculateBalances(toBalanceInput(movements))
-    for (const id of [A, B]) {
-      const breakdown = balanceBreakdown(movements, id)
-      expect(breakdown.balance).toBe(balances[id])
-      expect(breakdown.paid - breakdown.share + breakdown.sent - breakdown.received).toBe(
-        breakdown.balance,
-      )
-    }
-  })
-
-  it('suma solo lo activo y separa cada término', () => {
-    expect(balanceBreakdown(movements, A)).toEqual({
-      paid: 1_095_000,
-      share: 648_950,
-      sent: 0,
-      received: 300_000,
-      balance: 146_050,
-    })
-  })
-
-  it('sin movimientos todo es cero', () => {
-    expect(balanceBreakdown([], A)).toEqual({
-      paid: 0,
-      share: 0,
-      sent: 0,
-      received: 0,
-      balance: 0,
-    })
-  })
-})
-
-describe('periodBridge', () => {
+describe('saldo disponible', () => {
   const october = { from: '2026-10-01', to: '2026-10-31' }
 
-  it('saldo anterior + efecto del mes = saldo al cierre', () => {
-    const bridge = periodBridge(movements, A, october)
-    expect(bridge).toEqual({
-      before: 477_550,
-      expenses: 28_500 - 60_000,
-      transfers: -300_000,
-      after: 146_050,
-    })
-  })
-
-  it('el efecto de los gastos es lo que pagó menos su parte en el periodo', () => {
-    const bridge = periodBridge(movements, A, october)
-    const me = summarizePeriod(movements, [A, B], october).people.find((p) => p.userId === A)!
-    expect(bridge.expenses).toBe(me.paid - me.share)
-  })
-
-  it('sin movimientos posteriores, el cierre coincide con el saldo total', () => {
-    expect(periodBridge(movements, A, october).after).toBe(
-      calculateBalances(toBalanceInput(movements))[A],
-    )
-  })
-
-  it('ignora lo que pasa después del periodo', () => {
-    const september = { from: '2026-09-01', to: '2026-09-30' }
-    expect(periodBridge(movements, A, september)).toEqual({
-      before: 0,
-      expenses: 500_000 - 22_450,
-      transfers: 0,
-      after: 477_550,
-    })
-  })
-
-  it('para el otro miembro todo es simétrico', () => {
-    const a = periodBridge(movements, A, october)
-    const b = periodBridge(movements, B, october)
-    expect([b.before, b.expenses, b.transfers, b.after]).toEqual([
-      -a.before,
-      -a.expenses,
-      -a.transfers,
-      -a.after,
+  it('el ejemplo: 100.000 cada uno y un gasto de 30.000 al 50 % deja 85.000 a cada uno', () => {
+    const list: Movement[] = [
+      expense(A, 30_000, { [A]: 15_000, [B]: 15_000 }, { date: '2026-10-03' }),
+      income(A, 100_000, { date: '2026-10-02' }),
+      income(B, 100_000, { date: '2026-10-02' }),
+    ]
+    const people = availableSummary(list, [A, B], october)
+    expect(people.map((person) => person.balance)).toEqual([85_000, 85_000])
+    // Quién pagó no importa: si lo paga B, queda igual.
+    const paidByB = [{ ...list[0], paidBy: B } as Expense, ...list.slice(1)]
+    expect(availableSummary(paidByB, [A, B], october).map((p) => p.balance)).toEqual([
+      85_000, 85_000,
     ])
+  })
+
+  it('un gasto descuenta la parte de cada uno; una transferencia pasa saldo de uno al otro', () => {
+    const spend = expense(B, 120_000, { [A]: 60_000, [B]: 60_000 })
+    expect(Object.fromEntries(availableEffects(spend))).toEqual({ [A]: -60_000, [B]: -60_000 })
+    expect(Object.fromEntries(availableEffects(transfer(B, A, 300_000)))).toEqual({
+      [A]: 300_000,
+      [B]: -300_000,
+    })
+    expect(availableEffects(expense(A, 999, { [A]: 999 }, { status: 'voided' })).size).toBe(0)
+  })
+
+  it('arrastra el saldo de los meses anteriores y separa lo del periodo', () => {
+    const [a, b] = availableSummary(movements, [A, B], october)
+    expect(a).toEqual({
+      userId: A,
+      carried: -522_450,
+      incomes: 3_000_000,
+      share: 126_500,
+      received: 300_000,
+      sent: 0,
+      balance: 2_651_050,
+    })
+    expect(b).toEqual({
+      userId: B,
+      carried: -522_450,
+      incomes: 0,
+      share: 88_500,
+      received: 0,
+      sent: 300_000,
+      balance: -910_950,
+    })
+  })
+
+  it('ignora lo posterior al periodo', () => {
+    const september = { from: '2026-09-01', to: '2026-09-30' }
+    expect(availableSummary(movements, [A, B], september).map((p) => p.balance)).toEqual([
+      -522_450, -522_450,
+    ])
+  })
+
+  it('solo hay dependencia cuando el saldo se agota, y hasta donde alcance el del otro', () => {
+    const people = availableSummary(movements, [A, B], october)
+    expect(usingFromOthers(people, A)).toBe(0)
+    expect(usingFromOthers(people, B)).toBe(910_950)
+    // B queda en −360.000 pero a A solo le sobran 240.000: no puede usar más que eso.
+    const short = availableSummary(movements.slice(0, 2), [A, B], october)
+    expect(usingFromOthers(short, B)).toBe(240_000)
+  })
+
+  it('el libro diario encadena el saldo disponible y cierra en el saldo actual', () => {
+    const entries = annotateLedger(
+      buildAvailableLedger(movements, A, { includeVoided: true }),
+    ).flatMap((day) => day.entries)
+    expect(entries[0].after).toBe(2_651_050)
+    for (let index = 0; index < entries.length - 1; index += 1)
+      expect(entries[index].before).toBe(entries[index + 1].after)
+    expect(entries.at(-1)?.before).toBe(0)
+    const voided = entries.find((entry) => entry.movement.status === 'voided')!
+    expect(voided.effect).toBe(0)
   })
 })

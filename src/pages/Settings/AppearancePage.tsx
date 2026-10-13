@@ -120,7 +120,7 @@ function LivePreview({ appearance }: { appearance: Appearance }) {
         className="flex flex-col gap-4 rounded-2xl border border-line-strong bg-canvas p-(--card-p) font-sans text-fg"
       >
         <div>
-          <p className="text-sm text-fg-muted">Te queda en octubre</p>
+          <p className="text-sm text-fg-muted">Tu saldo disponible</p>
           <p className="tabular text-3xl font-semibold tracking-tight">$2.450.570</p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
             <div className="h-full w-2/3 rounded-full bg-positive" />
@@ -136,9 +136,9 @@ function LivePreview({ appearance }: { appearance: Appearance }) {
                 <span className="truncate font-medium">Mercado D1</span>
                 <span className="tabular font-semibold">$87.350</span>
               </span>
-              <span className="text-sm text-fg-muted">Pagaste · 50/50 · tu parte $43.675</span>
-              <span className="text-sm font-medium text-positive">
-                {others[0] ? `${others[0].displayName} te debe` : 'Te deben'} $43.675 más
+              <span className="text-sm text-fg-muted">Pagaste · 50/50</span>
+              <span className="text-sm font-medium text-negative">
+                Tu saldo −$43.675{others[0] ? ` · ${others[0].displayName} −$43.675` : ''}
               </span>
             </span>
           </div>

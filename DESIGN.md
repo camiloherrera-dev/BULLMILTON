@@ -1,6 +1,6 @@
 ---
 name: BULLMILTON
-description: Libreta financiera compartida para un hogar de dos; el saldo entre ambos como respuesta principal.
+description: Libreta financiera compartida para un hogar de dos; el saldo disponible de cada uno como respuesta principal.
 colors:
   canvas: '#0b0f14'
   surface: '#151b22'
@@ -136,7 +136,7 @@ components:
 
 **Creative North Star: "El libro diario del hogar"**
 
-BULLMILTON es una superficie de trabajo, no una vitrina. Se abre para responder una sola pregunta (quién le debe cuánto a quién) y para registrar un movimiento en segundos, casi siempre con una mano en el celular. Todo el sistema se organiza como un libro contable de casa: movimientos agrupados por día, cada día cerrado con su saldo acumulado, y cifras tabulares alineadas a la derecha que se leen en columna.
+BULLMILTON es una superficie de trabajo, no una vitrina. Se abre para responder una sola pregunta (cuánto saldo le queda a cada uno) y para registrar un movimiento en segundos, casi siempre con una mano en el celular. Todo el sistema se organiza como un libro contable de casa: movimientos agrupados por día, cada día cerrado con su saldo acumulado, y cifras tabulares alineadas a la derecha que se leen en columna.
 
 El mundo es oscuro por mandato de la especificación (§40.1): fondo Deep Navy, hojas Dark Slate, controles Slate. La profundidad se construye por capas tonales y reglas finas, no por sombras. El amarillo es escaso y significa algo concreto (actuar, hoy, atención); el verde y el rojo siempre viajan con signo o texto. La densidad es media: filas de 44px o más, sin decoración, con el saldo grande como única pieza de escala dramática.
 
@@ -184,7 +184,7 @@ Paleta obligatoria de la spec §40.1, documentada tal cual; los derivados son me
 
 **The Yellow Means Act Rule.** El amarillo marca acciones, el día de hoy y datos que piden atención (barras de magnitud, pendientes). Nunca es fondo decorativo.
 
-**The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("Sebastián te debe $X más", "Le debes $X más"). En el libro, el monto de cada fila es neutro (`fg`) y el color solo va en la frase del efecto: verde si te deben más, rojo si debes más, gris si el saldo se acerca a cero.
+**The Sign Travels With Color Rule.** Verde y rojo nunca son el único indicador: siempre van con signo (+ / −) o texto ("Tu saldo −$15.000 · Sebastián −$15.000"). En el libro, el monto de cada fila es neutro (`fg`) y el color solo va en la línea del efecto: verde si sube tu saldo, rojo si lo baja, gris si no lo toca.
 
 **The Theme Rule.** El tema por defecto es Bullmilton oscuro (paleta de la spec). Desde el 2026-10-12, por decisión del usuario, cada cuenta personaliza su apariencia (sección "Personalización"). Todo valor vive solo en `src/styles/tokens.css`; todo tema o acento nuevo redefine los mismos tokens, declara `on-primary` y pasa AA, cosa que comprueba `src/styles/tokens.test.ts`. En modo claro `primary` es un tono oscuro y `primary-soft` su hover, más oscuro.
 
@@ -300,8 +300,8 @@ Firmes y directos, sin adornos.
 
 La estructura que define a BULLMILTON.
 
-- **Encabezado de día:** fecha a la izquierda (14px, 600; en el acento si es hoy) y, a la derecha, cómo cerró la cuenta entre los dos en palabras ("Le debías $213.220", "Sebastián te debía $229.555", "Estaban a mano") con la cifra en Soft White semibold tabular; debajo, doble regla de 3px en `line-strong`. En Inicio los días son `h3` bajo un `h2` "Últimos movimientos" solo para lectores de pantalla.
-- **Filas:** círculo de 40px (la categoría con su color, Deep Green para ingresos, Slate para transferencias); título en 500 que puede ocupar dos líneas; a la derecha el **monto real** del movimiento en Soft White. Debajo: quién pagó, división y "tu parte $X" (lo que descuenta de lo que te queda) en Muted Gray, y una frase con el efecto en la cuenta entre los dos: verde si te deben más, rojo si debes más, gris si la deuda baja o no cambia. Los anulados van tachados con "Anulado: no cuenta".
+- **Encabezado de día:** fecha a la izquierda (14px, 600; en el acento si es hoy) y, a la derecha, tu saldo disponible al cierre ("Tu saldo al cierre $213.220"; hoy "Tu saldo ahora"; en rojo con signo si es negativo) con la cifra en Soft White semibold tabular; debajo, doble regla de 3px en `line-strong`. En Inicio los días son `h3` bajo un `h2` "Últimos movimientos" solo para lectores de pantalla.
+- **Filas:** círculo de 40px (la categoría con su color, Deep Green para ingresos, Slate para transferencias); título en 500 que puede ocupar dos líneas; a la derecha el **monto real** del movimiento en Soft White. Debajo: quién pagó y la división en Muted Gray, y una línea con lo que sumó o restó al saldo de cada uno ("Tu saldo −$15.000 · Sebastián −$15.000"): verde si sube el tuyo, rojo si baja, gris si no lo toca. Los anulados van tachados con "Anulado: no cuenta".
 - **Relleno vertical:** `--row-y` (densidad). **Hover:** Slate al 50% (con 70% el rojo bajaba de 4,5:1).
 - Inicio muestra las últimas 8 filas y un botón secundario "Ver todo el historial (N)".
 
@@ -310,7 +310,7 @@ La estructura que define a BULLMILTON.
 - **Te queda:** desde el 2026-10-12 (decisión del usuario) la respuesta principal es cuánto del dinero del mes le queda a cada uno: su parte de los ingresos menos su parte de los gastos. Frase en 18px Muted Gray ("Te queda en octubre") sobre la cifra Display tabular; barra de 8px que se llena en `positive` con lo que queda (más llena = más dinero); "Te entraron" y "Tu parte de los gastos"; enlace a tus movimientos del mes y "¿Cómo se calcula?".
 - **Estados:** sin ingresos registrados aún, "Llevas en gastos este mes" en neutro (no es una alarma); si de verdad se pasó, "Te pasaste este mes por" en rojo con icono.
 - **El otro:** tarjeta Dark Slate con su avatar, lo que le queda y su barra; lleva a sus movimientos del mes.
-- **Cuentas entre ustedes:** tarjeta secundaria con la deuda, "Registrar abono" y una hoja "¿Cómo se calcula?" con el desglose (pagado, lo que te correspondía, transferencias) y el paso del mes.
+- **Saldo disponible (héroe de Inicio):** tu saldo grande, el de cada otro miembro debajo y una hoja "¿Cómo se calcula?" (venías con, te entraron, tu parte de los gastos, transferencias). Sin tarjeta de deudas: si a alguien se le acaba el saldo, el héroe dice cuánto está usando del otro.
 - **Barra compacta:** al salir la cifra del viewport, una barra fija de 48px en Dark Slate con borde `line` aparece arriba, entrando con opacidad y 8px de desplazamiento en 200ms `ease-out-expo`.
 
 ### Personalización (Ajustes → Apariencia)

@@ -120,7 +120,8 @@ function TransferForm({ transfer }: { transfer?: Transfer }) {
       {readOnly && <VoidedNotice label="transferencia" />}
       {!transfer && (
         <p className="text-sm text-fg-muted">
-          Dinero que uno le pasa al otro para saldar. Cambia el saldo, pero no cuenta como gasto.
+          Saldo que uno le pasa al otro: se resta de quien envía y se suma a quien recibe. No cuenta
+          como gasto.
         </p>
       )}
       <fieldset disabled={readOnly || isSubmitting} className="flex flex-col gap-6">

@@ -26,17 +26,17 @@ const toneClasses = {
 
 /**
  * Fila del libro: a la derecha el monto real del movimiento (neutro); debajo de la descripción,
- * qué le hizo a tu saldo en palabras. El verde y el rojo solo van en esa frase.
+ * cuánto sumó o restó al saldo de cada uno. El verde y el rojo solo van en esa línea.
  */
 export function MovementRow({ entry }: MovementRowProps) {
   const data = useHousehold()
-  const { movement, effect, before, after } = entry
+  const { movement } = entry
   const category =
     movement.kind === 'transfer'
       ? null
       : data.categories.find((item) => item.id === movement.categoryId)
   const voided = movement.status === 'voided'
-  const effectLine = effectText(movement, effect, before, after, data)
+  const effectLine = effectText(movement, data)
 
   const title =
     movement.kind === 'transfer' && !movement.notes?.trim()
@@ -103,11 +103,14 @@ export function MovementRow({ entry }: MovementRowProps) {
               </span>
             )}
           </span>
-          {effectLine && (
-            <span data-money className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>
-              {effectLine.text}
-            </span>
-          )}
+          <span data-money className={`text-sm font-medium ${toneClasses[effectLine.tone]}`}>
+            {effectLine.parts.map((part, index) => (
+              <span key={part}>
+                {index > 0 && ' · '}
+                <span className="whitespace-nowrap">{part}</span>
+              </span>
+            ))}
+          </span>
         </span>
       </Link>
     </li>

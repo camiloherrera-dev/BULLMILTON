@@ -526,7 +526,7 @@ export function SettingsPage() {
         <ul className="flex list-disc flex-col gap-1.5 pl-5">
           <li>Dejarás de ver los movimientos, el saldo y los reportes de {data.household.name}.</li>
           <li>
-            Nada se borra: lo que registraste y lo que se deben sigue en el historial para{' '}
+            Nada se borra: lo que registraste sigue en el historial y en los saldos de{' '}
             {activeMembers.filter((member) => member.userId !== userId).length
               ? activeMembers
                   .filter((member) => member.userId !== userId)

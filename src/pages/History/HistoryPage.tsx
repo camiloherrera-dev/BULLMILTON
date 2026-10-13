@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { FunnelSimpleIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useHousehold } from '../../app/household-context'
-import { buildLedger } from '../../lib/calculations/balance'
+import { buildAvailableLedger } from '../../lib/calculations/available'
 import { annotateLedger } from '../../lib/calculations/ledger'
 import { expenseCategoryIds, inRange } from '../../lib/calculations/reports'
 import { todayBogota } from '../../lib/dates'
@@ -106,7 +106,7 @@ export function HistoryPage() {
     // filtran las filas visibles.
     // Los saldos antes/después de cada fila también se anotan antes de filtrar.
     const ledger = annotateLedger(
-      buildLedger(data.movements, data.userId, { includeVoided: showVoided }),
+      buildAvailableLedger(data.movements, data.userId, { includeVoided: showVoided }),
     )
       .map((day) => ({ ...day, entries: day.entries.filter((entry) => matches(entry.movement)) }))
       .filter((day) => day.entries.length > 0)

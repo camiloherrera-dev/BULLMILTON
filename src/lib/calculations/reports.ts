@@ -18,8 +18,8 @@ export interface PersonSummary {
   /** Su parte de los ingresos (los compartidos cuentan según el reparto). */
   incomes: number
   /**
-   * Lo que le queda del periodo: su parte de los ingresos menos su parte de los gastos.
-   * Negativo = gastó más de lo que le entró. Las transferencias no cuentan (solo saldan deudas).
+   * Cómo cambió su saldo disponible en el periodo: su parte de los ingresos − su parte de los
+   * gastos + transferencias recibidas − enviadas. Negativo = gastó más de lo que le entró.
    */
   left: number
   transfersSent: number
@@ -98,7 +98,8 @@ export function summarizePeriod(
     }
   }
 
-  for (const entry of people.values()) entry.left = entry.incomes - entry.share
+  for (const entry of people.values())
+    entry.left = entry.incomes - entry.share + entry.transfersReceived - entry.transfersSent
   summary.people = [...people.values()]
   return summary
 }

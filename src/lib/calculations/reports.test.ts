@@ -99,7 +99,7 @@ describe('summarizePeriod', () => {
         paid: 1_240_000,
         share: 680_000,
         incomes: 3_200_000,
-        left: 2_520_000,
+        left: 2_820_000,
         transfersSent: 0,
         transfersReceived: 300_000,
       },
@@ -108,7 +108,7 @@ describe('summarizePeriod', () => {
         paid: 120_000,
         share: 680_000,
         incomes: 0,
-        left: -680_000,
+        left: -980_000,
         transfersSent: 300_000,
         transfersReceived: 0,
       },
@@ -157,14 +157,17 @@ describe('summarizePeriod: lo que le queda a cada uno', () => {
     expect(people.map((person) => person.left)).toEqual([950_000, 950_000])
   })
 
-  it('las transferencias no cambian lo que le queda a nadie', () => {
+  it('una transferencia pasa saldo de quien envía a quien recibe', () => {
     const withTransfer = summarizePeriod(movements, [A, B], october).people
     const without = summarizePeriod(
       movements.filter((movement) => movement.kind !== 'transfer'),
       [A, B],
       october,
     ).people
-    expect(withTransfer.map((person) => person.left)).toEqual(without.map((person) => person.left))
+    expect(withTransfer.map((person) => person.left)).toEqual([
+      without[0].left + 300_000,
+      without[1].left - 300_000,
+    ])
   })
 
   it('lo que queda entre todos = ingresos − gastos del periodo', () => {

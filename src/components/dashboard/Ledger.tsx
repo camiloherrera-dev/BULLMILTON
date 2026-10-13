@@ -1,11 +1,9 @@
-import { useHousehold } from '../../app/household-context'
 import { formatDayHeading, todayBogota } from '../../lib/dates'
-import { formatMoney } from '../../lib/money'
+import { formatMoney, formatSigned } from '../../lib/money'
 import type { AnnotatedDay } from '../../lib/calculations/ledger'
-import { balancePhrase } from '../movements/describe'
 import { MovementRow } from '../movements/MovementRow'
 
-/** Libro diario: cada día con cómo quedó el saldo al cierre, en palabras. */
+/** Libro diario: cada día con tu saldo disponible al cierre. */
 export function Ledger({
   days,
   heading,
@@ -17,7 +15,6 @@ export function Ledger({
   dayLevel?: 'h2' | 'h3'
 }) {
   const DayHeading = dayLevel
-  const data = useHousehold()
   const today = todayBogota()
   return (
     <section
@@ -32,7 +29,7 @@ export function Ledger({
       )}
       {days.map((day) => {
         const isToday = day.date === today
-        const closing = balancePhrase(day.closingBalance, data, isToday ? 'now' : 'past')
+        const negative = day.closingBalance < 0
         return (
           <div key={day.date}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 border-b-[3px] border-double border-line-strong pt-3 pb-2">
@@ -42,16 +39,10 @@ export function Ledger({
                 <time dateTime={day.date}>{formatDayHeading(day.date, today)}</time>
               </DayHeading>
               <p className="text-sm text-fg-muted">
-                <span className="sr-only">{isToday ? 'Por ahora: ' : 'Al cierre del día: '}</span>
-                {closing.lead}
-                {closing.amount !== null && (
-                  <>
-                    {' '}
-                    <span className="tabular font-semibold text-fg">
-                      {formatMoney(closing.amount)}
-                    </span>
-                  </>
-                )}
+                {isToday ? 'Tu saldo ahora' : 'Tu saldo al cierre'}{' '}
+                <span className={`tabular font-semibold ${negative ? 'text-negative' : 'text-fg'}`}>
+                  {negative ? formatSigned(day.closingBalance) : formatMoney(day.closingBalance)}
+                </span>
               </p>
             </div>
             <ul className="divide-y divide-line">
