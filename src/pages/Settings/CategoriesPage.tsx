@@ -108,7 +108,9 @@ function CategoryRow({ category }: { category: Category }) {
   const data = useHousehold()
   // Con movimientos no se puede borrar (la base de datos lo impide): solo archivar.
   const inUse = data.movements.some(
-    (movement) => movement.kind !== 'transfer' && movement.categoryId === category.id,
+    (movement) =>
+      (movement.kind === 'expense' || movement.kind === 'income') &&
+      movement.categoryId === category.id,
   )
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editing, setEditing] = useState(false)

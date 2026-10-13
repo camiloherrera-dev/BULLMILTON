@@ -1,8 +1,11 @@
 // Saldo disponible de cada persona (decidido 2026-10-12): no hay deudas entre ustedes.
-//   saldo = su parte de los ingresos − su parte de los gastos + transferencias recibidas − enviadas
+//   saldo = su parte de los ingresos − su parte de los gastos (sin tarjeta) − sus pagos de tarjeta
+//           + transferencias recibidas − enviadas
 // Quién pagó un gasto no importa: a cada uno se le descuenta su parte. Si el saldo de alguien
-// queda negativo, está usando el saldo de los demás. TypeScript puro y determinista; solo cuentan
-// movimientos activos y se acumula de un mes al siguiente.
+// queda negativo, está usando el saldo de los demás.
+// Tarjeta (2026-10-13): un gasto con tarjeta no baja el saldo todavía; la parte de cada uno queda
+// "por pagar de tarjeta" hasta que registra un pago de tarjeta, que es lo que sí baja su saldo.
+// TypeScript puro y determinista; solo cuentan movimientos activos y se acumula entre meses.
 
 import type { Movement } from '../../types/domain'
 import type { LedgerDay } from './balance'
@@ -17,10 +20,24 @@ export function availableEffects(movement: Movement): Map<string, number> {
   if (movement.kind === 'transfer') {
     add(movement.fromUser, -movement.amount)
     add(movement.toUser, movement.amount)
-  } else {
-    const sign = movement.kind === 'income' ? 1 : -1
-    for (const split of movement.splits) add(split.userId, sign * split.amount)
+  } else if (movement.kind === 'card_payment') {
+    add(movement.userId, -movement.amount)
+  } else if (movement.kind === 'income') {
+    for (const split of movement.splits) add(split.userId, split.amount)
+  } else if (!movement.paidWithCard) {
+    for (const split of movement.splits) add(split.userId, -split.amount)
   }
+  return effects
+}
+
+/** Cuánto cambia lo que cada persona tiene por pagar de tarjeta con un movimiento. */
+export function cardEffects(movement: Movement): Map<string, number> {
+  const effects = new Map<string, number>()
+  if (movement.status !== 'active') return effects
+  if (movement.kind === 'card_payment') effects.set(movement.userId, -movement.amount)
+  else if (movement.kind === 'expense' && movement.paidWithCard)
+    for (const split of movement.splits)
+      effects.set(split.userId, (effects.get(split.userId) ?? 0) + split.amount)
   return effects
 }
 
@@ -33,12 +50,18 @@ export interface AvailableSummary {
   carried: number
   /** Su parte de los ingresos del periodo. */
   incomes: number
-  /** Su parte de los gastos del periodo, los pagara quien los pagara. */
+  /** Su parte de los gastos del periodo sin tarjeta, los pagara quien los pagara. */
   share: number
+  /** Su parte de los gastos del periodo con tarjeta (aún no baja el saldo). */
+  cardCharged: number
+  /** Lo que abonó a la tarjeta en el periodo. */
+  cardPaid: number
   received: number
   sent: number
-  /** carried + incomes − share + received − sent. */
+  /** carried + incomes − share − cardPaid + received − sent. */
   balance: number
+  /** Lo que le queda por pagar de tarjeta al cierre del periodo (todo el historial). */
+  cardPending: number
 }
 
 /** Saldo disponible de cada persona al cierre del periodo, con lo que pasó dentro de él. */
@@ -51,7 +74,18 @@ export function availableSummary(
   const person = (userId: string) => {
     let entry = people.get(userId)
     if (!entry) {
-      entry = { userId, carried: 0, incomes: 0, share: 0, received: 0, sent: 0, balance: 0 }
+      entry = {
+        userId,
+        carried: 0,
+        incomes: 0,
+        share: 0,
+        cardCharged: 0,
+        cardPaid: 0,
+        received: 0,
+        sent: 0,
+        balance: 0,
+        cardPending: 0,
+      }
       people.set(userId, entry)
     }
     return entry
@@ -60,6 +94,7 @@ export function availableSummary(
 
   for (const movement of movements) {
     if (movement.status !== 'active' || movement.date > range.to) continue
+    for (const [userId, effect] of cardEffects(movement)) person(userId).cardPending += effect
     if (movement.date < range.from) {
       for (const [userId, effect] of availableEffects(movement)) person(userId).carried += effect
       continue
@@ -68,16 +103,21 @@ export function availableSummary(
     if (movement.kind === 'transfer') {
       person(movement.fromUser).sent += movement.amount
       person(movement.toUser).received += movement.amount
+    } else if (movement.kind === 'card_payment') {
+      person(movement.userId).cardPaid += movement.amount
     } else {
       for (const split of movement.splits) {
-        if (movement.kind === 'income') person(split.userId).incomes += split.amount
-        else person(split.userId).share += split.amount
+        const entry = person(split.userId)
+        if (movement.kind === 'income') entry.incomes += split.amount
+        else if (movement.paidWithCard) entry.cardCharged += split.amount
+        else entry.share += split.amount
       }
     }
   }
 
   for (const entry of people.values())
-    entry.balance = entry.carried + entry.incomes - entry.share + entry.received - entry.sent
+    entry.balance =
+      entry.carried + entry.incomes - entry.share - entry.cardPaid + entry.received - entry.sent
   return [...people.values()]
 }
 
@@ -120,4 +160,13 @@ export function buildAvailableLedger(
       day.entries.push({ movement, effect })
   }
   return days.filter((day) => day.entries.length > 0)
+}
+
+/** Lo que cada persona tiene por pagar de tarjeta, contando todo el historial activo. */
+export function cardPendingByPerson(movements: ReadonlyArray<Movement>): Map<string, number> {
+  const pending = new Map<string, number>()
+  for (const movement of movements)
+    for (const [userId, effect] of cardEffects(movement))
+      pending.set(userId, (pending.get(userId) ?? 0) + effect)
+  return pending
 }

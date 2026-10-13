@@ -11,7 +11,10 @@ export function CardCheckbox({ registration }: { registration: UseFormRegisterRe
         {...registration}
       />
       <CreditCardIcon aria-hidden="true" className="size-5 shrink-0 text-fg-muted" />
-      <span className="font-medium">Pagado con tarjeta</span>
+      <span className="flex flex-col py-2 leading-tight">
+        <span className="font-medium">Pagado con tarjeta</span>
+        <span className="text-sm text-fg-muted">Se resta del saldo cuando paguen la tarjeta</span>
+      </span>
     </label>
   )
 }

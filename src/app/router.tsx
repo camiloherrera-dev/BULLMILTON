@@ -11,6 +11,9 @@ import { HistoryPage } from '../pages/History/HistoryPage'
 import { ExpenseFormPage } from '../pages/Expenses/ExpenseFormPage'
 import { IncomeFormPage } from '../pages/Incomes/IncomeFormPage'
 import { TransferFormPage } from '../pages/Transfers/TransferFormPage'
+import { CardPaymentFormPage } from '../pages/Card/CardPaymentFormPage'
+import { BudgetFormPage } from '../pages/Budgets/BudgetFormPage'
+import { BudgetsPage } from '../pages/Budgets/BudgetsPage'
 import { RecurringPage } from '../pages/Recurring/RecurringPage'
 import { RecurringFormPage } from '../pages/Recurring/RecurringFormPage'
 import { ConfirmRecurringPage } from '../pages/Recurring/ConfirmRecurringPage'
@@ -64,10 +67,15 @@ export const router = createBrowserRouter([
               { path: 'ingresos/:id', element: <IncomeFormPage /> },
               { path: 'transferencias/nueva', element: <TransferFormPage /> },
               { path: 'transferencias/:id', element: <TransferFormPage /> },
+              { path: 'tarjeta/pagos/nuevo', element: <CardPaymentFormPage /> },
+              { path: 'tarjeta/pagos/:id', element: <CardPaymentFormPage /> },
               { path: 'recurrentes', element: <RecurringPage /> },
               { path: 'recurrentes/nuevo', element: <RecurringFormPage /> },
               { path: 'recurrentes/:id', element: <RecurringFormPage /> },
               { path: 'recurrentes/:id/confirmar', element: <ConfirmRecurringPage /> },
+              { path: 'presupuestos', element: <BudgetsPage /> },
+              { path: 'presupuestos/nuevo', element: <BudgetFormPage /> },
+              { path: 'presupuestos/:id', element: <BudgetFormPage /> },
               { path: 'reportes', element: <ReportsRoute /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/categorias', element: <CategoriesPage /> },

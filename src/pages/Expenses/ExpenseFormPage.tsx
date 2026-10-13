@@ -1,16 +1,19 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHousehold } from '../../app/household-context'
+import { useBudgets } from '../../hooks/useBudgets'
 import { useGoBack } from '../../hooks/useGoBack'
 import { invalidateData } from '../../hooks/useResource'
 import { todayBogota } from '../../lib/dates'
 import { toUserMessage } from '../../lib/errors'
 import { formatMoneyInput, parseMoneyInput } from '../../lib/money'
 import { expenseSchema, type ExpenseFormValues } from '../../lib/validation/movements'
+import { setExpenseBudgets } from '../../services/budgets'
 import { createExpense, updateExpense, voidExpense } from '../../services/movements'
 import type { Expense } from '../../types/domain'
+import { BudgetPicker } from '../../components/forms/BudgetPicker'
 import { CardCheckbox } from '../../components/forms/CardCheckbox'
 import { CategoryMultiPicker } from '../../components/forms/CategoryMultiPicker'
 import { DateChips } from '../../components/forms/DateChips'
@@ -33,6 +36,13 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
   const toast = useToast()
   const savedToast = useSavedToast()
   const readOnly = expense?.status === 'voided'
+  const budgets = useBudgets()
+  const freeBudgets = (budgets.data ?? []).filter((budget) => budget.kind === 'free')
+  // null = sin tocar: se muestran los que ya tenía y al guardar no se cambian.
+  const [pickedBudgets, setPickedBudgets] = useState<string[] | null>(null)
+  const budgetIds =
+    pickedBudgets ??
+    (expense ? freeBudgets.filter((b) => b.expenseIds.includes(expense.id)).map((b) => b.id) : [])
 
   const categories = data.categories.filter(
     (category) =>
@@ -93,13 +103,27 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
       notes: values.notes.trim(),
       paidWithCard: values.paidWithCard,
     }
+    // Los presupuestos son una nota privada aparte: si fallan, el gasto ya quedó guardado.
+    const saveBudgets = async (expenseId: string) => {
+      if (pickedBudgets === null) return
+      try {
+        await setExpenseBudgets(expenseId, pickedBudgets)
+      } catch (error) {
+        toast.show(
+          toUserMessage(error, 'El gasto se guardó, pero no pudimos marcarlo en tu presupuesto.'),
+          'error',
+        )
+      }
+    }
     try {
       if (expense) {
         await updateExpense(expense.id, input)
+        await saveBudgets(expense.id)
         invalidateData()
         toast.show('Gasto actualizado')
       } else {
         const id = await createExpense(data.household.id, input)
+        await saveBudgets(id)
         invalidateData()
         savedToast({
           message: 'Gasto guardado',
@@ -212,6 +236,8 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
               .map(([key, value]) => [key, (value as { message?: string })?.message]),
           )}
         />
+
+        <BudgetPicker budgets={freeBudgets} value={budgetIds} onChange={setPickedBudgets} />
 
         <NoteField
           registration={register('notes')}

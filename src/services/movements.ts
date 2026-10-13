@@ -8,6 +8,7 @@ import type {
   SplitInput,
   SplitType,
   Transfer,
+  CardPayment,
 } from '../types/domain'
 
 // PostgREST devuelve como máximo 1000 filas por petición (max_rows): se pagina hasta el final.
@@ -43,6 +44,8 @@ const EXPENSE_COLUMNS =
   'id, description, amount, currency, date, category_id, paid_by, split_type, notes, paid_with_card, status, recurring_expense_id, created_by, created_at, updated_by, updated_at, expense_splits(user_id, share_bp, amount), expense_categories(category_id)'
 const INCOME_COLUMNS =
   'id, user_id, source, amount, currency, date, category_id, split_type, notes, status, created_by, created_at, updated_by, updated_at, income_splits(user_id, share_bp, amount)'
+const CARD_PAYMENT_COLUMNS =
+  'id, user_id, amount, currency, date, notes, status, created_by, created_at, updated_by, updated_at'
 const TRANSFER_COLUMNS =
   'id, from_user, to_user, amount, currency, date, notes, status, created_by, created_at, updated_by, updated_at'
 
@@ -51,7 +54,7 @@ const TRANSFER_COLUMNS =
  * El saldo necesita el historial completo, así que una sola carga sirve a todas las pantallas.
  */
 export async function fetchAllMovements(householdId: string): Promise<Movement[]> {
-  const [expenses, incomes, transfers] = await Promise.all([
+  const [expenses, incomes, transfers, cardPayments] = await Promise.all([
     fetchAllPages((from, to) =>
       supabase
         .from('expenses')
@@ -74,6 +77,15 @@ export async function fetchAllMovements(householdId: string): Promise<Movement[]
       supabase
         .from('transfers')
         .select(TRANSFER_COLUMNS)
+        .eq('household_id', householdId)
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase
+        .from('card_payments')
+        .select(CARD_PAYMENT_COLUMNS)
         .eq('household_id', householdId)
         .order('date', { ascending: false })
         .order('created_at', { ascending: false })
@@ -130,6 +142,17 @@ export async function fetchAllMovements(householdId: string): Promise<Movement[]
       id: row.id,
       fromUser: row.from_user,
       toUser: row.to_user,
+      amount: row.amount,
+      currency: row.currency,
+      date: row.date,
+      notes: row.notes,
+      status: row.status as RecordStatus,
+      ...audit(row),
+    })),
+    ...cardPayments.map((row): CardPayment => ({
+      kind: 'card_payment',
+      id: row.id,
+      userId: row.user_id,
       amount: row.amount,
       currency: row.currency,
       date: row.date,
@@ -308,4 +331,53 @@ export async function updateTransfer(transferId: string, input: TransferInput): 
 
 export async function voidTransfer(transferId: string): Promise<void> {
   assertOk(await supabase.from('transfers').update({ status: 'voided' }).eq('id', transferId))
+}
+
+// ---------------------------------------------------------------------------
+// Pagos de tarjeta
+// ---------------------------------------------------------------------------
+
+export interface CardPaymentInput {
+  userId: string
+  amount: number
+  date: string
+  notes: string
+}
+
+export async function createCardPayment(
+  householdId: string,
+  input: CardPaymentInput,
+): Promise<string> {
+  const { id } = unwrap(
+    await supabase
+      .from('card_payments')
+      .insert({
+        household_id: householdId,
+        user_id: input.userId,
+        amount: input.amount,
+        date: input.date,
+        notes: input.notes.trim() || null,
+      })
+      .select('id')
+      .single(),
+  )
+  return id
+}
+
+export async function updateCardPayment(paymentId: string, input: CardPaymentInput): Promise<void> {
+  assertOk(
+    await supabase
+      .from('card_payments')
+      .update({
+        user_id: input.userId,
+        amount: input.amount,
+        date: input.date,
+        notes: input.notes.trim() || null,
+      })
+      .eq('id', paymentId),
+  )
+}
+
+export async function voidCardPayment(paymentId: string): Promise<void> {
+  assertOk(await supabase.from('card_payments').update({ status: 'voided' }).eq('id', paymentId))
 }

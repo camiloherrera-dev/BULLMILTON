@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { CaretRightIcon, QuestionIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import {
+  CaretRightIcon,
+  CreditCardIcon,
+  QuestionIcon,
+  WarningCircleIcon,
+} from '@phosphor-icons/react'
 import { memberName, personColor, useHousehold } from '../../app/household-context'
 import { formatMonthName } from '../../lib/dates'
 import { formatMoney, formatSigned } from '../../lib/money'
@@ -34,7 +39,40 @@ function LeftBar({ person }: { person: AvailableSummary }) {
 }
 
 const moved = (person: AvailableSummary) =>
-  person.carried !== 0 || person.incomes + person.share + person.received + person.sent > 0
+  person.carried !== 0 ||
+  person.cardPending !== 0 ||
+  person.incomes + person.share + person.cardCharged + person.received + person.sent > 0
+
+/** Lo pendiente de tarjeta de una persona: lo que debe, o lo que pagó de más. */
+function CardPending({ person, mine }: { person: AvailableSummary; mine: boolean }) {
+  const pending = person.cardPending
+  if (pending === 0 && person.cardCharged === 0) return null
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3">
+      <span className="flex min-w-0 flex-col">
+        <span className="inline-flex items-center gap-1.5 text-sm text-fg-muted">
+          <CreditCardIcon aria-hidden="true" className="size-4" />
+          {pending < 0 ? 'Pagaste de más a la tarjeta' : 'Por pagar de tarjeta'}
+        </span>
+        <span className="tabular text-xl font-semibold">{formatMoney(Math.abs(pending))}</span>
+        <span className="text-xs text-fg-muted">
+          {pending > 0
+            ? 'Aún no se resta de tu saldo: se resta cuando pagas.'
+            : 'Estás al día con la tarjeta.'}
+        </span>
+      </span>
+      {mine && pending > 0 && (
+        <ButtonLink
+          to={`/tarjeta/pagos/nuevo?${new URLSearchParams({ persona: person.userId })}`}
+          variant="secondary"
+          size="sm"
+        >
+          Pagar
+        </ButtonLink>
+      )}
+    </div>
+  )
+}
 
 /**
  * Inicio: el saldo disponible de cada uno. Cada gasto resta a cada persona su parte, la pagara
@@ -141,6 +179,7 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                 ¿Cómo se calcula?
               </button>
             </div>
+            <CardPending person={me} mine />
           </div>
         )}
 
@@ -185,6 +224,15 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                         </span>
                       </span>
                     )}
+                    {person.cardPending > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-sm text-fg-muted">
+                        <CreditCardIcon aria-hidden="true" className="size-4" />
+                        Por pagar de tarjeta{' '}
+                        <span className="tabular font-semibold text-fg">
+                          {formatMoney(person.cardPending)}
+                        </span>
+                      </span>
+                    )}
                   </Link>
                 </li>
               )
@@ -197,8 +245,9 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
             <p className="text-sm text-fg-muted">
               Cada gasto se descuenta del saldo de cada uno según su parte, sin importar quién lo
               pagó: si gastan $30.000 a medias, a cada uno se le restan $15.000. No hay deudas entre
-              ustedes; solo si a alguien se le acaba el saldo, está usando el del otro. Lo que sobra
-              pasa al mes siguiente. No es el saldo de tu cuenta del banco.
+              ustedes; solo si a alguien se le acaba el saldo, está usando el del otro. Los gastos
+              con tarjeta no se restan hasta que pagas tu parte de la tarjeta. Lo que sobra pasa al
+              mes siguiente. No es el saldo de tu cuenta del banco.
             </p>
             <dl className="flex flex-col divide-y divide-line rounded-xl bg-surface-2 px-4">
               {[
@@ -216,9 +265,15 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                 },
                 {
                   label: 'Tu parte de los gastos',
-                  hint: 'Los pagara quien los pagara.',
+                  hint: 'Sin los de tarjeta; los pagara quien los pagara.',
                   value: -me.share,
                   show: true,
+                },
+                {
+                  label: 'Pagaste de la tarjeta',
+                  hint: 'Tus pagos de tarjeta este mes.',
+                  value: -me.cardPaid,
+                  show: me.cardPaid > 0,
                 },
                 {
                   label: 'Te pasaron',

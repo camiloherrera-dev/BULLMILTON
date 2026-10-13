@@ -1,4 +1,4 @@
-// Exportación y respaldo (spec §21): CSV y JSON con gastos, ingresos, transferencias,
+// Exportación y respaldo (spec §21): CSV y JSON con gastos, ingresos, transferencias, pagos de tarjeta,
 // categorías y gastos recurrentes. Funciones puras; la descarga vive en downloadFile().
 
 import type { Category, Member, Movement, RecurringExpense } from '../types/domain'
@@ -42,6 +42,7 @@ export function buildExport(input: ExportInput) {
   const expenses = input.movements.filter((movement) => movement.kind === 'expense')
   const incomes = input.movements.filter((movement) => movement.kind === 'income')
   const transfers = input.movements.filter((movement) => movement.kind === 'transfer')
+  const cardPayments = input.movements.filter((movement) => movement.kind === 'card_payment')
 
   const csv: Record<string, string> = {
     'gastos.csv': toCsv(
@@ -127,6 +128,19 @@ export function buildExport(input: ExportInput) {
         transfer.status === 'active' ? 'activo' : 'anulado',
         transfer.notes,
         transfer.createdAt,
+      ]),
+    ),
+    'pagos_tarjeta.csv': toCsv(
+      ['id', 'fecha', 'persona', 'monto', 'moneda', 'estado', 'nota', 'creado'],
+      cardPayments.map((payment) => [
+        payment.id,
+        payment.date,
+        name(payment.userId),
+        payment.amount,
+        payment.currency,
+        payment.status === 'active' ? 'activo' : 'anulado',
+        payment.notes,
+        payment.createdAt,
       ]),
     ),
     'categorias.csv': toCsv(

@@ -8,6 +8,190 @@ export type Database = {
   }
   public: {
     Tables: {
+      budget_expenses: {
+        Row: {
+          budget_id: string
+          created_at: string
+          expense_id: string
+          household_id: string
+          user_id: string
+        }
+        Insert: {
+          budget_id: string
+          created_at?: string
+          expense_id: string
+          household_id: string
+          user_id: string
+        }
+        Update: {
+          budget_id?: string
+          created_at?: string
+          expense_id?: string
+          household_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'budget_expenses_budget_id_household_id_user_id_fkey'
+            columns: ['budget_id', 'household_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'budgets'
+            referencedColumns: ['id', 'household_id', 'user_id']
+          },
+          {
+            foreignKeyName: 'budget_expenses_expense_id_household_id_fkey'
+            columns: ['expense_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'expenses'
+            referencedColumns: ['id', 'household_id']
+          },
+        ]
+      }
+      budgets: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          household_id: string
+          id: string
+          kind: string
+          name: string
+          period: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          kind: string
+          name: string
+          period: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          kind?: string
+          name?: string
+          period?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'budgets_category_id_household_id_fkey'
+            columns: ['category_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id', 'household_id']
+          },
+          {
+            foreignKeyName: 'budgets_household_id_fkey'
+            columns: ['household_id']
+            isOneToOne: false
+            referencedRelation: 'households'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'budgets_household_id_user_id_fkey'
+            columns: ['household_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'household_members'
+            referencedColumns: ['household_id', 'user_id']
+          },
+        ]
+      }
+      card_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          date: string
+          household_id: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          date?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          date?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'card_payments_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'card_payments_household_id_fkey'
+            columns: ['household_id']
+            isOneToOne: false
+            referencedRelation: 'households'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'card_payments_household_id_user_id_fkey'
+            columns: ['household_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'household_members'
+            referencedColumns: ['household_id', 'user_id']
+          },
+          {
+            foreignKeyName: 'card_payments_updated_by_fkey'
+            columns: ['updated_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'card_payments_voided_by_fkey'
+            columns: ['voided_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       categories: {
         Row: {
           archived_at: string | null
@@ -912,6 +1096,10 @@ export type Database = {
       }
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       leave_household: { Args: { p_household_id: string }; Returns: undefined }
+      set_expense_budgets: {
+        Args: { p_budget_ids: Json; p_expense_id: string }
+        Returns: undefined
+      }
       skip_recurring_expense: {
         Args: { p_recurring_expense_id: string }
         Returns: undefined

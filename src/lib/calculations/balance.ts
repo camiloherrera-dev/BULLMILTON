@@ -127,6 +127,7 @@ export function movementEffect(movement: Movement, userId: string): number {
       if (movement.toUser === userId) return -movement.amount
       return 0
     case 'income':
+    case 'card_payment':
       return 0
   }
 }

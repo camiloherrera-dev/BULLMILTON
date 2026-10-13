@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import type { Expense, Income, Movement, Transfer } from '../../types/domain'
+import type { CardPayment, Expense, Income, Movement, Transfer } from '../../types/domain'
 import { buildLedger, calculateBalances, toBalanceInput } from './balance'
 import {
   availableEffects,
+  cardPendingByPerson,
   availableSummary,
   buildAvailableLedger,
   usingFromOthers,
@@ -199,18 +200,24 @@ describe('saldo disponible', () => {
       carried: -522_450,
       incomes: 3_000_000,
       share: 126_500,
+      cardCharged: 0,
+      cardPaid: 0,
       received: 300_000,
       sent: 0,
       balance: 2_651_050,
+      cardPending: 0,
     })
     expect(b).toEqual({
       userId: B,
       carried: -522_450,
       incomes: 0,
       share: 88_500,
+      cardCharged: 0,
+      cardPaid: 0,
       received: 0,
       sent: 300_000,
       balance: -910_950,
+      cardPending: 0,
     })
   })
 
@@ -240,5 +247,70 @@ describe('saldo disponible', () => {
     expect(entries.at(-1)?.before).toBe(0)
     const voided = entries.find((entry) => entry.movement.status === 'voided')!
     expect(voided.effect).toBe(0)
+  })
+})
+
+function cardPayment(
+  userId: string,
+  amount: number,
+  extra: Partial<CardPayment> = {},
+): CardPayment {
+  return {
+    kind: 'card_payment',
+    id: `p${(sequence += 1)}`,
+    userId,
+    amount,
+    currency: 'COP',
+    date: '2026-10-01',
+    notes: null,
+    status: 'active',
+    ...audit(),
+    ...extra,
+  }
+}
+
+describe('tarjeta', () => {
+  const october = { from: '2026-10-01', to: '2026-10-31' }
+  const base: Movement[] = [
+    income(A, 100_000, { date: '2026-10-02' }),
+    income(B, 100_000, { date: '2026-10-02' }),
+  ]
+
+  it('un gasto con tarjeta no baja el saldo: queda por pagar la parte de cada uno', () => {
+    const card = expense(
+      A,
+      30_000,
+      { [A]: 15_000, [B]: 15_000 },
+      {
+        date: '2026-10-03',
+        paidWithCard: true,
+      },
+    )
+    const people = availableSummary([card, ...base], [A, B], october)
+    expect(people.map((p) => p.balance)).toEqual([100_000, 100_000])
+    expect(people.map((p) => p.cardPending)).toEqual([15_000, 15_000])
+    expect(people.map((p) => p.cardCharged)).toEqual([15_000, 15_000])
+    expect(people.map((p) => p.share)).toEqual([0, 0])
+  })
+
+  it('al pagar su parte, baja su saldo y lo que tiene por pagar; el otro no cambia', () => {
+    const list: Movement[] = [
+      cardPayment(B, 15_000, { date: '2026-10-20' }),
+      expense(A, 30_000, { [A]: 15_000, [B]: 15_000 }, { date: '2026-10-03', paidWithCard: true }),
+      ...base,
+    ]
+    const [a, b] = availableSummary(list, [A, B], october)
+    expect([a.balance, a.cardPending]).toEqual([100_000, 15_000])
+    expect([b.balance, b.cardPending, b.cardPaid]).toEqual([85_000, 0, 15_000])
+    expect(Object.fromEntries(cardPendingByPerson(list))).toEqual({ [A]: 15_000, [B]: 0 })
+  })
+
+  it('lo pendiente se arrastra entre meses y un pago anulado no cuenta', () => {
+    const list: Movement[] = [
+      cardPayment(A, 15_000, { date: '2026-10-05', status: 'voided' }),
+      expense(A, 30_000, { [A]: 30_000 }, { date: '2026-09-20', paidWithCard: true }),
+    ]
+    const [a] = availableSummary(list, [A, B], october)
+    expect([a.carried, a.cardPending, a.balance]).toEqual([0, 30_000, 0])
   })
 })

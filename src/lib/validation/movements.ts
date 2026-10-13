@@ -110,6 +110,15 @@ export const transferSchema = z
 
 export type TransferFormValues = z.infer<typeof transferSchema>
 
+export const cardPaymentSchema = z.object({
+  userId: z.string().min(1, 'Elige quién paga.'),
+  amount: moneyField,
+  date: dayField,
+  notes: notesField,
+})
+
+export type CardPaymentFormValues = z.infer<typeof cardPaymentSchema>
+
 export const recurringSchema = z
   .object({
     name: z.string().trim().min(1, 'Ponle un nombre.').max(120, 'Máximo 120 caracteres.'),

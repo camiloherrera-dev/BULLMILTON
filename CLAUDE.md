@@ -53,7 +53,9 @@
 - **Lo que ve el usuario es el saldo disponible, no deudas** (decidido 2026-10-12,
   `src/lib/calculations/available.ts`): `su parte de ingresos − su parte de gastos + recibidas −
 enviadas`, acumulado entre meses. Quién pagó un gasto no importa. Solo si el saldo de alguien es
-  negativo se dice que está usando el del otro. El motor de deudas (`balance.ts`) sigue con sus
+  negativo se dice que está usando el del otro. Un gasto con tarjeta no baja el saldo: queda
+  "por pagar de tarjeta" hasta un `card_payments` (2026-10-13). Los presupuestos son privados de
+  cada persona y cuentan su parte de los gastos (`budgets.ts`). El motor de deudas (`balance.ts`) sigue con sus
   tests pero la UI ya no lo muestra.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos

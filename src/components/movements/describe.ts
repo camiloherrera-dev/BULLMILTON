@@ -1,6 +1,6 @@
 import { memberName, nameInSentence, type HouseholdData } from '../../app/household-context'
-import { availableEffects } from '../../lib/calculations/available'
-import { formatShare, formatSigned } from '../../lib/money'
+import { availableEffects, cardEffects } from '../../lib/calculations/available'
+import { formatMoney, formatShare, formatSigned } from '../../lib/money'
 import type { Expense, Income, Movement, Transfer } from '../../types/domain'
 
 // Textos de presentación de un movimiento (no son cálculos financieros: el efecto en el saldo
@@ -14,13 +14,18 @@ export function movementTitle(movement: Movement): string {
       return movement.source
     case 'transfer':
       return movement.notes?.trim() || 'Transferencia'
+    case 'card_payment':
+      return movement.notes?.trim() || 'Pago de tarjeta'
   }
 }
 
 export function movementPath(movement: Movement): string {
-  const base = { expense: '/gastos', income: '/ingresos', transfer: '/transferencias' }[
-    movement.kind
-  ]
+  const base = {
+    expense: '/gastos',
+    income: '/ingresos',
+    transfer: '/transferencias',
+    card_payment: '/tarjeta/pagos',
+  }[movement.kind]
   return `${base}/${movement.id}`
 }
 
@@ -74,6 +79,10 @@ export function movementDetail(movement: Movement, data: HouseholdData): string 
     }
     case 'transfer':
       return movement.notes?.trim() ? 'Transferencia' : 'Transferencia entre ustedes'
+    case 'card_payment':
+      return movement.userId === data.userId
+        ? 'Pagaste tu parte de la tarjeta'
+        : `${memberName(data, movement.userId)} pagó su parte de la tarjeta`
   }
 }
 
@@ -92,13 +101,25 @@ export function effectText(movement: Movement, data: HouseholdData): EffectText 
   if (movement.status === 'voided') return { parts: ['Anulado: no cuenta'], tone: 'neutral' }
   const effects = availableEffects(movement)
   const mine = effects.get(data.userId) ?? 0
+  const order = (id: string) =>
+    id === data.userId ? -1 : data.members.findIndex((member) => member.userId === id)
+
+  // Gasto con tarjeta: no toca el saldo todavía, queda por pagar.
+  if (movement.kind === 'expense' && movement.paidWithCard) {
+    const owed = [...cardEffects(movement)]
+      .filter(([, amount]) => amount !== 0)
+      .sort(([a], [b]) => order(a) - order(b))
+      .map(([userId, amount]) =>
+        userId === data.userId
+          ? `tú ${formatMoney(amount)}`
+          : `${memberName(data, userId)} ${formatMoney(amount)}`,
+      )
+    return { parts: ['Por pagar de tarjeta', ...owed], tone: 'neutral' }
+  }
+
   const parts = [...effects]
     .filter(([, amount]) => amount !== 0)
-    .sort(([a], [b]) => {
-      const position = (id: string) =>
-        id === data.userId ? -1 : data.members.findIndex((member) => member.userId === id)
-      return position(a) - position(b)
-    })
+    .sort(([a], [b]) => order(a) - order(b))
     .map(([userId, amount]) =>
       userId === data.userId
         ? `Tu saldo ${formatSigned(amount)}`

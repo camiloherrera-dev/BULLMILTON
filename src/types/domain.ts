@@ -96,7 +96,19 @@ export interface Transfer extends Audit {
   status: RecordStatus
 }
 
-export type Movement = Expense | Income | Transfer
+/** Lo que una persona abona de su parte de la tarjeta: baja su saldo y lo que tiene por pagar. */
+export interface CardPayment extends Audit {
+  kind: 'card_payment'
+  id: string
+  userId: string
+  amount: number
+  currency: string
+  date: string
+  notes: string | null
+  status: RecordStatus
+}
+
+export type Movement = Expense | Income | Transfer | CardPayment
 export type MovementKind = Movement['kind']
 
 export interface RecurringSplit {
@@ -118,6 +130,23 @@ export interface RecurringExpense extends Audit {
   notes: string | null
   paidWithCard: boolean
   active: boolean
+}
+
+export type BudgetKind = 'category' | 'total' | 'free'
+export type BudgetPeriod = 'month' | 'week'
+
+/** Presupuesto personal y privado (solo lo ve quien lo creó). */
+export interface Budget {
+  id: string
+  name: string
+  kind: BudgetKind
+  /** Solo en los de tipo 'category'. */
+  categoryId: string | null
+  amount: number
+  period: BudgetPeriod
+  createdAt: string
+  /** Gastos asignados a mano (solo en los de tipo 'free'). */
+  expenseIds: string[]
 }
 
 /** División pedida al crear/editar: participantes (iguales) o porcentajes en puntos básicos. */

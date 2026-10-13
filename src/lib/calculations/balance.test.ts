@@ -215,6 +215,16 @@ describe('movementEffect', () => {
     expect(movementEffect(fifty, B)).toBe(-50)
   })
 
+  it('un pago de tarjeta no mueve el saldo entre los dos', () => {
+    const payment = {
+      ...transfer(A, B, 30),
+      kind: 'card_payment' as const,
+      userId: A,
+    }
+    expect(movementEffect(payment, A)).toBe(0)
+    expect(movementEffect(payment, B)).toBe(0)
+  })
+
   it('transferencia: enviar sube mi saldo, recibir lo baja', () => {
     const payment = transfer(B, A, 30)
     expect(movementEffect(payment, B)).toBe(30)

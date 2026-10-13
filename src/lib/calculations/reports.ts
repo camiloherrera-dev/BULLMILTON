@@ -95,6 +95,9 @@ export function summarizePeriod(
         person(movement.fromUser).transfersSent += movement.amount
         person(movement.toUser).transfersReceived += movement.amount
         break
+      case 'card_payment':
+        // El gasto ya contó al cargarse a la tarjeta; el pago no es un gasto nuevo.
+        break
     }
   }
 

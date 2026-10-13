@@ -80,11 +80,12 @@ describe('buildExport', () => {
     exportedAt: '2026-10-12T00:00:00Z',
   })
 
-  it('genera los cinco CSV de la spec', () => {
+  it('genera los CSV de la spec y el de pagos de tarjeta', () => {
     expect(Object.keys(result.csv).sort()).toEqual([
       'categorias.csv',
       'gastos.csv',
       'ingresos.csv',
+      'pagos_tarjeta.csv',
       'recurrentes.csv',
       'transferencias.csv',
     ])

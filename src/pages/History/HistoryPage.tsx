@@ -38,6 +38,8 @@ function involves(movement: Movement, userId: string): boolean {
       return movement.userId === userId || movement.splits.some((split) => split.userId === userId)
     case 'transfer':
       return movement.fromUser === userId || movement.toUser === userId
+    case 'card_payment':
+      return movement.userId === userId
   }
 }
 
@@ -94,9 +96,10 @@ export function HistoryPage() {
       inRange(movement.date, range) &&
       (kind === 'all' || movement.kind === kind) &&
       (categoryIds.length === 0 || categoriesOf(movement).some((id) => categoryIds.includes(id))) &&
-      // "Con / sin tarjeta" solo aplica a gastos.
+      // "Con tarjeta": gastos con tarjeta y pagos de tarjeta. "Sin tarjeta": gastos sin ella.
       (card === 'all' ||
-        (movement.kind === 'expense' && movement.paidWithCard === (card === 'si'))) &&
+        (movement.kind === 'expense' && movement.paidWithCard === (card === 'si')) ||
+        (movement.kind === 'card_payment' && card === 'si')) &&
       (!person || involves(movement, person)) &&
       (!needle ||
         movementTitle(movement).toLocaleLowerCase('es').includes(needle) ||
@@ -249,7 +252,7 @@ export function HistoryPage() {
                 />
               </div>
             )}
-            {kind !== 'transfer' && (
+            {kind !== 'transfer' && kind !== 'card_payment' && (
               <div className="sm:col-span-2">
                 <CategoryChips
                   label="Categorías"

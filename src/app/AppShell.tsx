@@ -5,6 +5,7 @@ import {
   ChartPieIcon,
   GearSixIcon,
   ListBulletsIcon,
+  WalletIcon,
   type IconProps,
 } from '@phosphor-icons/react'
 import { QuickActions } from '../components/QuickActions'
@@ -20,6 +21,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/', label: 'Inicio', icon: BookOpenIcon, end: true },
   { to: '/movimientos', label: 'Movimientos', icon: ListBulletsIcon },
+  { to: '/presupuestos', label: 'Presupuestos', icon: WalletIcon },
   { to: '/reportes', label: 'Reportes', icon: ChartPieIcon },
   { to: '/ajustes', label: 'Ajustes', icon: GearSixIcon },
 ]

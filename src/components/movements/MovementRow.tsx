@@ -16,7 +16,12 @@ interface MovementRowProps {
   entry: AnnotatedEntry
 }
 
-const kindLabel = { expense: 'Gasto', income: 'Ingreso', transfer: 'Transferencia' } as const
+const kindLabel = {
+  expense: 'Gasto',
+  income: 'Ingreso',
+  transfer: 'Transferencia',
+  card_payment: 'Pago de tarjeta',
+} as const
 
 const toneClasses = {
   positive: 'text-positive',
@@ -32,7 +37,7 @@ export function MovementRow({ entry }: MovementRowProps) {
   const data = useHousehold()
   const { movement } = entry
   const category =
-    movement.kind === 'transfer'
+    movement.kind === 'transfer' || movement.kind === 'card_payment'
       ? null
       : data.categories.find((item) => item.id === movement.categoryId)
   const voided = movement.status === 'voided'
@@ -63,6 +68,8 @@ export function MovementRow({ entry }: MovementRowProps) {
           >
             {movement.kind === 'transfer' ? (
               <TransferIcon />
+            ) : movement.kind === 'card_payment' ? (
+              <CreditCardIcon aria-hidden="true" className="size-5" />
             ) : (
               <CategoryIcon icon={category?.icon} />
             )}
