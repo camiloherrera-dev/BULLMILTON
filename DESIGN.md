@@ -311,6 +311,7 @@ La estructura que define a BULLMILTON.
 - **Estados:** sin ingresos registrados aún, "Llevas en gastos este mes" en neutro (no es una alarma); si de verdad se pasó, "Te pasaste este mes por" en rojo con icono.
 - **El otro:** tarjeta Dark Slate con su avatar, lo que le queda y su barra; lleva a sus movimientos del mes.
 - **Saldo disponible (héroe de Inicio):** tu saldo grande, el de cada otro miembro debajo y una hoja "¿Cómo se calcula?" (venías con, te entraron, tu parte de los gastos, transferencias). Sin tarjeta de deudas: si a alguien se le acaba el saldo, el héroe dice cuánto está usando del otro.
+- **Te quedan este mes (2026-10-18):** tarjeta Dark Slate dentro del héroe, bajo la barra del saldo: tu avatar de persona, "Te quedan en octubre" y la cifra en 2xl tabular, "≈ $Y por día hasta fin de mes" y una fila por cada otro miembro con su avatar. Negativo: rojo con icono y "Gastaste $X más de lo que entró"; sin ingresos registrados, gris (no es alarma). Al tocarla, una hoja con la cuenta de cada uno y el total del hogar. Reemplazó las líneas "te entraron / tu parte de los gastos" del héroe.
 - **Barra compacta:** al salir la cifra del viewport, una barra fija de 48px en Dark Slate con borde `line` aparece arriba, entrando con opacidad y 8px de desplazamiento en 200ms `ease-out-expo`.
 
 ### Personalización (Ajustes → Apariencia)

@@ -10,13 +10,17 @@ import { memberName, personColor, useHousehold } from '../../app/household-conte
 import { formatMonthName } from '../../lib/dates'
 import { formatMoney, formatSigned } from '../../lib/money'
 import { usingFromOthers, type AvailableSummary } from '../../lib/calculations/available'
+import type { PeriodSummary } from '../../lib/calculations/reports'
 import { PersonAvatar } from '../people/PersonColor'
 import { ButtonLink } from '../ui/Button'
 import { buttonClasses } from '../ui/buttonClasses'
 import { Sheet } from '../ui/Sheet'
+import { MonthLeftCard } from './MonthLeftCard'
 
 interface MoneyLeftHeroProps {
   people: AvailableSummary[]
+  /** Resumen del mes en curso, para "Te quedan este mes". */
+  summary: PeriodSummary
   month: string
 }
 
@@ -79,7 +83,7 @@ function CardPending({ person, mine }: { person: AvailableSummary; mine: boolean
  * quien la pagara; no hay deudas. Solo si a alguien se le acaba el saldo está usando el del otro.
  * Al hacer scroll se compacta en una barra fija.
  */
-export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
+export function MoneyLeftHero({ people, summary, month }: MoneyLeftHeroProps) {
   const data = useHousehold()
   const sentinel = useRef<HTMLDivElement>(null)
   const [compact, setCompact] = useState(false)
@@ -153,16 +157,6 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
               </p>
             )}
             <LeftBar person={me} />
-            <p className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
-              <span>
-                En {monthName} te entraron{' '}
-                <span className="tabular text-fg">{formatMoney(me.incomes)}</span>
-              </span>
-              <span>
-                Tu parte de los gastos{' '}
-                <span className="tabular text-fg">{formatMoney(me.share)}</span>
-              </span>
-            </p>
             <div className="flex flex-wrap items-center gap-x-2">
               <Link
                 to={personPath(data.userId)}
@@ -179,6 +173,7 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                 ¿Cómo se calcula?
               </button>
             </div>
+            <MonthLeftCard summary={summary} today={month} />
             <CardPending person={me} mine />
           </div>
         )}
@@ -208,20 +203,10 @@ export function MoneyLeftHero({ people, month }: MoneyLeftHeroProps) {
                       </span>
                     </span>
                     <LeftBar person={person} />
-                    {short && takes > 0 ? (
+                    {short && takes > 0 && (
                       <span className="text-sm font-medium text-negative">
                         Se le acabó: está usando {formatMoney(takes)}{' '}
                         {others.length === 1 ? 'de tu saldo' : 'del saldo de los demás'}
-                      </span>
-                    ) : (
-                      <span className="flex flex-wrap justify-between gap-x-4 text-sm text-fg-muted">
-                        <span>
-                          Le entraron <span className="tabular">{formatMoney(person.incomes)}</span>
-                        </span>
-                        <span>
-                          Su parte de los gastos{' '}
-                          <span className="tabular">{formatMoney(person.share)}</span>
-                        </span>
                       </span>
                     )}
                     {person.cardPending > 0 && (

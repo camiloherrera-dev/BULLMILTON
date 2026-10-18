@@ -18,8 +18,9 @@ export interface PersonSummary {
   /** Su parte de los ingresos (los compartidos cuentan según el reparto). */
   incomes: number
   /**
-   * Cómo cambió su saldo disponible en el periodo: su parte de los ingresos − su parte de los
-   * gastos + transferencias recibidas − enviadas. Negativo = gastó más de lo que le entró.
+   * Lo que le queda del periodo (remaining.ts): su parte de los ingresos − su parte de los gastos
+   * (con tarjeta incluidos) + transferencias recibidas − enviadas. Negativo = gastó más de lo
+   * que le entró.
    */
   left: number
   transfersSent: number

@@ -40,7 +40,7 @@ export function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 lg:px-10">
-      <MoneyLeftHero people={available} month={today} />
+      <MoneyLeftHero people={available} summary={summary} month={today} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-8">
         <div className="flex flex-col gap-6 empty:hidden xl:col-start-2 xl:row-start-1">

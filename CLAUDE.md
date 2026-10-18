@@ -57,6 +57,9 @@ enviadas`, acumulado entre meses. Quién pagó un gasto no importa. Solo si el s
   "por pagar de tarjeta" hasta un `card_payments` (2026-10-13). Los presupuestos son privados de
   cada persona y cuentan su parte de los gastos (`budgets.ts`). El motor de deudas (`balance.ts`) sigue con sus
   tests pero la UI ya no lo muestra.
+- "Lo que queda" del mes (2026-10-18, `remaining.ts` sobre `summarizePeriod`): su parte de los
+  ingresos − su parte de los gastos (con tarjeta, al cargarse) − enviadas + recibidas; no arrastra
+  meses. Restante del hogar = suma de los individuales. Las transferencias nunca son gasto.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos
   financieros dentro de JSX.
