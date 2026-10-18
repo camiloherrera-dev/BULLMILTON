@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  formatMonthAbbr,
   addMonths,
   endOfMonth,
   formatDayHeading,
@@ -48,5 +49,12 @@ describe('formatDayHeading', () => {
     expect(formatDayHeading('2026-10-12', '2026-10-12')).toBe('Hoy')
     expect(formatDayHeading('2026-10-11', '2026-10-12')).toBe('Ayer')
     expect(formatDayHeading('2026-10-06', '2026-10-12')).toMatch(/^mar 6 oct$/)
+  })
+})
+
+describe('formatMonthAbbr', () => {
+  it('mes abreviado sin punto ni año', () => {
+    expect(formatMonthAbbr('2026-10-01')).toBe('oct')
+    expect(formatMonthAbbr('2026-05-01')).toBe('may')
   })
 })

@@ -2,7 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { applyAppearance } from '../lib/appearance'
 import { supabase } from '../lib/supabase/client'
-import { fetchAppearance } from '../services/household'
+import { setPreferences } from '../lib/preferences'
+import { fetchAppearance, fetchPreferences } from '../services/household'
 import { AuthContext, type AuthState } from './auth-context'
 
 function toState(session: Session | null): AuthState {
@@ -49,6 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         // Sin conexión: se queda la apariencia guardada en este navegador.
+      })
+    fetchPreferences(userId)
+      .then((preferences) => {
+        if (active) setPreferences(preferences)
+      })
+      .catch(() => {
+        // Sin conexión: se quedan las preferencias guardadas en este navegador.
       })
     return () => {
       active = false

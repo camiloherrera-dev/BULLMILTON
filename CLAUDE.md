@@ -60,6 +60,8 @@ enviadas`, acumulado entre meses. Quién pagó un gasto no importa. Solo si el s
 - "Lo que queda" del mes (2026-10-18, `remaining.ts` sobre `summarizePeriod`): su parte de los
   ingresos − su parte de los gastos (con tarjeta, al cargarse) − enviadas + recibidas; no arrastra
   meses. Restante del hogar = suma de los individuales. Las transferencias nunca son gasto.
+  Series de Reportes en `charts.ts` y alertas de gasto en `alerts.ts` (con tests); preferencias
+  (`report_chart`, `spend_alerts`, `spend_alert_threshold`) en `profiles` con `check` y pgTAP.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos
   financieros dentro de JSX.

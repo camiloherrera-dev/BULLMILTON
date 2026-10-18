@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatCompactMoney,
   formatAmount,
   formatMoney,
   formatMoneyInput,
@@ -64,5 +65,20 @@ describe('parsePercentToBp', () => {
     expect(parsePercentToBp('12,345')).toBeNull()
     expect(parsePercentToBp('-5')).toBeNull()
     expect(parsePercentToBp('')).toBeNull()
+  })
+})
+
+describe('formatCompactMoney (ejes de gráficas)', () => {
+  it('abrevia millones y miles', () => {
+    expect(formatCompactMoney(1_234_567)).toBe('$1,2 M')
+    expect(formatCompactMoney(3_000_000)).toBe('$3 M')
+    expect(formatCompactMoney(45_000)).toBe('$45 mil')
+    expect(formatCompactMoney(999)).toBe('$999')
+    expect(formatCompactMoney(0)).toBe('$0')
+  })
+
+  it('negativos con signo menos tipográfico', () => {
+    expect(formatCompactMoney(-250_000)).toBe('−$250 mil')
+    expect(formatCompactMoney(-1_500_000)).toBe('−$1,5 M')
   })
 })

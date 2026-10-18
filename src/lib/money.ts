@@ -20,6 +20,16 @@ export function formatSigned(amount: number): string {
   return `${sign}$${formatAmount(Math.abs(amount))}`
 }
 
+/** Para ejes de gráficas: 1234567 → "$1,2 M", 45000 → "$45 mil", −250000 → "−$250 mil". */
+export function formatCompactMoney(amount: number): string {
+  const sign = amount < 0 ? '−' : ''
+  const value = Math.abs(amount)
+  if (value >= 1_000_000)
+    return `${sign}$${(value / 1_000_000).toLocaleString('es-CO', { maximumFractionDigits: 1 })} M`
+  if (value >= 1_000) return `${sign}$${Math.round(value / 1_000)} mil`
+  return `${sign}$${formatAmount(value)}`
+}
+
 export const MAX_AMOUNT = 100_000_000_000_000
 
 /**

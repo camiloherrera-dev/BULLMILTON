@@ -753,6 +753,9 @@ export type Database = {
           motion: string
           person_color: string | null
           private_mode: boolean
+          report_chart: string
+          spend_alert_threshold: number
+          spend_alerts: boolean
           text_size: string
           theme: string
           updated_at: string
@@ -769,6 +772,9 @@ export type Database = {
           motion?: string
           person_color?: string | null
           private_mode?: boolean
+          report_chart?: string
+          spend_alert_threshold?: number
+          spend_alerts?: boolean
           text_size?: string
           theme?: string
           updated_at?: string
@@ -785,6 +791,9 @@ export type Database = {
           motion?: string
           person_color?: string | null
           private_mode?: boolean
+          report_chart?: string
+          spend_alert_threshold?: number
+          spend_alerts?: boolean
           text_size?: string
           theme?: string
           updated_at?: string

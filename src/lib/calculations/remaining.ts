@@ -27,3 +27,24 @@ export function dailyAllowance(remaining: number, today: string): number {
   if (remaining <= 0) return 0
   return Math.floor(remaining / daysLeftInMonth(today))
 }
+
+export interface PeriodRemaining {
+  incomes: number
+  expenses: number
+  /** incomes − expenses: igual a la suma de los restantes de cada uno. */
+  left: number
+  /** Porcentaje de lo que entró ya gastado, en puntos básicos; null si no entró nada. */
+  spentBp: number | null
+}
+
+/** Ingresos − Gastos = Queda, del hogar, para la tarjeta de Reportes. */
+export function periodRemaining(summary: PeriodSummary): PeriodRemaining {
+  const incomes = summary.totalIncomes
+  const expenses = summary.totalExpenses
+  return {
+    incomes,
+    expenses,
+    left: householdRemaining(summary),
+    spentBp: incomes > 0 ? Math.floor((expenses * 10000) / incomes) : null,
+  }
+}

@@ -237,7 +237,7 @@ Sistema plano por capas tonales: canvas, luego surface, luego surface-2, con reg
 
 ### Shadow Vocabulary
 
-- **Floating ambient** (`box-shadow: 0 8px 24px -8px var(--color-canvas)`): toasts y tooltip del gráfico mensual. Nada más.
+- **Floating ambient** (`box-shadow: 0 8px 24px -8px var(--color-canvas)`): toasts, tooltips de las gráficas y el menú "Ver como…" de Reportes. Nada más.
 
 ### Named Rules
 
@@ -312,6 +312,8 @@ La estructura que define a BULLMILTON.
 - **El otro:** tarjeta Dark Slate con su avatar, lo que le queda y su barra; lleva a sus movimientos del mes.
 - **Saldo disponible (héroe de Inicio):** tu saldo grande, el de cada otro miembro debajo y una hoja "¿Cómo se calcula?" (venías con, te entraron, tu parte de los gastos, transferencias). Sin tarjeta de deudas: si a alguien se le acaba el saldo, el héroe dice cuánto está usando del otro.
 - **Te quedan este mes (2026-10-18):** tarjeta Dark Slate dentro del héroe, bajo la barra del saldo: tu avatar de persona, "Te quedan en octubre" y la cifra en 2xl tabular, "≈ $Y por día hasta fin de mes" y una fila por cada otro miembro con su avatar. Negativo: rojo con icono y "Gastaste $X más de lo que entró"; sin ingresos registrados, gris (no es alarma). Al tocarla, una hoja con la cuenta de cada uno y el total del hogar. Reemplazó las líneas "te entraron / tu parte de los gastos" del héroe.
+- **Avisos de gasto (2026-10-18):** en Inicio (columna de pendientes) y arriba de Reportes. Un aviso del hogar a la vez, el más grave: "Gastando más de lo que entra" (Red Wash, borde rojo al 40 %, icono octágono), "A este ritmo se pasan" (Primary Wash, borde amarillo al 40 %, icono de tendencia) o "Atención: ya gastaron el N %" (Primary Wash, icono de advertencia); más uno por persona en rojo. Título + monto + qué hacer, botón de cerrar de 44px; cerrado se recuerda en el navegador hasta que cambie el estado. Ajustes → Alertas: interruptor y umbral.
+- **Reportes (2026-10-18):** arriba "Lo que queda": Ingresos − Gastos = Queda (doble regla antes del total, cifra en 3xl), barra de % del ingreso gastado (amarillo; roja si se pasan) y "A cada uno". Debajo, "Análisis" con el selector "Ver como…" (botón de 56px con nombre y descripción; hoja inferior en móvil, menú de 384px en escritorio) y seis vistas: ingresos vs gastos (barras verde/amarillo + línea Soft White de lo que quedó), ritmo del mes (línea amarilla, proyección punteada, línea verde de lo que entró), por categoría y comparar (listas con barras horizontales y flechas con texto), por persona (barra llena = pagó, contorno = le tocaba) y restante por persona (barras en color de persona). Ejes abreviados ($1,2 M), montos completos en el tooltip, tabla alternativa y leyenda siempre visibles.
 - **Barra compacta:** al salir la cifra del viewport, una barra fija de 48px en Dark Slate con borde `line` aparece arriba, entrando con opacidad y 8px de desplazamiento en 200ms `ease-out-expo`.
 
 ### Personalización (Ajustes → Apariencia)
@@ -330,7 +332,7 @@ Todo se aplica con atributos en `<html>` (`src/lib/appearance.ts` → `appearanc
 | Movimiento      | `data-motion`  | sistema, reducido                                                                 | `motion-reduce:` / `motion-safe:` responden a la preferencia del sistema o a este atributo                                             |
 | Modo privado    | `data-private` | presente o no                                                                     | Montos (`tabular`) y líneas con `data-money` borrosos hasta tocarlos (`src/lib/privacy.ts`)                                            |
 
-**Color por persona** (`profiles.person_color`): azul, ámbar, rosa, cian, tokens `--color-person-*`. Calculados para separarse entre sí (ΔE OKLab ≥ 15) y del verde y el rojo del dinero (≥ 10). Lo ven los dos; la base de datos impide que dos miembros activos tengan el mismo y, sin elección, `lib/people.ts` reparte el primero libre. Se usa en las barras de aportes, el gráfico mensual apilado por quién pagó (con leyenda de nombres) y el avatar con la inicial (`on-swatch` encima, 4,5:1). El color nunca va solo: siempre al lado del nombre.
+**Color por persona** (`profiles.person_color`): azul, ámbar, rosa, cian, tokens `--color-person-*`. Calculados para separarse entre sí (ΔE OKLab ≥ 15) y del verde y el rojo del dinero (≥ 10). Lo ven los dos; la base de datos impide que dos miembros activos tengan el mismo y, sin elección, `lib/people.ts` reparte el primero libre. Se usa en las vistas "Por persona" y "Restante por persona" de Reportes (con leyenda de nombres), en "Te quedan este mes" y el avatar con la inicial (`on-swatch` encima, 4,5:1). El color nunca va solo: siempre al lado del nombre.
 
 **Color e icono por categoría** (`categories.color`, `categories.icon`): ocho muestras `--color-swatch-*` y 34 iconos Phosphor. El círculo es la muestra al 18% sobre el panel con el icono en la muestra (≥ 3:1); sin color, el círculo neutro de siempre.
 

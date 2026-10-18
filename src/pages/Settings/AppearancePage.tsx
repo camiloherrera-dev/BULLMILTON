@@ -23,6 +23,9 @@ import {
 import { toUserMessage } from '../../lib/errors'
 import { invalidateData } from '../../hooks/useResource'
 import { updateAppearance, updatePersonColor } from '../../services/household'
+import { usePreferences } from '../../hooks/usePreferences'
+import { isReportView, reportViews } from '../../lib/preferences'
+import { Field, Select } from '../../components/ui/Field'
 import { PersonAvatar } from '../../components/people/PersonColor'
 import { personBg } from '../../components/people/personClasses'
 import { Button } from '../../components/ui/Button'
@@ -255,6 +258,7 @@ export function AppearancePage() {
   const saved = useRef(appearance)
   const name = useId()
   const mode = resolveMode(appearance.mode)
+  const [preferences, updatePreferences] = usePreferences()
 
   const choose = async (next: Appearance) => {
     // Se aplica al instante; se guarda en la cuenta para el resto de dispositivos.
@@ -482,6 +486,34 @@ export function AppearancePage() {
               className="relative mt-1 h-7 w-12 shrink-0 rounded-full bg-surface-2 transition-colors peer-checked:bg-primary after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-fg after:transition-[translate] peer-checked:after:translate-x-5 peer-checked:after:bg-on-primary motion-reduce:after:transition-none"
             />
           </label>
+        </Group>
+
+        <Group
+          title="Gráfica inicial de Reportes"
+          description="La vista con la que abre el análisis. También cambia sola cuando eliges otra en Reportes."
+        >
+          <Field
+            label="Vista al abrir Reportes"
+            hint={reportViews.find((view) => view.id === preferences.reportView)?.description}
+          >
+            {({ id, describedBy }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                value={preferences.reportView}
+                onChange={(event) => {
+                  if (isReportView(event.target.value))
+                    updatePreferences({ reportView: event.target.value })
+                }}
+              >
+                {reportViews.map((view) => (
+                  <option key={view.id} value={view.id}>
+                    {view.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
         </Group>
 
         <div className="border-t border-line pt-6">

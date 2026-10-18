@@ -20,6 +20,7 @@ import { ConfirmRecurringPage } from '../pages/Recurring/ConfirmRecurringPage'
 import { SettingsPage } from '../pages/Settings/SettingsPage'
 import { CategoriesPage } from '../pages/Settings/CategoriesPage'
 import { AppearancePage } from '../pages/Settings/AppearancePage'
+import { AlertsPage } from '../pages/Settings/AlertsPage'
 
 export const router = createBrowserRouter([
   {
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/categorias', element: <CategoriesPage /> },
               { path: 'ajustes/apariencia', element: <AppearancePage /> },
+              { path: 'ajustes/alertas', element: <AlertsPage /> },
             ],
           },
         ],

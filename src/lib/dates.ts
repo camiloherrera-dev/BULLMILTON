@@ -97,6 +97,7 @@ const dayMonthYear = new Intl.DateTimeFormat('es-CO', {
   timeZone: 'UTC',
 })
 const monthLong = new Intl.DateTimeFormat('es-CO', { month: 'long', timeZone: 'UTC' })
+const monthShort = new Intl.DateTimeFormat('es-CO', { month: 'short', timeZone: 'UTC' })
 const monthShortYear = new Intl.DateTimeFormat('es-CO', {
   month: 'short',
   year: '2-digit',
@@ -129,6 +130,11 @@ export function formatMonthName(day: string): string {
 /** "oct 25" (ejes de gráficos). */
 export function formatMonthShort(day: string): string {
   return tidy(monthShortYear.format(dayToUtcNoon(day)))
+}
+
+/** "oct" (ejes de gráficas angostas; el año va en el tooltip). */
+export function formatMonthAbbr(day: string): string {
+  return tidy(monthShort.format(dayToUtcNoon(day)))
 }
 
 /** Encabezado de un día en el libro: "Hoy", "Ayer" o "lun 6 oct". */

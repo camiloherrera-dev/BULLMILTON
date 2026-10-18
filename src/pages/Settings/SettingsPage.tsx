@@ -8,6 +8,7 @@ import {
   CopyIcon,
   DownloadSimpleIcon,
   KeyIcon,
+  BellIcon,
   PaletteIcon,
   RepeatIcon,
   SignOutIcon,
@@ -21,6 +22,7 @@ import { invalidateData, useResource } from '../../hooks/useResource'
 import { formatDay, toBogotaDay } from '../../lib/dates'
 import { toUserMessage } from '../../lib/errors'
 import { currentAppearance, fonts, modes, themes } from '../../lib/appearance'
+import { usePreferences } from '../../hooks/usePreferences'
 import { buildExport, downloadFile } from '../../lib/export'
 import { newPasswordSchema, type NewPasswordValues } from '../../lib/validation/password'
 import { supabase } from '../../lib/supabase/client'
@@ -387,6 +389,7 @@ export function SettingsPage() {
   const [leaving, setLeaving] = useState(false)
   const activeMembers = data.members.filter((member) => member.active)
   const appearance = currentAppearance()
+  const [preferences] = usePreferences()
 
   return (
     <Page>
@@ -449,6 +452,19 @@ export function SettingsPage() {
           icon={<PaletteIcon />}
           title="Colores, letra y tamaño"
           detail={`${themes.find((theme) => theme.id === appearance.theme)?.name} ${modes.find((mode) => mode.id === appearance.mode)?.name.toLowerCase()} · ${fonts.find((font) => font.id === appearance.font)?.name}`}
+        />
+      </Section>
+
+      <Section title="Alertas">
+        <LinkRow
+          to="/ajustes/alertas"
+          icon={<BellIcon />}
+          title="Avisos de gasto"
+          detail={
+            preferences.spendAlerts
+              ? `Activados · atención desde el ${preferences.alertThreshold} %`
+              : 'Desactivados'
+          }
         />
       </Section>
 

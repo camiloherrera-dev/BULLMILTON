@@ -9,6 +9,7 @@ import {
   type PersonColorId,
 } from '../lib/appearance'
 import type { Category, CategoryKind, Household, Member, Role } from '../types/domain'
+import { toPreferences, type Preferences } from '../lib/preferences'
 
 export interface HouseholdContextData {
   household: Household
@@ -217,6 +218,40 @@ export async function updateAppearance(userId: string, appearance: Appearance): 
         corners: appearance.corners,
         motion: appearance.motion,
         private_mode: appearance.privateMode,
+      })
+      .eq('id', userId),
+  )
+}
+
+export async function fetchPreferences(userId: string): Promise<Preferences> {
+  const row = unwrap(
+    await supabase
+      .from('profiles')
+      .select('report_chart, spend_alerts, spend_alert_threshold')
+      .eq('id', userId)
+      .single(),
+  )
+  return toPreferences({
+    reportView: row.report_chart,
+    spendAlerts: row.spend_alerts,
+    alertThreshold: row.spend_alert_threshold,
+  })
+}
+
+/** Guarda solo lo que cambió (la base de datos valida cada valor con un CHECK). */
+export async function updatePreferences(
+  userId: string,
+  changes: Partial<Preferences>,
+): Promise<void> {
+  assertOk(
+    await supabase
+      .from('profiles')
+      .update({
+        ...(changes.reportView !== undefined && { report_chart: changes.reportView }),
+        ...(changes.spendAlerts !== undefined && { spend_alerts: changes.spendAlerts }),
+        ...(changes.alertThreshold !== undefined && {
+          spend_alert_threshold: changes.alertThreshold,
+        }),
       })
       .eq('id', userId),
   )

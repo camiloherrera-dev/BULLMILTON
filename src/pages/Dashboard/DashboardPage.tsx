@@ -11,6 +11,7 @@ import { Ledger } from '../../components/dashboard/Ledger'
 import { MoneyLeftHero } from '../../components/dashboard/MoneyLeftHero'
 import { MonthSummary } from '../../components/dashboard/MonthSummary'
 import { PendingRecurring } from '../../components/dashboard/PendingRecurring'
+import { SpendAlerts } from '../../components/alerts/SpendAlerts'
 import { ButtonLink } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/States'
 
@@ -44,6 +45,7 @@ export function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-8">
         <div className="flex flex-col gap-6 empty:hidden xl:col-start-2 xl:row-start-1">
+          <SpendAlerts />
           <PendingRecurring />
         </div>
         <div className="flex min-w-0 flex-col gap-6 xl:col-start-1 xl:row-span-2 xl:row-start-1">
