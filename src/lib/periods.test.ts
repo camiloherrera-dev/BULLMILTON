@@ -8,6 +8,10 @@ describe('resolvePeriod', () => {
     expect(resolvePeriod('week', today)).toEqual({ from: '2026-10-12', to: '2026-10-18' })
   })
 
+  it('semana pasada: lunes a domingo anteriores', () => {
+    expect(resolvePeriod('previousWeek', today)).toEqual({ from: '2026-10-05', to: '2026-10-11' })
+  })
+
   it('este mes y mes anterior', () => {
     expect(resolvePeriod('month', today)).toEqual({ from: '2026-10-01', to: '2026-10-31' })
     expect(resolvePeriod('previousMonth', today)).toEqual({ from: '2026-09-01', to: '2026-09-30' })

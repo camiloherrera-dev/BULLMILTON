@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from 'react-router'
-import { HouseholdLayout, NotFound, ReportsRoute, RouteError } from './RouteScreens'
+import { HouseholdLayout, NotFound, ReportsRoute, RouteError, StatementRoute } from './RouteScreens'
 import { PublicOnly, RequireAuth } from './guards'
 import { LoginPage } from '../pages/Login/LoginPage'
 import { ForgotPasswordPage } from '../pages/Password/ForgotPasswordPage'
@@ -78,6 +78,7 @@ export const router = createBrowserRouter([
               { path: 'presupuestos/nuevo', element: <BudgetFormPage /> },
               { path: 'presupuestos/:id', element: <BudgetFormPage /> },
               { path: 'reportes', element: <ReportsRoute /> },
+              { path: 'reportes/extracto', element: <StatementRoute /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/categorias', element: <CategoriesPage /> },
               { path: 'ajustes/apariencia', element: <AppearancePage /> },

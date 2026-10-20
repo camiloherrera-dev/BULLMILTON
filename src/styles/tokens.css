@@ -416,3 +416,18 @@
   --radius-xl: 0px;
   --radius-2xl: 0px;
 }
+
+/* Impresión (Reportes → Extracto → Guardar como PDF): papel blanco y tinta oscura con cualquier
+   tema o modo. La especificidad le gana a los bloques [data-theme][data-mode] y de acento. */
+@media print {
+  :root:root[data-theme][data-mode] {
+    --color-canvas: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #f1f2f4;
+    --color-fg: #111418;
+    --color-fg-muted: #4b5563;
+    --color-primary: #7a5800;
+    --color-positive: #146f3d;
+    --color-negative: #b3261e;
+  }
+}

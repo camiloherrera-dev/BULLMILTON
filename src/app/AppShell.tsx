@@ -85,14 +85,14 @@ export function AppShell() {
   const showMobileActions = onTab
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] print:block">
       <a
         href="#contenido"
         className="sr-only z-50 rounded-xl bg-primary px-4 py-3 font-semibold text-on-primary focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
         Saltar al contenido
       </a>
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex print:hidden">
         <div className="px-2">
           <Brand />
           <p className="mt-1 truncate text-sm text-fg-muted">{household.name}</p>
@@ -115,7 +115,7 @@ export function AppShell() {
 
       <div
         hidden={!onTab}
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface pb-safe lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface pb-safe lg:hidden print:hidden"
       >
         {showMobileActions && (
           <div className="px-3 pt-2.5">

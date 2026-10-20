@@ -46,6 +46,25 @@ const ReportsPage = lazy(() =>
   import('../pages/Reports/ReportsPage').then((module) => ({ default: module.ReportsPage })),
 )
 
+// El extracto comparte el bloque de Reportes (sin la librería de gráficos).
+const StatementPage = lazy(() =>
+  import('../pages/Reports/StatementPage').then((module) => ({ default: module.StatementPage })),
+)
+
+export function StatementRoute() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-4xl px-4 py-10">
+          <LedgerSkeleton days={2} />
+        </div>
+      }
+    >
+      <StatementPage />
+    </Suspense>
+  )
+}
+
 export function ReportsRoute() {
   return (
     <Suspense

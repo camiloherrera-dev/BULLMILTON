@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChartPieIcon, FunnelSimpleIcon } from '@phosphor-icons/react'
+import { ChartPieIcon, FileTextIcon, FunnelSimpleIcon } from '@phosphor-icons/react'
 import { memberName, useHousehold } from '../../app/household-context'
 import { expenseCategoryIds, summarizePeriod } from '../../lib/calculations/reports'
 import { startOfMonth, todayBogota } from '../../lib/dates'
@@ -13,8 +13,16 @@ import { Field, TextInput } from '../../components/ui/Field'
 import { Page, PageHeader } from '../../components/ui/PageHeader'
 import { ScrollFade } from '../../components/ui/ScrollFade'
 import { EmptyState } from '../../components/ui/States'
+import { ButtonLink } from '../../components/ui/Button'
 
-const presets: PeriodPreset[] = ['week', 'month', 'previousMonth', 'last3Months', 'custom']
+const presets: PeriodPreset[] = [
+  'week',
+  'previousWeek',
+  'month',
+  'previousMonth',
+  'last3Months',
+  'custom',
+]
 
 /**
  * Reportes (spec §19-§20): lo que queda del periodo (Ingresos − Gastos = Queda) y el panel de
@@ -59,7 +67,19 @@ export function ReportsPage() {
 
   return (
     <Page width="lg">
-      <PageHeader title="Reportes" />
+      <PageHeader
+        title="Reportes"
+        actions={
+          <ButtonLink
+            to={`/reportes/extracto?${new URLSearchParams({ desde: range.from, hasta: range.to })}`}
+            variant="secondary"
+            size="sm"
+            icon={<FileTextIcon aria-hidden="true" className="size-4" weight="bold" />}
+          >
+            Extracto
+          </ButtonLink>
+        }
+      />
       <SpendAlerts className="mb-6" linkToReports={false} />
 
       <div className="-mx-4 mb-6 flex flex-col gap-3 px-4">

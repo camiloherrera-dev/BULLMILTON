@@ -135,3 +135,13 @@
 :root:not([data-mode='light']) .brand-on-light {
   display: none;
 }
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  /* El modo privado no aplica al papel: quien imprime el extracto quiere ver los montos. */
+  [data-private] :is(.tabular, [data-money]) {
+    filter: none !important;
+  }
+}
