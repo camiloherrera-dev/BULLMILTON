@@ -14,6 +14,8 @@ import { TransferFormPage } from '../pages/Transfers/TransferFormPage'
 import { CardPaymentFormPage } from '../pages/Card/CardPaymentFormPage'
 import { BudgetFormPage } from '../pages/Budgets/BudgetFormPage'
 import { BudgetsPage } from '../pages/Budgets/BudgetsPage'
+import { PersonalPage } from '../pages/Personal/PersonalPage'
+import { PersonalFormPage } from '../pages/Personal/PersonalFormPage'
 import { RecurringPage } from '../pages/Recurring/RecurringPage'
 import { RecurringFormPage } from '../pages/Recurring/RecurringFormPage'
 import { ConfirmRecurringPage } from '../pages/Recurring/ConfirmRecurringPage'
@@ -77,6 +79,10 @@ export const router = createBrowserRouter([
               { path: 'presupuestos', element: <BudgetsPage /> },
               { path: 'presupuestos/nuevo', element: <BudgetFormPage /> },
               { path: 'presupuestos/:id', element: <BudgetFormPage /> },
+              { path: 'personal', element: <PersonalPage /> },
+              { path: 'personal/ingresos/nuevo', element: <PersonalFormPage kind="income" /> },
+              { path: 'personal/gastos/nuevo', element: <PersonalFormPage kind="expense" /> },
+              { path: 'personal/:id', element: <PersonalFormPage /> },
               { path: 'reportes', element: <ReportsRoute /> },
               { path: 'reportes/extracto', element: <StatementRoute /> },
               { path: 'ajustes', element: <SettingsPage /> },

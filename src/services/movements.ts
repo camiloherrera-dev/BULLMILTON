@@ -14,7 +14,7 @@ import type {
 // PostgREST devuelve como máximo 1000 filas por petición (max_rows): se pagina hasta el final.
 const PAGE_SIZE = 1000
 
-async function fetchAllPages<T>(
+export async function fetchAllPages<T>(
   fetchPage: (
     from: number,
     to: number,

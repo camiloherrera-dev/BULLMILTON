@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHousehold } from '../../app/household-context'
@@ -144,6 +144,15 @@ function ExpenseForm({ expense }: { expense?: Expense }) {
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
       {readOnly && <VoidedNotice label="gasto" />}
+      {!expense && (
+        <p className="text-sm text-fg-muted">
+          ¿Lo pagas con tu dinero personal?{' '}
+          <Link to="/personal/gastos/nuevo" replace className="font-medium text-fg underline">
+            Regístralo aparte
+          </Link>
+          : no cuenta en el hogar.
+        </p>
+      )}
       <fieldset disabled={readOnly || isSubmitting} className="flex flex-col gap-6">
         <Controller
           control={control}

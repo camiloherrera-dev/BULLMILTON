@@ -16,6 +16,7 @@ import { ButtonLink } from '../ui/Button'
 import { buttonClasses } from '../ui/buttonClasses'
 import { Sheet } from '../ui/Sheet'
 import { MonthLeftCard } from './MonthLeftCard'
+import { PersonalMoneyCard } from './PersonalMoneyCard'
 
 interface MoneyLeftHeroProps {
   people: AvailableSummary[]
@@ -177,6 +178,9 @@ export function MoneyLeftHero({ people, summary, month }: MoneyLeftHeroProps) {
             <CardPending person={me} mine />
           </div>
         )}
+        <div className="mt-2 max-w-xl">
+          <PersonalMoneyCard />
+        </div>
 
         {others.length > 0 && (
           <ul className="mt-4 flex max-w-xl flex-col gap-2">

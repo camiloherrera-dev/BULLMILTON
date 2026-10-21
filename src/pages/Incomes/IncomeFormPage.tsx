@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { memberName, useHousehold } from '../../app/household-context'
@@ -127,7 +127,12 @@ function IncomeForm({ income }: { income?: Income }) {
       {readOnly && <VoidedNotice label="ingreso" />}
       {!income && (
         <p className="text-sm text-fg-muted">
-          Los ingresos no cambian el saldo entre ustedes; sirven para los reportes.
+          Los ingresos no cambian el saldo entre ustedes; sirven para los reportes. ¿Es dinero solo
+          tuyo que no quieres sumar al hogar?{' '}
+          <Link to="/personal/ingresos/nuevo" replace className="font-medium text-fg underline">
+            Regístralo como personal
+          </Link>
+          .
         </p>
       )}
       <fieldset disabled={readOnly || isSubmitting} className="flex flex-col gap-6">

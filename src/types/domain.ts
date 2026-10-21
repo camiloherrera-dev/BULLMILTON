@@ -149,6 +149,22 @@ export interface Budget {
   expenseIds: string[]
 }
 
+/**
+ * Ingreso o gasto del dinero personal de quien está conectado. Privado y aparte: no entra en el
+ * saldo disponible, en lo que queda ni en los reportes del hogar.
+ */
+export interface PersonalMovement extends Audit {
+  id: string
+  kind: 'income' | 'expense'
+  description: string
+  amount: number
+  currency: string
+  date: string
+  categoryId: string | null
+  notes: string | null
+  status: RecordStatus
+}
+
 /** División pedida al crear/editar: participantes (iguales) o porcentajes en puntos básicos. */
 export type SplitInput =
   { type: 'equal'; participants: string[] } | { type: 'percentage'; shares: RecurringSplit[] }

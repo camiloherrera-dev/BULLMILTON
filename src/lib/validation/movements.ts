@@ -119,6 +119,16 @@ export const cardPaymentSchema = z.object({
 
 export type CardPaymentFormValues = z.infer<typeof cardPaymentSchema>
 
+export const personalSchema = z.object({
+  description: z.string().trim().min(1, 'Escribe qué fue.').max(120, 'Máximo 120 caracteres.'),
+  amount: moneyField,
+  date: dayField,
+  categoryId: z.string(),
+  notes: notesField,
+})
+
+export type PersonalFormValues = z.infer<typeof personalSchema>
+
 export const recurringSchema = z
   .object({
     name: z.string().trim().min(1, 'Ponle un nombre.').max(120, 'Máximo 120 caracteres.'),

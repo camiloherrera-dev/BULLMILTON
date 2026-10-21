@@ -65,6 +65,9 @@ enviadas`, acumulado entre meses. Quién pagó un gasto no importa. Solo si el s
   Extracto (Reportes → Extracto, `statement.ts` + `lib/statementText.ts`): cada gasto cuenta una
   vez en su categoría principal; PDF con la impresión del navegador (`@media print` en tokens.css),
   sin librerías.
+- Dinero personal (2026-10-20, `personal.ts`, tabla `personal_movements`, pantalla `/personal`):
+  ingresos y gastos que cada persona lleva aparte; privado por RLS y fuera de todo cálculo del hogar
+  (saldo disponible, lo que queda, reportes). Disponible personal = ingresos − gastos, acumulado.
 - El motor de balance (`src/lib/calculations/`) es TypeScript puro, sin React, determinista y con
   tests unitarios. Toda modificación al motor incluye o actualiza tests. Nada de cálculos
   financieros dentro de JSX.

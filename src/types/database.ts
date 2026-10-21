@@ -740,6 +740,88 @@ export type Database = {
           },
         ]
       }
+      personal_movements: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          date: string
+          description: string
+          household_id: string
+          id: string
+          kind: string
+          notes: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          date?: string
+          description: string
+          household_id: string
+          id?: string
+          kind: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          date?: string
+          description?: string
+          household_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'personal_movements_category_id_household_id_fkey'
+            columns: ['category_id', 'household_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id', 'household_id']
+          },
+          {
+            foreignKeyName: 'personal_movements_household_id_fkey'
+            columns: ['household_id']
+            isOneToOne: false
+            referencedRelation: 'households'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'personal_movements_household_id_user_id_fkey'
+            columns: ['household_id', 'user_id']
+            isOneToOne: false
+            referencedRelation: 'household_members'
+            referencedColumns: ['household_id', 'user_id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           accent: string
